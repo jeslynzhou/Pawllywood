@@ -4,7 +4,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, on
 import { initializeApp } from '@firebase/app';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCGHpSfjU4CJ02RtoGp_01j5cF6P629epg",
+  apiKey: FIREBASE_API_KEY,
   authDomain: "pawllywood-abc3e.firebaseapp.com",
   projectId: "pawllywood-abc3e",
   storageBucket: "pawllywood-abc3e.appspot.com",
