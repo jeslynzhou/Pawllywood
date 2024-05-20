@@ -16,12 +16,12 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-const AuthScreen = ({ email, setEmail, password, setPassword, isLogin, setIsLogin, handleAuthentication }) => {
+const AuthScreen = ({ email, setEmail, password, setPassword, retypePassword, setRetypePassword, isLogin, setIsLogin, handleAuthentication }) => {
   return (
     <View style={styles.authContainer}>
-       <Text style={styles.title}>{isLogin ? 'Sign In' : 'Sign Up'}</Text>
+      <Text style={styles.title}>{isLogin ? 'Sign In' : 'Sign Up'}</Text>
 
-       <TextInput
+      <TextInput
         style={styles.input}
         value={email}
         onChangeText={setEmail}
@@ -35,6 +35,15 @@ const AuthScreen = ({ email, setEmail, password, setPassword, isLogin, setIsLogi
         placeholder="Password"
         secureTextEntry
       />
+      {!isLogin && (
+        <TextInput
+          style={styles.input}
+          value={retypePassword}
+          onChangeText={setRetypePassword}
+          placeholder="Retype Password"
+          secureTextEntry
+        />
+      )}
       <View style={styles.buttonContainer}>
         <Button title={isLogin ? 'Sign In' : 'Sign Up'} onPress={handleAuthentication} color="#3498db" />
       </View>
@@ -61,6 +70,7 @@ const AuthenticatedScreen = ({ user, handleAuthentication }) => {
 export default App = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [retypePassword, setRetypePassword] = useState('');
   const [user, setUser] = useState(null); // Track user authentication state
   const [isLogin, setIsLogin] = useState(true);
 
@@ -73,21 +83,26 @@ export default App = () => {
     return () => unsubscribe();
   }, [auth]);
 
-  
+
   const handleAuthentication = async () => {
     try {
       if (user) {
         // If user is already authenticated, log out
-        console.log('User logged out successfully!');
+        console.log('You have logged out successfully!');
         await signOut(auth);
       } else {
         // Sign in or sign up
         if (isLogin) {
           // Sign in
+
           await signInWithEmailAndPassword(auth, email, password);
-          console.log('User signed in successfully!');
+          console.log('You have signed in successfully!');
         } else {
           // Sign up
+          if (password !== retypePassword) {
+            console.error("Passwords don't match");
+            return;
+          }
           await createUserWithEmailAndPassword(auth, email, password);
           console.log('User created successfully!');
         }
@@ -96,6 +111,15 @@ export default App = () => {
       console.error('Authentication error:', error.message);
     }
   };
+
+  const resetInputFields = () => {
+    setEmail('');
+    setPassword('');
+    setRetypePassword('');
+  };
+  useEffect(() => {
+    resetInputFields();
+  }, [isLogin]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -109,6 +133,8 @@ export default App = () => {
           setEmail={setEmail}
           password={password}
           setPassword={setPassword}
+          retypePassword={retypePassword}
+          setRetypePassword={setRetypePassword}
           isLogin={isLogin}
           setIsLogin={setIsLogin}
           handleAuthentication={handleAuthentication}
@@ -117,6 +143,7 @@ export default App = () => {
     </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
