@@ -1,20 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from '@firebase/auth';
-import { initializeApp } from '@firebase/app';
-
-const firebaseConfig = {
-  apiKey: FIREBASE_API_KEY,
-  authDomain: "pawllywood-abc3e.firebaseapp.com",
-  projectId: "pawllywood-abc3e",
-  storageBucket: "pawllywood-abc3e.appspot.com",
-  messagingSenderId: "62836081451",
-  appId: "1:62836081451:web:7ccb964474f61b6c5c3b6e",
-  measurementId: "G-5GGHJXB9BP"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+import { app } from './initializeFB'
 
 const AuthScreen = ({ email, setEmail, password, setPassword, retypePassword, setRetypePassword, isLogin, setIsLogin, handleAuthentication }) => {
   return (
