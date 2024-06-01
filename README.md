@@ -97,7 +97,7 @@ Canva: https://www.canva.com/design/DAGF7uzLu3g/g3yj7IKo3Hcbmzxl-N5W5w/edit
 <!-- Content for Proof of Concept -->
 
 ## Software Engineering Practices
-a. 
+ 
 ### Version Controls
 
 #### Branching
@@ -111,21 +111,31 @@ For milestone 1, our regular commits focus on developing user authentication. To
 ### Software Architecture
 
 #### User Flow Diagram
-<!-- Content for User Flow Diagram -->
+![User Flow Diagram](https://github.com/jeslynzhou/Pawllywood/assets/168978806/5cf70b07-a3cb-4a66-9296-c7d688562344)
 
 #### Microservice Architecture Diagram
-<!-- Content for Microservice Architecture Diagram -->
+![Microservice](https://github.com/jeslynzhou/Pawllywood/assets/168978806/6e8d1bdb-c96c-4b27-97d2-225536dfd537)
+
 
 ## Development Plan
 
 ### Milestone 1 | 20/05 - 03/06
-<!-- Content for Milestone 1 -->
+- Design UI for the app
+- Software Engineering Diagrams
+- Proof of Concept (for Users Authentication)
+- Deployment
 
 ### Milestone 2 | 03/06 - 01/07
-<!-- Content for Milestone 2 -->
+- Create database
+- Refine UI
+- Implement core features (Profile, Library, and Forum)
+- System testing
 
 ### Milestone 3 | 01/07 - 29/07
-<!-- Content for Milestone 3 -->
+- Implement bonus features (Notebook, User Engagement, Multi-device synchronization, and Push Notification)
+- System testing
+- Bug fixing
+
 
 ## Project Log
 Total hours for Milestone 1:
