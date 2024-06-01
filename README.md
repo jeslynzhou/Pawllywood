@@ -21,8 +21,7 @@
 1. [Version Controls](#version-controls)
    - [Branching](#branching)
    - [Commits](#commits)
-3. [Performance Testing](#performance-testing)
-4. [Software Architecture](#software-architecture)
+2. [Software Architecture](#software-architecture)
    - [User Flow Diagram](#user-flow-diagram)
    - [Microservice Architecture Diagram](#microservice-architecture-diagram)
 
@@ -98,7 +97,7 @@ Canva: https://www.canva.com/design/DAGF7uzLu3g/g3yj7IKo3Hcbmzxl-N5W5w/edit
 <!-- Content for Proof of Concept -->
 
 ## Software Engineering Practices
-
+a. 
 ### Version Controls
 
 #### Branching
@@ -108,9 +107,6 @@ During our development, we achieved parallel work streams by utilizing different
 #### Commits
 
 For milestone 1, our regular commits focus on developing user authentication. To ensure easy tracking and management of our changes, we named our commits according to the specific changes made. Some examples of our commits are “Add Retype Password for Sign In”, “Login & Sign up Screen” and, “organize files”.
-
-### Performance Testing
-<!-- Content for Performance Testing -->
 
 ### Software Architecture
 
@@ -132,42 +128,24 @@ For milestone 1, our regular commits focus on developing user authentication. To
 <!-- Content for Milestone 3 -->
 
 ## Project Log
-## Milestone Tasks
+Total hours for Milestone 1:
 
-| Milestone | Tasks | PIC | Start | End | Hrs | Status |
-|-----------|-------|-----|-------|-----|-----|--------|
-| 1 - Ideation   | | | | | | |
-| 1.1 | Formulate project idea | Both | 12/05 | 13/05 | 3 | Completed |                    
-| 1.2 | Brainstorm features | Both | 13/05 | 14/05 | 2 | Completed |           
-| 1.3 | Project Poster + Video for Lift-off | Both | 14/05 | 20/05 | 6 | Completed |            
-| 1.4 | Design first draft UI for the app | Marianne | 21/05 | 23/05 | 8 | In Progress |                    
-| 1.5 | Design development plan | Marianne | 28/05 | - | 1 | In Progress |     
-| 1.6 | Refine User Flow Diagram | Marianne | 28/05 | 29/05 | - | Not Started |
-| 1.7 | Refine Poster with confirmed techstack | Jeslyn | 29/05 | - | - | In Progress |
-| 1.8 | Technical Proof of Concept (for Authentication) | Both | 29/05 | 31/05 | - | In Progress |
-| 1.9 | Deployment | Jeslyn | 31/05 | 01/06 | - | In Progress |
-| 1.10 | Update Video with PoC + next plan | Both | 01/06 | 02/06 | - | Not Started |
-| 1.11 | Refine Code in ReactNative (make it scalable, organize in folders) | Jeslyn | 02/06 | 03/06 | - | In Progress |
-| 1.12 | Write report | Both | - | - | - | In Progress |
-| 2 - Prototype   | | | | | | |
-| 2.1 | Create database with Firebase | Null   | 03/06   | 04/06   |     | Not Started |
-| 2.2 | Integrate Profile feature | Null   | 04/06   | 13/06   |     | Not Started |
-| 2.3 | System Testing for Profile feature | Null   | 13/06   | 14/06   |     | Not Started |
-| 2.4 | Integrate Library feature | Null   | 04/06   | 13/06   |     | Not Started |
-| 2.5 | System Testing for Library feature | Null   | 13/06   | 14/06   |     | Not Started |
-| 2.6 | Integrate Forum feature | Null   | 14/06   | 23/06   |     | Not Started |
-| 2.7 | System Testing for Forum feature | Null   | 23/06   | 24/06   |     | Not Started |
-| 2.8 | Training search engine algorithm | Null   | 24/06   | 28/06   |     | Not Started |
-| 2.9 | Final Testing for core features with users + feedback (Deployment) | Null | 28/06 | 30/06 | - | Not Started |
-| 2.10 | Finalize documentation | Null | 30/06 | 01/07 | - | Not Started |
-| 3 - Extension   | | | | | | |
-| 3.1 | Integrate Notebook feature | Null | 01/07 | 12/07 | - | Not Started |
-| 3.2 | System Testing for Notebook feature | Null | 12/07 | 13/07 | - | Not Started |
-| 3.3 | Integrate User engagement feature (Add friend, follow, visit people’s profile) | Null | 01/07 | 12/07 | - | Not Started |
-| 3.4 | System Testing for User engagement feature | Null | 12/07 | 13/07 | - | Not Started |
-| 3.5 | Implement Multi-device synchronization feature | Null | 13/07 | 25/07 | - | Not Started |
-| 3.6 | System Testing for Multi-device synchronization feature | Null | 25/07 | 26/07 | - | Not Started |
-| 3.7 | Implement Push Notification feature | Null | 13/07 | 25/07 | - | Not Started |
-| 3.8 | System Testing for Push Notification feature | Null | 25/07 | 26/07 | - | Not Started |
-| 3.9 | Final Testing for bonus features (internal and external testing) | Null | 26/07 | 27/07 | - | Not Started |
-| 3.10 | Finalize report + poster | Null | 27/07 | 29/07 | - | Not Started |
+Jeslyn: 41
+
+Marianne: 42
+
+| Milestone | Tasks | PIC | Start | End | Hrs |
+|-----------|-------|-----|-------|-----|-----|
+| 1 - Ideation   | | | | | |
+| 1.1 | Formulate project idea | Both | 12/05 | 13/05 | 3 |                  
+| 1.2 | Brainstorm features | Both | 13/05 | 14/05 | 2 |            
+| 1.3 | Project Poster + Video for Lift-off | Both | 14/05 | 20/05 | 8 |           
+| 1.4 | Design first draft UI for the app | Marianne | 21/05 | 23/05 | 8 |                  
+| 1.5 | Design development plan | Marianne | 28/05 | - | 1 |      
+| 1.6 | Refine User Flow Diagram | Marianne | 28/05 | 29/05 | 1 |
+| 1.7 | Refine Poster with confirmed techstack | Jeslyn | 29/05 | - | 1 | 
+| 1.8 | Technical Proof of Concept (for Authentication) | Both | 29/05 | 31/05 | 12 | 
+| 1.9 | Deployment | Jeslyn | 31/05 | 01/06 | 6 | 
+| 1.10 | Update Video with PoC + next plan | Both | 01/06 | 02/06 | 4 | 
+| 1.11 | Refine Code in ReactNative (make it scalable, organize in folders) | Jeslyn | 02/06 | 03/06 | 2 |
+| 1.12 | Write report | Both | 03/06 | - | 3 | 
