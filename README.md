@@ -81,8 +81,9 @@ https://github.com/jeslynzhou/Pawllywood/assets/168978806/7f4a970c-e504-4f21-9db
 ## Wireframe
 ***Medium Fidelity Designs***
 
+Canva: https://www.canva.com/design/DAGF7uzLu3g/g3yj7IKo3Hcbmzxl-N5W5w/edit
+
 *PREVIEW:*
-![UI Design](https://www.canva.com/design/DAGF7uzLu3g/g3yj7IKo3Hcbmzxl-N5W5w/edit)
 
 ![Splash_Login_Signup](https://github.com/jeslynzhou/Pawllywood/assets/157949261/124c9385-8c72-4bc4-94fc-6d6d56d39ea0)
 
