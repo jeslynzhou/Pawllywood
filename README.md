@@ -74,7 +74,7 @@ Our ***forum*** feature allows users to engage in discussions, ask questions, an
 4. Expo & GitHub & Git (Others)
 
 ## Poster & Video
-![Orbital2024  Poster 01-3](https://github.com/jeslynzhou/Pawllywood/assets/157949261/4bdac6bf-6fde-494d-8e40-860153117df0)
+<img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/4bdac6bf-6fde-494d-8e40-860153117df0" width="500px">
 
 https://github.com/jeslynzhou/Pawllywood/assets/168978806/7f4a970c-e504-4f21-9db2-c524d817ab20
 
@@ -85,17 +85,14 @@ Canva: https://www.canva.com/design/DAGF7uzLu3g/g3yj7IKo3Hcbmzxl-N5W5w/edit
 
 *PREVIEW:*
 
-![Splash_Login_Signup](https://github.com/jeslynzhou/Pawllywood/assets/157949261/124c9385-8c72-4bc4-94fc-6d6d56d39ea0)
-
-![Home Screen](https://github.com/jeslynzhou/Pawllywood/assets/157949261/26bc50ea-29bc-4f0f-aaf2-6eb87b23444e)
-
-![Profile Screen](https://github.com/jeslynzhou/Pawllywood/assets/157949261/c91576c1-6f4c-418d-afb1-d8db9dbb5d5e)
-
-![Notebook Screen](https://github.com/jeslynzhou/Pawllywood/assets/157949261/7a0ac2af-66db-4fd9-8926-95ed283fa2f0)
-
-![Library Screen](https://github.com/jeslynzhou/Pawllywood/assets/157949261/d63e7d6a-f4a0-41b1-af87-36b052367467)
-
-![Forum Screen](https://github.com/jeslynzhou/Pawllywood/assets/157949261/db01cfe6-b157-4f31-9304-0522d377ad37)
+<div style="display: flex; flex-wrap: wrap; justify-content: center;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/124c9385-8c72-4bc4-94fc-6d6d56d39ea0" alt="Splash_Login_Signup" style="width: 45%; margin: 5px;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/26bc50ea-29bc-4f0f-aaf2-6eb87b23444e" alt="Home Screen" style="width: 45%; margin: 5px;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/c91576c1-6f4c-418d-afb1-d8db9dbb5d5e" alt="Profile Screen" style="width: 45%; margin: 5px;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/7a0ac2af-66db-4fd9-8926-95ed283fa2f0" alt="Notebook Screen" style="width: 45%; margin: 5px;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/d63e7d6a-f4a0-41b1-af87-36b052367467" alt="Library Screen" style="width: 45%; margin: 5px;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/db01cfe6-b157-4f31-9304-0522d377ad37" alt="Forum Screen" style="width: 45%; margin: 5px;">
+</div>
 
 ## Proof of Concept
 <!-- Content for Proof of Concept -->
