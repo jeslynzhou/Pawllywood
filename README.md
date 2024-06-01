@@ -57,14 +57,14 @@ Our ***forum*** feature allows users to engage in discussions, ask questions, an
 ### Core Features
 1. In-app library for pet-specific care guides
 2. Forum for engaging in discussion, asking questions, and sharing thoughts and experiences through writing posts and pictures
-3. Notebook to save and note down useful tips sourced from in-app library and forum
-4. Authentication for user accounts
+3. Authentication for user accounts
 
 ### Bonus Features
-1. User engagement to add friends and initiate private chat with people
-2. Push notification to inform users about updates and relevant activities
-3. Multi-device synchronization
-4. Effective search-engine
+1. Notebook to save and note down useful tips sourced from in-app library and forum
+2. User engagement to add friends and initiate private chat with people
+3. Push notification to inform users about updates and relevant activities
+4. Multi-device synchronization
+5. Effective search-engine
 
 ## Tech Stack
 1. ReactNative & JavaScript (Frontend)
