@@ -74,7 +74,7 @@ Our ***forum*** feature allows users to engage in discussions, ask questions, an
 4. Expo & GitHub & Git (Others)
 
 ## Poster & Video
-![final](https://github.com/jeslynzhou/Pawllywood/assets/168978806/4cf24e35-2d0c-4591-bd37-65091b4e025e)
+![Orbital2024  Poster 01-3](https://github.com/jeslynzhou/Pawllywood/assets/157949261/4bdac6bf-6fde-494d-8e40-860153117df0)
 
 https://github.com/jeslynzhou/Pawllywood/assets/168978806/7f4a970c-e504-4f21-9db2-c524d817ab20
 
@@ -82,7 +82,17 @@ https://github.com/jeslynzhou/Pawllywood/assets/168978806/7f4a970c-e504-4f21-9db
 ***Medium Fidelity Designs***
 
 *PREVIEW:*
+![Splash_Login_Signup](https://github.com/jeslynzhou/Pawllywood/assets/157949261/124c9385-8c72-4bc4-94fc-6d6d56d39ea0)
 
+![Home Screen](https://github.com/jeslynzhou/Pawllywood/assets/157949261/26bc50ea-29bc-4f0f-aaf2-6eb87b23444e)
+
+![Profile Screen](https://github.com/jeslynzhou/Pawllywood/assets/157949261/c91576c1-6f4c-418d-afb1-d8db9dbb5d5e)
+
+![Notebook Screen](https://github.com/jeslynzhou/Pawllywood/assets/157949261/7a0ac2af-66db-4fd9-8926-95ed283fa2f0)
+
+![Library Screen](https://github.com/jeslynzhou/Pawllywood/assets/157949261/d63e7d6a-f4a0-41b1-af87-36b052367467)
+
+![Forum Screen](https://github.com/jeslynzhou/Pawllywood/assets/157949261/db01cfe6-b157-4f31-9304-0522d377ad37)
 
 ## Proof of Concept
 <!-- Content for Proof of Concept -->
