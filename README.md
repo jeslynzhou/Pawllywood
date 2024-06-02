@@ -9,7 +9,8 @@
    - [Bonus features](#bonus-features)
 6. [Tech Stack](#tech-stack)
 ### B. POSTER & VIDEO
-- [Poster & Video](#poster--video)
+- [Poster](#poster)
+- [Video](#video)
 
 ### C. WIREFRAME
 - [Wireframe](#wireframe)
@@ -73,8 +74,11 @@ Our ***forum*** feature allows users to engage in discussions, ask questions, an
 4. Expo & GitHub & Git (Others)
 
 ## Poster & Video
+
+### Poster
 <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/4bdac6bf-6fde-494d-8e40-860153117df0" width="500px">
 
+### Video
 https://github.com/jeslynzhou/Pawllywood/assets/168978806/7f4a970c-e504-4f21-9db2-c524d817ab20
 
 ## Wireframe
@@ -85,16 +89,20 @@ Canva: https://www.canva.com/design/DAGF7uzLu3g/g3yj7IKo3Hcbmzxl-N5W5w/edit
 *PREVIEW:*
 
 <div style="display: flex; flex-wrap: wrap; justify-content: center;">
-    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/124c9385-8c72-4bc4-94fc-6d6d56d39ea0" alt="Splash_Login_Signup" style="width: 45%; margin: 5px;">
-    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/26bc50ea-29bc-4f0f-aaf2-6eb87b23444e" alt="Home Screen" style="width: 45%; margin: 5px;">
-    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/c91576c1-6f4c-418d-afb1-d8db9dbb5d5e" alt="Profile Screen" style="width: 45%; margin: 5px;">
-    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/7a0ac2af-66db-4fd9-8926-95ed283fa2f0" alt="Notebook Screen" style="width: 45%; margin: 5px;">
-    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/d63e7d6a-f4a0-41b1-af87-36b052367467" alt="Library Screen" style="width: 45%; margin: 5px;">
-    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/db01cfe6-b157-4f31-9304-0522d377ad37" alt="Forum Screen" style="width: 45%; margin: 5px;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/124c9385-8c72-4bc4-94fc-6d6d56d39ea0" alt="Splash_Login_Signup" style="width: 49%; margin: 0.5px;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/26bc50ea-29bc-4f0f-aaf2-6eb87b23444e" alt="Home Screen" style="width: 49%; margin: 0.5px;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/c91576c1-6f4c-418d-afb1-d8db9dbb5d5e" alt="Profile Screen" style="width: 49%; margin: 0.5px;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/7a0ac2af-66db-4fd9-8926-95ed283fa2f0" alt="Notebook Screen" style="width: 49%; margin: 0.5px;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/d63e7d6a-f4a0-41b1-af87-36b052367467" alt="Library Screen" style="width: 49%; margin: 0.5px;">
+    <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/db01cfe6-b157-4f31-9304-0522d377ad37" alt="Forum Screen" style="width: 49%; margin: 0.5px;">
 </div>
 
 ## Proof of Concept
-<!-- Content for Proof of Concept -->
+
+In our initial milestone, we have effectively integrated the Authentication feature into the application. This advancement enables users to conveniently access Pawllywood by either logging in through an existing account or signing up for a new one.
+
+The process of registration is straightforward. Users simply need to tap the "Sign Up" button and provide their desired username, email address, and password. Upon completion, they will be welcomed with a "Welcome" screen. For those who already have an account, logging in is a seamless process. By entering their registered email address and password, users can swiftly access the application's features and content.
+
 
 ## Software Engineering Practices
  
