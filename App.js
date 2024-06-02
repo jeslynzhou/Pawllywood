@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import AuthScreen from './screens/auth/AuthScreen/authScr.js';
 import AuthenticatedScreen from './screens/auth/AuthenticatedScreen/authenticatedScr.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from '@firebase/auth';
-import { app } from './initializeFB';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { app, auth } from './initializeFB'; // Use the configured auth
 
 const App = () => {
   const [username, setUsername] = useState('');
@@ -13,14 +13,13 @@ const App = () => {
   const [user, setUser] = useState(null); // Track user authentication state
   const [isLogin, setIsLogin] = useState(true);
 
-  const auth = getAuth(app);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
     });
 
     return () => unsubscribe();
-  }, [auth]);
+  }, []);
 
   const handleAuthentication = async () => {
     try {
