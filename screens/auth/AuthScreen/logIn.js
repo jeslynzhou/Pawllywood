@@ -19,6 +19,7 @@ const LogInScreen = ({ email, setEmail, password, setPassword, handleAuthenticat
         value={password}
         onChangeText={setPassword}
         placeholder="Type your password here"
+        secureTextEntry
       />
       <TouchableOpacity onPress={handleAuthentication} style={styles.button}>
         <Text style={styles.buttonText}>Sign In</Text>
