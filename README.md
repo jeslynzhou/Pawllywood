@@ -79,7 +79,8 @@ Our ***forum*** feature allows users to engage in discussions, ask questions, an
 <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/4bdac6bf-6fde-494d-8e40-860153117df0" width="500px">
 
 ### Video
-https://github.com/jeslynzhou/Pawllywood/assets/168978806/7f4a970c-e504-4f21-9db2-c524d817ab20
+https://github.com/jeslynzhou/Pawllywood/assets/168978806/cd255d0c-4b8c-4ad9-8848-ce106a63193e
+
 
 ## Wireframe
 ***Medium Fidelity Designs***
