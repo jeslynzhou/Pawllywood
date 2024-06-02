@@ -1,9 +1,16 @@
 import React from 'react';
 import LogInScreen from './logIn';
 import SignInScreen from './signIn';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 
-const AuthScreen = ({ username, setUsername, email, setEmail, password, setPassword, retypePassword, setRetypePassword, isLogin, setIsLogin, handleAuthentication }) => {
+const AuthScreen = ({ 
+  username, setUsername, 
+  email, setEmail, 
+  password, setPassword, 
+  retypePassword, setRetypePassword, 
+  isLogin, setIsLogin, 
+  handleAuthentication 
+}) => {
   return (
     <View style={styles.authContainer}>
       <Text style={styles.title}>{isLogin ? 'Sign In' : 'Sign Up'}</Text>
@@ -15,7 +22,15 @@ const AuthScreen = ({ username, setUsername, email, setEmail, password, setPassw
         />
       )}
 
-      {!isLogin && (
+      {isLogin ? (
+        <LogInScreen
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+          handleAuthentication={handleAuthentication}
+        />
+      ) : (
         <SignInScreen
           username={username}
           setUsername={setUsername}
@@ -29,37 +44,42 @@ const AuthScreen = ({ username, setUsername, email, setEmail, password, setPassw
         />
       )}
 
-      {isLogin && (
-        <LogInScreen
-          email={email}
-          setEmail={setEmail}
-          password={password}
-          setPassword={setPassword}
-          handleAuthentication={handleAuthentication}
-        />
-      )}
+      <TouchableOpacity onPress={() => setIsLogin(!isLogin)} style={styles.toggleButton}>
+        <Text style={styles.toggleButtonText}>
+          {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   authContainer: {
-    width: '100%', // 80% of the screen width
-    height: '90%', // 80% of the screen height
+    width: '100%',
+    height: '90%',
     backgroundColor: '#FCF9D9',
-    marginTop: '10%', // Adjust as needed to center vertically
-    paddingHorizontal: 16, // Add horizontal padding if needed
+    marginTop: '10%',
+    paddingHorizontal: 16,
   },
   title: {
     fontSize: 25,
     marginBottom: 16,
     textAlign: 'left',
-    marginTop: 20, // Adding a top margin here
-    fontWeight: 'bold', // Making the text bold
-    fontFamily: 'Poppins', // Specify Poppins font family
+    marginTop: 20,
+    fontWeight: 'bold',
+    fontFamily: 'Poppins',
   },
   image: {
     alignSelf: 'center',
+  },
+  toggleButton: {
+    marginTop: 20,
+    alignSelf: 'center',
+  },
+  toggleButtonText: {
+    color: '#F26419',
+    fontWeight: 'bold',
+    fontFamily: 'Poppins',
   },
 });
 

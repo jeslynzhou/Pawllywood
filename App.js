@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import AuthScreen from './screens/auth/AuthScreen/authScr.js';
 import AuthenticatedScreen from './screens/auth/AuthenticatedScreen/authenticatedScr.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from '@firebase/auth';
@@ -40,7 +40,7 @@ const App = () => {
             console.error("Passwords don't match");
             return;
           }
-          await createUserWithEmailAndPassword(auth, username, email, password);
+          await createUserWithEmailAndPassword(auth, email, password);
           console.log('User created successfully!');
         }
       }
@@ -85,7 +85,7 @@ const App = () => {
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -93,6 +93,6 @@ const styles = {
     padding: 16,
     backgroundColor: '#FCF9D9',
   },
-};
+});
 
 export default App;
