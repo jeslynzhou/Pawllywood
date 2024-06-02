@@ -1,6 +1,6 @@
 import React from 'react';
 import LogInScreen from './logIn';
-import SignInScreen from './signIn';
+import SignUpScreen from './signUp';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 
 const AuthScreen = ({ 
@@ -31,7 +31,7 @@ const AuthScreen = ({
           handleAuthentication={handleAuthentication}
         />
       ) : (
-        <SignInScreen
+        <SignUpScreen
           username={username}
           setUsername={setUsername}
           email={email}

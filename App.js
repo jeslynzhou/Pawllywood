@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import AuthScreen from './screens/auth/AuthScreen/authScr.js';
 import AuthenticatedScreen from './screens/auth/AuthenticatedScreen/authenticatedScr.js';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { app, auth } from './initializeFB'; // Use the configured auth
+import { auth } from './initializeFB'; // Use the configured auth
 
 const App = () => {
   const [username, setUsername] = useState('');

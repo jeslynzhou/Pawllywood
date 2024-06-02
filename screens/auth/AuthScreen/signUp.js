@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
-const SignInScreen = ({ username, setUsername, email, setEmail, password, setPassword, retypePassword, setRetypePassword, handleAuthentication }) => {
+const SignUpScreen = ({ username, setUsername, email, setEmail, password, setPassword, retypePassword, setRetypePassword, handleAuthentication }) => {
   return (
     <View>
       <Text style={styles.labels}>Username</Text>
@@ -77,4 +77,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignInScreen;
+export default SignUpScreen;
