@@ -11,6 +11,7 @@ const LogInScreen = ({ email, setEmail, password, setPassword, handleAuthenticat
         onChangeText={setEmail}
         placeholder="Type your email here"
         autoCapitalize="none"
+        textContentType="oneTimeCode"
       />
       <Text style={styles.labels}>Password</Text>
       <TextInput
@@ -18,7 +19,6 @@ const LogInScreen = ({ email, setEmail, password, setPassword, handleAuthenticat
         value={password}
         onChangeText={setPassword}
         placeholder="Type your password here"
-        secureTextEntry
       />
       <TouchableOpacity onPress={handleAuthentication} style={styles.button}>
         <Text style={styles.buttonText}>Sign In</Text>
