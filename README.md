@@ -96,7 +96,7 @@ Our **_forum_** feature allows users to engage in discussions, ask questions, an
 
 ### Video
 
-https://github.com/jeslynzhou/Pawllywood/assets/168978806/cd255d0c-4b8c-4ad9-8848-ce106a63193e
+https://github.com/jeslynzhou/Pawllywood/assets/168978806/1123358e-2086-4b61-8c3d-00758b1571d3
 
 ## Wireframe
 
