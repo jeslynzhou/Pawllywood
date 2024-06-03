@@ -1,3 +1,27 @@
+## Running the App on iOS
+
+To run the app on iOS using EAS Build, execute the following command:
+```sh
+eas build:run -p ios --latest
+```
+This command will build and run the latest version of the app on iOS using EAS Build.
+
+## Running the App on Android
+
+To run the app on Android using EAS Build, execute the following command:
+```sh
+eas build:run -p android --latest
+```
+Then run this line:
+```sh
+npx expo start
+```
+This command will build and run the latest version of the app on Android using EAS Build.
+
+
+
+
+
 ## Table of Contents
 
 ### A. ABOUT PAWLLYWOOD
