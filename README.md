@@ -1,5 +1,7 @@
 ## Table of Contents
+
 ### A. ABOUT PAWLLYWOOD
+
 1. [Proposed Level of Achievement](#proposed-level-of-achievement)
 2. [Motivation](#motivation)
 3. [Aim](#aim)
@@ -8,17 +10,22 @@
    - [Core features](#core-features)
    - [Bonus features](#bonus-features)
 6. [Tech Stack](#tech-stack)
+
 ### B. POSTER & VIDEO
+
 - [Poster](#poster)
 - [Video](#video)
 
 ### C. WIREFRAME
+
 - [Wireframe](#wireframe)
 
 ### D. PROOF OF CONCEPT
+
 - [Proof of Concept](#proof-of-concept)
 
 ### E. SOFTWARE ENGINEERING PRACTICES
+
 1. [Version Controls](#version-controls)
    - [Branching](#branching)
    - [Commits](#commits)
@@ -27,40 +34,47 @@
    - [Microservice Architecture Diagram](#microservice-architecture-diagram)
 
 ### F. DEVELOPMENT PLAN
+
 1. [Milestone 1 | 20/05 - 03/06](#milestone-1--2005---0306)
 2. [Milestone 2 | 03/06 - 01/07](#milestone-2--0306---0107)
 3. [Milestone 3 | 01/07 - 29/07](#milestone-3--0107---2907)
 
 ### G. PROJECT LOG
+
 - [Project Log](#project-log)
 
 ## Proposed Level of Achievement
+
 Apollo 11
 
 ## Motivation
-As a volunteer feeder at NUS CatCafe this semester, I've had the opportunity to contribute to the well-being of our feline friends and gained a lot of new information on how to take care of the cats. Our routine involves feeding the cats and then documenting their health conditions through photos and updates in a WhatsApp group chat. 
-While this system has been effective for our small community, it became apparent that there was a wider audience of pet lovers who could benefit from this. That's when the idea for ***Pawllywood*** emerged. By transitioning from a small group chat to a dedicated app, we could reach a larger audience, foster stronger bonds within the pet lover community, and better prepare individuals for pet ownership. 
+
+As a volunteer feeder at NUS CatCafe this semester, I've had the opportunity to contribute to the well-being of our feline friends and gained a lot of new information on how to take care of the cats. Our routine involves feeding the cats and then documenting their health conditions through photos and updates in a WhatsApp group chat.
+While this system has been effective for our small community, it became apparent that there was a wider audience of pet lovers who could benefit from this. That's when the idea for **_Pawllywood_** emerged. By transitioning from a small group chat to a dedicated app, we could reach a larger audience, foster stronger bonds within the pet lover community, and better prepare individuals for pet ownership.
 This shift would streamline communication, provide a centralized platform for sharing experiences, thoughts, doubts regarding taking care of pets, and ultimately enhance the overall experience for pet owners and foster a strong community of pet owners.
 
 ## Aim
-With ***Pawllywood***, we hope to create a platform for pet lovers—whether one is a seasoned pet owner or just starting one’s journey— to come together, share their experiences and seek support from a vibrant community of fellow enthusiasts while caring for the pets.
-Our ***forum*** feature allows users to engage in discussions, ask questions, and offer advice, creating a supportive environment where everyone can learn and grow together. Additionally, our ***in-app library*** also provides valuable resources and tips to help the users become the best pet parent they can be. The comprehensive resources in the library will cover everything from feeding and grooming to training and even more. Furthermore, Pawllywood integrates useful features including a powerful search engine, multi-device synchronization, ensuring seamless experience for all users.
+
+With **_Pawllywood_**, we hope to create a platform for pet lovers—whether one is a seasoned pet owner or just starting one’s journey— to come together, share their experiences and seek support from a vibrant community of fellow enthusiasts while caring for the pets.
+Our **_forum_** feature allows users to engage in discussions, ask questions, and offer advice, creating a supportive environment where everyone can learn and grow together. Additionally, our **_in-app library_** also provides valuable resources and tips to help the users become the best pet parent they can be. The comprehensive resources in the library will cover everything from feeding and grooming to training and even more. Furthermore, Pawllywood integrates useful features including a powerful search engine, multi-device synchronization, ensuring seamless experience for all users.
 
 ## User Stories
+
 - As individuals who are planning to raise a pet, I want to gain information about different animals and various breeds to decide on the most suitable animal considering my lifestyle and preferences. Also, I wish to gain knowledge about how to take care of pets to ensure I have the ability to provide the best possible care for my future furry companion.
 - As pet enthusiasts and pet owners, I want to engage in discussions, ask questions, and share thoughts and pictures in a forum. Additionally, I want to have an in-app notebook to help me easily jot down notes and advice that I have received.
 - As new pet owners who want to provide the best care for my pet, I want to be able to access a library of detailed pet-specific care guides and tips.
 - As pet owners, I want to store my pet’s information, including breed, age, medical history and health conditions to keep track of their needs.
 
-
 ## Features
 
 ### Core Features
+
 1. In-app library for pet-specific care guides
 2. Forum for engaging in discussion, asking questions, and sharing thoughts and experiences through writing posts and pictures
 3. Authentication for user accounts
 
 ### Bonus Features
+
 1. Notebook to save and note down useful tips sourced from in-app library and forum
 2. User engagement to add friends and initiate private chat with people
 3. Push notification to inform users about updates and relevant activities
@@ -68,6 +82,7 @@ Our ***forum*** feature allows users to engage in discussions, ask questions, an
 5. Effective search-engine
 
 ## Tech Stack
+
 1. ReactNative & JavaScript (Frontend)
 2. Node.js (Backend)
 3. Firebase (Backend + Database)
@@ -76,18 +91,20 @@ Our ***forum*** feature allows users to engage in discussions, ask questions, an
 ## Poster & Video
 
 ### Poster
+
 <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/4bdac6bf-6fde-494d-8e40-860153117df0" width="500px">
 
 ### Video
+
 https://github.com/jeslynzhou/Pawllywood/assets/168978806/cd255d0c-4b8c-4ad9-8848-ce106a63193e
 
-
 ## Wireframe
-***Medium Fidelity Designs***
+
+**_Medium Fidelity Designs_**
 
 Canva: https://www.canva.com/design/DAGF7uzLu3g/g3yj7IKo3Hcbmzxl-N5W5w/edit
 
-*PREVIEW:*
+_PREVIEW:_
 
 <div style="display: flex; flex-wrap: wrap; justify-content: center;">
     <img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/124c9385-8c72-4bc4-94fc-6d6d56d39ea0" alt="Splash_Login_Signup" style="width: 49%; margin: 0.5px;">
@@ -104,9 +121,8 @@ In our initial milestone, we have effectively integrated the Authentication feat
 
 The process of registration is straightforward. Users simply need to tap the "Sign Up" button and provide their desired username, email address, and password. Upon completion, they will be welcomed with a "Welcome" screen. For those who already have an account, logging in is a seamless process. By entering their registered email address and password, users can swiftly access the application's features and content.
 
-
 ## Software Engineering Practices
- 
+
 ### Version Controls
 
 #### Branching
@@ -120,51 +136,55 @@ For milestone 1, our regular commits focus on developing user authentication. To
 ### Software Architecture
 
 #### User Flow Diagram
+
 ![User Flow Diagram](https://github.com/jeslynzhou/Pawllywood/assets/168978806/5cf70b07-a3cb-4a66-9296-c7d688562344)
 
 #### Microservice Architecture Diagram
-![Microservice](https://github.com/jeslynzhou/Pawllywood/assets/168978806/6e8d1bdb-c96c-4b27-97d2-225536dfd537)
 
+![Microservice](https://github.com/jeslynzhou/Pawllywood/assets/168978806/6e8d1bdb-c96c-4b27-97d2-225536dfd537)
 
 ## Development Plan
 
 ### Milestone 1 | 20/05 - 03/06
+
 - Design UI for the app
 - Software Engineering Diagrams
 - Proof of Concept (for Users Authentication)
 - Deployment
 
 ### Milestone 2 | 03/06 - 01/07
+
 - Create database
 - Refine UI
 - Implement core features (Profile, Library, and Forum)
 - System testing
 
 ### Milestone 3 | 01/07 - 29/07
+
 - Implement bonus features (Notebook, User Engagement, Multi-device synchronization, and Push Notification)
 - System testing
 - Bug fixing
 
-
 ## Project Log
+
 Total hours for Milestone 1:
 
 Jeslyn: 41
 
 Marianne: 42
 
-| Milestone | Tasks | PIC | Start | End | Hrs |
-|-----------|-------|-----|-------|-----|-----|
-| 1 - Ideation   | | | | | |
-| 1.1 | Formulate project idea | Both | 12/05 | 13/05 | 3 |                  
-| 1.2 | Brainstorm features | Both | 13/05 | 14/05 | 2 |            
-| 1.3 | Project Poster + Video for Lift-off | Both | 14/05 | 20/05 | 8 |           
-| 1.4 | Design first draft UI for the app | Marianne | 21/05 | 23/05 | 8 |                  
-| 1.5 | Design development plan | Marianne | 28/05 | - | 1 |      
-| 1.6 | Refine User Flow Diagram | Marianne | 28/05 | 29/05 | 1 |
-| 1.7 | Refine Poster with confirmed techstack | Jeslyn | 29/05 | - | 1 | 
-| 1.8 | Technical Proof of Concept (for Authentication) | Both | 29/05 | 31/05 | 12 | 
-| 1.9 | Deployment | Jeslyn | 31/05 | 01/06 | 6 | 
-| 1.10 | Update Video with PoC + next plan | Both | 01/06 | 02/06 | 4 | 
-| 1.11 | Refine Code in ReactNative (make it scalable, organize in folders) | Jeslyn | 02/06 | 03/06 | 2 |
-| 1.12 | Write report | Both | 03/06 | - | 3 | 
+| Milestone    | Tasks                                                              | PIC      | Start | End   | Hrs |
+| ------------ | ------------------------------------------------------------------ | -------- | ----- | ----- | --- |
+| 1 - Ideation |                                                                    |          |       |       |     |
+| 1.1          | Formulate project idea                                             | Both     | 12/05 | 13/05 | 3   |
+| 1.2          | Brainstorm features                                                | Both     | 13/05 | 14/05 | 2   |
+| 1.3          | Project Poster + Video for Lift-off                                | Both     | 14/05 | 20/05 | 8   |
+| 1.4          | Design first draft UI for the app                                  | Marianne | 21/05 | 23/05 | 8   |
+| 1.5          | Design development plan                                            | Marianne | 28/05 | -     | 1   |
+| 1.6          | Refine User Flow Diagram                                           | Marianne | 28/05 | 29/05 | 1   |
+| 1.7          | Refine Poster with confirmed techstack                             | Jeslyn   | 29/05 | -     | 1   |
+| 1.8          | Technical Proof of Concept (for Authentication)                    | Both     | 29/05 | 31/05 | 12  |
+| 1.9          | Deployment                                                         | Jeslyn   | 31/05 | 01/06 | 6   |
+| 1.10         | Update Video with PoC + next plan                                  | Both     | 01/06 | 02/06 | 4   |
+| 1.11         | Refine Code in ReactNative (make it scalable, organize in folders) | Jeslyn   | 02/06 | 03/06 | 2   |
+| 1.12         | Write report                                                       | Both     | 03/06 | -     | 3   |

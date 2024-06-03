@@ -17,7 +17,7 @@ const AuthScreen = ({
 
       {isLogin && (
         <Image
-          source={require('/Users/j6s1yn8z/Pawllywood/assets/app_images/magic_cat.png')}
+          source={require('../../../assets/app_images/magic_cat.png')}
           style={styles.image}
         />
       )}

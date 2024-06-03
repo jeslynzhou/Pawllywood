@@ -12,7 +12,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jeslynzhou0618.Pawllywood"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,6 +29,17 @@
       "eas": {
         "projectId": "4888a826-2349-469c-bf3c-9cc6163a0120"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "13.4",
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ]
   }
 }
