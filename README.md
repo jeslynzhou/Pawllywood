@@ -1,3 +1,14 @@
+## Running the App on iOS
+
+To run the app on iOS using EAS Build, execute the following command:
+```sh
+eas build:run -p ios --latest
+```
+This command will build and run the latest version of the app on iOS using EAS Build.
+
+
+
+
 ## Table of Contents
 
 ### A. ABOUT PAWLLYWOOD
