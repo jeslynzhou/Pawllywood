@@ -5,6 +5,7 @@ import AuthenticatedScreen from './screens/auth/AuthenticatedScreen/authenticate
 import SplashScreen from './screens/auth/AuthScreen/splashScr.js'; // Import the SplashScreen component
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './initializeFB'; // Use the configured auth
+import { styles } from './components/styles.js';
 
 const App = () => {
   const [username, setUsername] = useState('');
@@ -93,15 +94,5 @@ const App = () => {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#FCF9D9',
-  },
-});
 
 export default App;

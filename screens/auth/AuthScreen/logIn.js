@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { styles } from '../../../components/styles';
+
+const { labels } = styles;
 
 const LogInScreen = ({ email, setEmail, password, setPassword, handleAuthentication }) => {
   return (
@@ -27,40 +30,5 @@ const LogInScreen = ({ email, setEmail, password, setPassword, handleAuthenticat
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  labels: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    margin: 5,
-  },
-  input: {
-    height: 45,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    marginBottom: 16,
-    padding: 8,
-    borderRadius: 17,
-    borderColor: '#000000',
-    borderWidth: 1,
-    fontFamily: 'Poppins',
-  },
-  button: {
-    height: 45,
-    backgroundColor: '#F26419',
-    borderColor: '#F26419',
-    borderWidth: 1,
-    borderRadius: 17,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-    fontFamily: 'Poppins',
-  },
-});
 
 export default LogInScreen;
