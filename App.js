@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import AuthScreen from './screens/auth/AuthScreen/authScr.js';
 import AuthenticatedScreen from './screens/auth/AuthenticatedScreen/authenticatedScr.js';
+import SplashScreen from './screens/auth/AuthScreen/splashScr.js'; // Import the SplashScreen component
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './initializeFB'; // Use the configured auth
 
@@ -12,6 +13,7 @@ const App = () => {
   const [retypePassword, setRetypePassword] = useState('');
   const [user, setUser] = useState(null); // Track user authentication state
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // State to manage splash screen
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -20,6 +22,10 @@ const App = () => {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    resetInputFields();
+  }, [isLogin]);
 
   const handleAuthentication = async () => {
     try {
@@ -55,9 +61,13 @@ const App = () => {
     setRetypePassword('');
   };
 
-  useEffect(() => {
-    resetInputFields();
-  }, [isLogin]);
+  const handleSplashScreenTimeout = () => {
+    setIsLoading(false);
+  };
+
+  if (isLoading) {
+    return <SplashScreen onTimeout={handleSplashScreenTimeout} />;
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
