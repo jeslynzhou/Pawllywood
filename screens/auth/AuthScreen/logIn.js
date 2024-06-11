@@ -2,8 +2,6 @@ import React from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { styles } from '../../../components/styles';
 
-const { labels } = styles;
-
 const LogInScreen = ({ email, setEmail, password, setPassword, handleAuthentication }) => {
   return (
     <View>

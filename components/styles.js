@@ -1,6 +1,14 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
+    // for App.js
+    appContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 16,
+        backgroundColor: '#FCF9D9',
+    },
     authContainer: {
         width: '100%',
         height: '90%',
@@ -8,13 +16,9 @@ export const styles = StyleSheet.create({
         marginTop: '10%',
         paddingHorizontal: 16,
     },
-    // for App.js
-    container: {
-        flexGrow: 1,
+    profileContainer: {
+        flex: 1,
         justifyContent: 'center',
-        alignItems: 'center',
-        padding: 16,
-        backgroundColor: '#FCF9D9',
     },
     title: {
         fontSize: 25,
@@ -61,8 +65,15 @@ export const styles = StyleSheet.create({
         color: '#F26419',
         fontWeight: 'bold',
     },
+    imageContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+    },
+
     image: {
         alignSelf: 'center',
+        resizeMode: 'cover',
     },
 });
 

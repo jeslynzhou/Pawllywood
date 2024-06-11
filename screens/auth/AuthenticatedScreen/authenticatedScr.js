@@ -1,13 +1,25 @@
-import React from 'react';
-import { View, Text, Button } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, Image } from 'react-native';
 import { styles } from '../../../components/styles';
 
-const AuthenticatedScreen = ({ user, handleAuthentication }) => {
+const AuthenticatedScreen = ({ user, navigateToProfile }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigateToProfile();
+    }, 3000); // Redirect after 3 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <View style={styles.authContainer}>
       <Text style={styles.title}>Welcome</Text>
       <Text style={styles.emailText}>{user.email}</Text>
-      <Button title="Logout" onPress={handleAuthentication} color="#e74c3c" />
+      <View style={styles.imageContainer}>
+        <Image
+          source={require('../../../assets/app_images/authenticatedScr_Background.png')}
+          style={styles.image} />
+      </View>
     </View>
   );
 };
