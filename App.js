@@ -93,7 +93,7 @@ const App = () => {
         showAuthenticatedScreen ? (
           <AuthenticatedScreen user={user} handleAuthentication={handleAuthentication} navigateToProfile={navigateToProfile} />
         ) : (
-          <ProfileScreen user={user} handleSignOut={handleSignOut} resetInputFields={resetInputFields} />
+          <ProfileScreen user={user} handleSignOut={handleSignOut} />
         )
       ) : (
         // Show sign-in or sign-up form if user is not authenticated
