@@ -37,9 +37,9 @@ const App = () => {
         console.log('You have logged out successfully!');
         await signOut(auth);
       } else {
-        // Sign in or sign up
+        // Log in or sign up
         if (isLogin) {
-          // Sign in
+          // Log in
           await signInWithEmailAndPassword(auth, email, password);
           console.log('You have signed in successfully!');
           setShowAuthenticatedScreen(true);
@@ -50,7 +50,7 @@ const App = () => {
             return;
           }
           await createUserWithEmailAndPassword(auth, email, password);
-          console.log('User created successfully!');
+          console.log('You have created an account successfully!');
         }
       }
     } catch (error) {

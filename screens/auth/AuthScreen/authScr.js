@@ -1,7 +1,7 @@
 import React from 'react';
 import LogInScreen from './logIn';
 import SignUpScreen from './signUp';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { styles } from '../../../components/styles';
 
 const AuthScreen = ({
