@@ -1,15 +1,39 @@
-import React from 'react';
-import { View, Text, Button, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import { styles } from '../../../components/styles';
 
-const AuthenticatedScreen = ({ user, handleAuthentication, navigation }) => {
+const LibraryScreen = ({ navigation }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const animals = [
+    { type: 'Dog', name: 'Bulldog' },
+    { type: 'Dog', name: 'Beagle' },
+    { type: 'Dog', name: 'Labrador' },
+    { type: 'Cat', name: 'Persian' },
+    { type: 'Cat', name: 'Siamese' },
+    { type: 'Cat', name: 'Maine Coon' },
+  ];
+
+  const filteredAnimals = animals.filter(animal =>
+    animal.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <View style={styles.container}>
-      <View style={styles.authContainer}>
-        <Text style={styles.title}>Welcome</Text>
-        <Text style={styles.emailText}>{user.email}</Text>
-        <Button title="Logout" onPress={handleAuthentication} color="#e74c3c" />
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search..."
+          value={searchQuery}
+          onChangeText={text => setSearchQuery(text)}
+        />
       </View>
+      <ScrollView contentContainerStyle={styles.animalList}>
+        {filteredAnimals.map((animal, index) => (
+          <TouchableOpacity key={index} style={styles.animalBlock}>
+            <Text style={styles.animalText}>{animal.name} ({animal.type})</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
       <View style={styles.bottomBar}>
         <TouchableOpacity
           style={styles.bottomBarButton}
@@ -46,4 +70,4 @@ const AuthenticatedScreen = ({ user, handleAuthentication, navigation }) => {
   );
 };
 
-export default AuthenticatedScreen;
+export default LibraryScreen;
