@@ -64,5 +64,23 @@ export const styles = StyleSheet.create({
     image: {
         alignSelf: 'center',
     },
+    bottomBar: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        backgroundColor: '#000',
+        paddingVertical: 10,
+        position: 'absolute',
+        bottom: 0,
+        width: '100%',
+    },
+    bottomBarButton: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    bottomBarButtonText: {
+        color: '#fff',
+        fontSize: 16,
+    },
 });
 
