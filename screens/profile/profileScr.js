@@ -157,7 +157,7 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
           </View>
         </Modal>
 
-        {/* Navigation Bar (Footer) */}
+        {/* Navigation Bar */}
         <NavigationBar
           activeScreen={currentScreen}
           directToProfile={directToProfile}
