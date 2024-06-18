@@ -182,6 +182,7 @@ const styles = StyleSheet.create({
   profileInfoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: '10%',
     marginBottom: 20,
     backgroundColor: '#ffffff',
     padding: 10,
