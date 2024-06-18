@@ -5,7 +5,7 @@ const AuthenticatedScreen = ({ user, navigateToProfile }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       navigateToProfile();
-    }, 2000); // Redirect after 3 seconds
+    }, 2000); // Redirect after 2 seconds
 
     return () => clearTimeout(timer);
   }, []);
