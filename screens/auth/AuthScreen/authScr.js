@@ -1,7 +1,7 @@
 import React from 'react';
 import LogInScreen from './logIn';
 import SignUpScreen from './signUp';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { styles } from '../../../components/styles';
 
 const AuthScreen = ({
@@ -12,6 +12,10 @@ const AuthScreen = ({
   isLogin, setIsLogin,
   handleAuthentication
 }) => {
+  const { width, height } = Dimensions.get('window');
+  // image
+  const imageSize = height * 0.2; // size of image (dogs and cats)
+
   return (
     <View style={styles.authContainer}>
       <Text style={styles.title}>{isLogin ? 'Sign In' : 'Sign Up'}</Text>
@@ -19,7 +23,7 @@ const AuthScreen = ({
       {isLogin && (
         <Image
           source={require('../../../assets/app_images/magic_cat.png')}
-          style={styles.image}
+          style={[styles.image, { width: imageSize, height: imageSize }]}
         />
       )}
 

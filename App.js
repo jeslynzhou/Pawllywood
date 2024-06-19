@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import AuthScreen from './screens/auth/AuthScreen/authScr.js';
+import ProfileScreen from './screens/profile/profileScr.js';
 import AuthenticatedScreen from './screens/auth/AuthenticatedScreen/authenticatedScr.js';
-import SplashScreen from './screens/auth/AuthScreen/splashScr.js'; // Import the SplashScreen component
+import SplashScreen from './screens/auth/AuthScreen/splashScr.js';
+import LibraryScreen from './screens/library/libraryScr.js';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './initializeFB'; // Use the configured auth
 import { styles } from './components/styles.js';
@@ -15,10 +17,15 @@ const App = () => {
   const [user, setUser] = useState(null); // Track user authentication state
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(true); // State to manage splash screen
+  const [currentScreen, setCurrentScreen] = useState('Auth'); // Track current screen
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
+      if (user) {
+        setCurrentScreen('Authenticated');
+      }
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
@@ -34,12 +41,14 @@ const App = () => {
         // If user is already authenticated, log out
         console.log('You have logged out successfully!');
         await signOut(auth);
+        setCurrentScreen('Auth');
       } else {
-        // Sign in or sign up
+        // Log in or sign up
         if (isLogin) {
-          // Sign in
+          // Log in
           await signInWithEmailAndPassword(auth, email, password);
           console.log('You have signed in successfully!');
+          setCurrentScreen('Authenticated');
         } else {
           // Sign up
           if (password !== retypePassword) {
@@ -47,13 +56,24 @@ const App = () => {
             return;
           }
           await createUserWithEmailAndPassword(auth, email, password);
-          console.log('User created successfully!');
+          console.log('You have created an account successfully!');
+          setCurrentScreen('Authenticated');
         }
       }
     } catch (error) {
       console.error('Authentication error:', error.message);
     }
   };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      console.log('You have signed out successfully!');
+      setCurrentScreen('Auth');
+    } catch (error) {
+      console.error('Sign out error:', error.message);
+    }
+  }
 
   const resetInputFields = () => {
     setUsername('');
@@ -70,13 +90,17 @@ const App = () => {
     return <SplashScreen onTimeout={handleSplashScreenTimeout} />;
   }
 
+  const directToProfile = () => {
+    setCurrentScreen('Profile');
+  };
+
+  const directToLibrary = () => {
+    setCurrentScreen('Library');
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {user ? (
-        // Show user's email if user is authenticated
-        <AuthenticatedScreen user={user} handleAuthentication={handleAuthentication} />
-      ) : (
-        // Show sign-in or sign-up form if user is not authenticated
+    <ScrollView contentContainerStyle={styles.appContainer}>
+      {currentScreen === 'Auth' && (
         <AuthScreen
           username={username}
           setUsername={setUsername}
@@ -91,8 +115,27 @@ const App = () => {
           handleAuthentication={handleAuthentication}
         />
       )}
+      {currentScreen === 'Authenticated' && (
+        <AuthenticatedScreen
+          user={user}
+          handleAuthentication={handleAuthentication}
+          navigateToProfile={() => setCurrentScreen('Profile')}
+        />
+      )}
+      {currentScreen === 'Profile' && (
+        <ProfileScreen
+          user={user}
+          handleSignOut={handleSignOut}
+          directToLibrary={directToLibrary}
+        />
+      )}
+      {currentScreen === 'Library' && (
+        <LibraryScreen
+          directToProfile={directToProfile}
+        />
+      )}
     </ScrollView>
   );
-}
+};
 
 export default App;

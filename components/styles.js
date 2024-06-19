@@ -1,20 +1,19 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
+    // for App.js
+    appContainer: {
+        flexGrow: 1,
+        justifyContent: 'space-between',
+        backgroundColor: '#FCF9D9',
+    },
     authContainer: {
         width: '100%',
         height: '90%',
         backgroundColor: '#FCF9D9',
-        marginTop: '10%',
+        marginTop: 20,
         paddingHorizontal: 16,
-    },
-    // for App.js
-    container: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 16,
-        backgroundColor: '#FCF9D9',
+        paddingVertical: 16,
     },
     title: {
         fontSize: 25,
@@ -24,13 +23,12 @@ export const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     labels: {
-        fontSize: 15,
+        fontSize: 18,
         fontWeight: 'bold',
         margin: 5,
     },
     input: {
         height: 45,
-        borderColor: '#ddd',
         borderWidth: 1,
         marginBottom: 16,
         padding: 8,
@@ -51,7 +49,7 @@ export const styles = StyleSheet.create({
     buttonText: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#fff',
+        color: '#FFFFFF',
     },
     toggleButton: {
         marginTop: 20,
@@ -61,8 +59,13 @@ export const styles = StyleSheet.create({
         color: '#F26419',
         fontWeight: 'bold',
     },
+    imageContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+    },
     image: {
         alignSelf: 'center',
+        resizeMode: 'cover',
     },
 });
-
