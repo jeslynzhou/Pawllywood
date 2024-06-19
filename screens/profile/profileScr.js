@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet, Modal } from "react-native";
+import React, { useState } from 'react';
+import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import NavigationBar from '../../components/navigationbar.js';
+import NavigationBar from '../../components/navigationBar';
+import EditProfileScreen from './editProfileScr';
+import LogoutModal from './logoutModal';
 
 export default function ProfileScreen({ username: initialUsername, handleSignOut, directToProfile, directToLibrary }) {
   const [profileImage, setProfileImage] = useState(require('../../assets/default-profile-picture.png'));
   const [username, setUsername] = useState(initialUsername);
-  const [newUsername, setNewUsername] = useState('');
-  const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [description, setDescription] = useState('');
   const [currentScreen, setCurrentScreen] = useState('Profile');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
 
   const handleImagePicker = async () => {
@@ -53,172 +54,174 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
     }
   };
 
-  const handleUsernameChange = (newUsername) => {
-    setUsername(newUsername);
-    // Here you can save the updated username to AsyncStorage or send it to your backend
-    setIsEditingUsername(false); // Close the modal after username change
-  };
-
+  const MAX_DESCRIPTION_LENGTH = 80;
   const handleDescriptionChange = (text) => {
-    setDescription(text);
-  };
-
-  const openUsernameModal = () => {
-    setIsEditingUsername(true);
-    setNewUsername(username); // Initialize input field with current username
-  };
-
-  const closeUsernameModal = () => {
-    setIsEditingUsername(false);
-    setNewUsername(''); // Clear input field
-  };
-
-  const saveUsername = () => {
-    if (newUsername.trim() !== '') {
-      setUsername(newUsername.trim()); // Update username state
-      // Here you can save the updated username to AsyncStorage or send it to your backend
-      setIsEditingUsername(false); // Close the modal after username change
+    if (text.length <= MAX_DESCRIPTION_LENGTH) {
+      setDescription(text);
     }
+  };
+
+  const handleEditProfile = () => {
+    setCurrentScreen('EditProfile');
+  };
+  const handleAddingPets = () => {
+    console.log('Adding pet!');
+  }
+
+  const openLogoutModal = () => {
+    setShowLogoutModal(true);
+  };
+
+  const closeLogoutModal = () => {
+    setShowLogoutModal(false);
+  };
+
+  const handleLogout = () => {
+    handleSignOut();
+    setShowLogoutModal(false);
   };
 
   return (
     <>
-      <View style={styles.profileInfoBox}>
-        <View style={styles.profileInfoContainer}>
-          {/* Profile Picture */}
-          <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageContainer}>
-            <Image source={profileImage} style={styles.profileImage} />
-          </TouchableOpacity>
-
-          {/* Username and Bio description */}
-          <View style={styles.profileTextContainer}>
-            <View style={styles.usernameRow}>
-              <Text style={styles.usernameInput}>{username}</Text>
-              <TouchableOpacity onPress={openUsernameModal}>
-                <Ionicons name="pencil-outline" size={24} color="black" />
+      {currentScreen === 'Profile' && (
+        <View style={styles.profileContainer}>
+          <View style={styles.profileInfoContainer}>
+            <View style={styles.profileInfoContent}>
+              {/* Profile Picture */}
+              <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageContainer}>
+                <Image source={profileImage} style={styles.profileImage} />
               </TouchableOpacity>
-            </View>
-            <TextInput
-              style={styles.descriptionInput}
-              placeholder="Write something about yourself"
-              multiline
-              numberOfLines={3}
-              value={description}
-              onChangeText={handleDescriptionChange}
-            />
-          </View>
-        </View>
-      </View>
 
-      {/* Function Button Groups */}
-      <View style={styles.functionButtonGroup}>
-        {/* Group 1: My Pets and My Posts */}
-        <View style={styles.functionBox}>
-          <TouchableOpacity onPress={() => console.log('Navigate to My Pets')}>
-            <View style={styles.functionButton}>
-              <Ionicons name="paw-outline" size={24} color="black" />
-              <Text style={styles.functionButtonText}>My Pets</Text>
-              <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.separatorLine} />
-
-          <TouchableOpacity onPress={() => console.log('Navigate to My Posts')}>
-            <View style={styles.functionButton}>
-              <Ionicons name="newspaper-outline" size={24} color="black" />
-              <Text style={styles.functionButtonText}>My Posts</Text>
-              <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Group 2: Friends, Message, Notification */}
-        <View style={styles.functionBox}>
-          <TouchableOpacity onPress={() => console.log('Navigate to Friends')}>
-            <View style={styles.functionButton}>
-              <Ionicons name="people-outline" size={24} color="black" />
-              <Text style={styles.functionButtonText}>Friends</Text>
-              <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.separatorLine} />
-
-          <TouchableOpacity onPress={() => console.log('Navigate to Message')}>
-            <View style={styles.functionButton}>
-              <Ionicons name="chatbubble-ellipses-outline" size={24} color="black" />
-              <Text style={styles.functionButtonText}>Message</Text>
-              <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.separatorLine} />
-
-          <TouchableOpacity onPress={() => console.log('Navigate to Notification')}>
-            <View style={styles.functionButton}>
-              <Ionicons name="notifications-outline" size={24} color="black" />
-              <Text style={styles.functionButtonText}>Notification</Text>
-              <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View >
-
-      {/* Log out button */}
-      < TouchableOpacity onPress={handleSignOut} style={styles.button} >
-        <Text style={styles.buttonText}>Log out</Text>
-      </TouchableOpacity >
-
-      {/* Modal for Username Change */}
-      < Modal
-        visible={isEditingUsername}
-        animationType="slide"
-        transparent={true}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Change Username</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Enter new username"
-              value={newUsername}
-              onChangeText={handleUsernameChange}
-            />
-            <View style={styles.modalButtonContainer}>
-              <TouchableOpacity onPress={closeUsernameModal} style={styles.modalButton}>
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={saveUsername} style={styles.modalButtonHighlighted}>
-                <Text style={styles.buttonText}>Save</Text>
-              </TouchableOpacity>
+              {/* Username and Bio description */}
+              <View style={styles.profileTextContainer}>
+                <View style={styles.usernameRow}>
+                  <Text style={styles.usernameInput}>{username}</Text>
+                </View>
+                <TextInput
+                  style={styles.descriptionInput}
+                  placeholder="Write something about yourself"
+                  multiline
+                  numberOfLines={3}
+                  value={description}
+                  onChangeText={handleDescriptionChange}
+                />
+                <View style={styles.functionButtonBox}>
+                  <TouchableOpacity onPress={handleEditProfile} style={styles.functionButton}>
+                    <Text style={styles.functionButtonText}>Edit Profile</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleAddingPets} style={styles.functionButton}>
+                    <Text style={styles.functionButtonText}>Add Pets</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal >
 
-      {/* Navigation Bar */}
-      < NavigationBar
-        activeScreen={currentScreen}
-        directToProfile={directToProfile}
-        directToLibrary={directToLibrary}
+          {/* Function Button Groups */}
+          <View style={styles.featurePanelGroup}>
+            {/* Group 1: My Pets and My Posts */}
+            <View style={styles.featureBox}>
+              <TouchableOpacity onPress={() => console.log('Navigate to My Pets')}>
+                <View style={styles.featurePanel}>
+                  <Ionicons name="paw-outline" size={24} color="black" />
+                  <Text style={styles.featurePanelText}>My Pets</Text>
+                  <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.separatorLine} />
+
+              <TouchableOpacity onPress={() => console.log('Navigate to My Posts')}>
+                <View style={styles.featurePanel}>
+                  <Ionicons name="newspaper-outline" size={24} color="black" />
+                  <Text style={styles.featurePanelText}>My Posts</Text>
+                  <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            {/* Group 2: Friends, Message, Notification */}
+            <View style={styles.featureBox}>
+              <TouchableOpacity onPress={() => console.log('Navigate to Friends')}>
+                <View style={styles.featurePanel}>
+                  <Ionicons name="people-outline" size={24} color="black" />
+                  <Text style={styles.featurePanelText}>Friends</Text>
+                  <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.separatorLine} />
+
+              <TouchableOpacity onPress={() => console.log('Navigate to Message')}>
+                <View style={styles.featurePanel}>
+                  <Ionicons name="chatbubble-ellipses-outline" size={24} color="black" />
+                  <Text style={styles.featurePanelText}>Message</Text>
+                  <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.separatorLine} />
+
+              <TouchableOpacity onPress={() => console.log('Navigate to Notification')}>
+                <View style={styles.featurePanel}>
+                  <Ionicons name="notifications-outline" size={24} color="black" />
+                  <Text style={styles.featurePanelText}>Notification</Text>
+                  <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.separatorLine} />
+
+              <TouchableOpacity onPress={openLogoutModal}>
+                <View style={styles.featurePanel}>
+                  <Ionicons name="log-out-outline" size={24} color="black" />
+                  <Text style={styles.featurePanelText}>Log out</Text>
+                  <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View >
+
+          {/* Navigation Bar */}
+          <NavigationBar
+            activeScreen={currentScreen}
+            directToProfile={directToProfile}
+            directToLibrary={directToLibrary}
+          />
+        </View>
+      )}
+      <LogoutModal
+        visible={showLogoutModal}
+        onClose={closeLogoutModal}
+        onLogout={handleLogout}
       />
+      {currentScreen === 'EditProfile' && (
+        <EditProfileScreen
+          username={username}
+          setUsername={setUsername}
+          closeEditProfile={() => setCurrentScreen('Profile')}
+        />
+      )}
     </>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  profileInfoBox: {
+  profileContainer: {
+    justifyContent: 'flex-start',
+    flex: 1,
+  },
+  profileInfoContainer: {
     marginBottom: 15,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
-    paddingTop: 50,
+    paddingTop: 40,
     borderRadius: 40,
     marginTop: -10,
     borderWidth: 1,
     borderColor: '#000000',
   },
-  profileInfoContainer: {
+  profileInfoContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -234,7 +237,6 @@ const styles = StyleSheet.create({
   profileImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 50,
   },
   profileTextContainer: {
     flex: 1,
@@ -251,34 +253,48 @@ const styles = StyleSheet.create({
   },
   descriptionInput: {
     fontSize: 16,
-    padding: 10,
-    marginBottom: 10,
   },
-  savedDescription: {
-    marginTop: 10,
-    color: 'green',
+  functionButtonBox: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignSelf: 'flex-start',
+    marginVertical: '5%',
+    marginLeft: -15,
   },
-  functionButtonGroup: {
-    justifyContent: 'space-between',
+  functionButton: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#000000',
+    borderWidth: 1,
+    borderRadius: 9,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  functionButtonText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  featurePanelGroup: {
     marginBottom: 20,
     paddingHorizontal: 16,
-    paddingVertical: 16,
   },
-  functionBox: {
+  featureBox: {
     borderRadius: 17,
     borderWidth: 1,
     borderColor: '#000000',
-    marginBottom: 20,
+    marginBottom: 10,
     backgroundColor: '#FFFFFF',
   },
-  functionButton: {
+  featurePanel: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingHorizontal: 10,
     paddingVertical: 10,
   },
-  functionButtonText: {
+  featurePanelText: {
     marginLeft: 10,
     fontSize: 16,
     fontWeight: 'bold',
@@ -303,59 +319,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 17,
-    padding: 20,
-    minWidth: 300,
-    maxWidth: '80%',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  modalInput: {
-    borderWidth: 1,
-    borderColor: '#CCCCCC',
-    borderRadius: 17,
-    padding: 10,
-    marginBottom: 10,
-  },
-  modalButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  modalButtonHighlighted: {
-    flex: 1,
-    height: 45,
-    backgroundColor: '#F26419',
-    borderRadius: 17,
-    paddingHorizontal: 16,
-    marginHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  modalButton: {
-    flex: 1,
-    height: 45,
-    backgroundColor: '#CCCCCC',
-    borderRadius: 17,
-    paddingHorizontal: 16,
-    marginHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-
-
 });
-
-

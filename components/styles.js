@@ -29,7 +29,6 @@ export const styles = StyleSheet.create({
     },
     input: {
         height: 45,
-        borderColor: '#ddd',
         borderWidth: 1,
         marginBottom: 16,
         padding: 8,
@@ -50,7 +49,7 @@ export const styles = StyleSheet.create({
     buttonText: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#fff',
+        color: '#FFFFFF',
     },
     toggleButton: {
         marginTop: 20,

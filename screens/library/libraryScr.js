@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { getDocs, collection } from 'firebase/firestore';
-import { db } from '../../initializeFB';
-import NavigationBar from '../../components/navigationbar';
+import { database } from '../../initializeFB';
+import NavigationBar from '../../components/navigationBar';
 
 export default function LibraryScreen({ directToProfile, directToLibrary }) {
   const [currentScreen, setCurrentScreen] = useState('Library');
@@ -16,7 +16,7 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
     const fetchBreeds = async () => {
       try {
         const breedsList = [];
-        const querySnapshot = await getDocs(collection(db, 'breeds'));
+        const querySnapshot = await getDocs(collection(database, 'breeds'));
         querySnapshot.forEach(doc => {
           breedsList.push({
             id: doc.id,
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 17,
     marginHorizontal: 5,
     alignItems: 'center',
     justifyContent: 'center',

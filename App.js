@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView } from 'react-native';
 import AuthScreen from './screens/auth/AuthScreen/authScr.js';
 import ProfileScreen from './screens/profile/profileScr.js';
 import AuthenticatedScreen from './screens/auth/AuthenticatedScreen/authenticatedScr.js';
 import SplashScreen from './screens/auth/AuthScreen/splashScr.js';
-import LibraryScreen from './screens/library/libraryScr.js'; // Import the LibraryScreen component
+import LibraryScreen from './screens/library/libraryScr.js';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './initializeFB'; // Use the configured auth
 import { styles } from './components/styles.js';
