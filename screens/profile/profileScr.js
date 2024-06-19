@@ -90,7 +90,7 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
 
               <TouchableOpacity onPress={() => console.log('Navigate to My Posts')}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="newspaper-outline" size={24} color="black" />
+                  <Ionicons name="document-outline" size={24} color="black" />
                   <Text style={styles.featurePanelText}>My Posts</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
