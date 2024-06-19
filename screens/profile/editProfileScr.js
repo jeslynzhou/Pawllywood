@@ -3,12 +3,41 @@ import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet } from "reac
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function EditProfileScreen({ username, setUsername, closeEditProfile }) {
-    const [newUsername, setNewUsername] = useState(username);
+export default function EditProfileScreen({ username: initialUsername, profileImage: initialProfileImage, description: initialDescription, updateProfile, closeEditProfile }) {
+    const [username, setUsername] = useState(initialUsername);
+    const [profileImage, setProfileImage] = useState(initialProfileImage);
+    const [description, setDescription] = useState(initialDescription);
 
-    const saveChanges = () => {
-        setUsername(newUsername);
-        closeEditProfile();
+    const handleImagePicker = async () => {
+        // Request permission to access the media library
+        let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (permissionResult.granted === false) {
+            alert('Permission to access camera roll is required.');
+            return;
+        }
+
+        // Launch image picker
+        let pickerResult = await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!pickerResult.cancelled) {
+            setProfileImage({ uri: pickerResult.uri });
+        }
+    };
+
+    const MAX_DESCRIPTION_LENGTH = 80;
+    const handleDescriptionChange = (text) => {
+        if (text.length <= MAX_DESCRIPTION_LENGTH) {
+            setDescription(text);
+        }
+    };
+
+    const handleSaveChanges = () => {
+        updateProfile(username, profileImage, description);
     };
 
     return (
@@ -23,14 +52,37 @@ export default function EditProfileScreen({ username, setUsername, closeEditProf
 
             {/* Edit Profile Form */}
             <View style={styles.contentContainer}>
+                {/* Profile Picture */}
+                <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageContainer}>
+                    <Image source={profileImage} style={styles.profileImage} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageLabelContainer}>
+                    <Text style={styles.profileImageLabel}>Edit picture</Text>
+                </TouchableOpacity>
+
+
+                {/* Username */}
                 <Text style={styles.label}>Username</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder={username}
-                    value={newUsername}
-                    onChangeText={setNewUsername}
+                    placeholder={initialUsername}
+                    value={username}
+                    onChangeText={setUsername}
                 />
-                <TouchableOpacity onPress={saveChanges} style={styles.saveButton}>
+
+                {/* Description */}
+                <Text style={styles.label}>Description</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder={initialDescription}
+                    multiline
+                    numberOfLines={3}
+                    value={description}
+                    onChangeText={handleDescriptionChange}
+                />
+
+                {/* Save button */}
+                <TouchableOpacity onPress={handleSaveChanges} style={styles.button}>
                     <Text style={styles.buttonText}>Save changes</Text>
                 </TouchableOpacity>
             </View>
@@ -41,8 +93,7 @@ export default function EditProfileScreen({ username, setUsername, closeEditProf
 const styles = StyleSheet.create({
     editProfileContainer: {
         marginTop: '10%',
-        paddingHorizontal: 16,
-        paddingVertical: 16,
+        padding: 16,
     },
     headerContainer: {
         flexDirection: 'row',
@@ -62,6 +113,26 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
     },
+    profileImageContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        overflow: 'hidden',
+        justifyContent: 'center',
+        alignSelf: 'center',
+        marginTop: 21,
+    },
+    profileImage: {
+        width: '100%',
+        height: '100%',
+    },
+    profileImageLabelContainer: {
+        alignSelf: 'center',
+        marginTop: 5,
+    },
+    profileImageLabel: {
+        fontSize: 14,
+    },
     label: {
         fontSize: 15,
         fontWeight: 'bold',
@@ -73,16 +144,16 @@ const styles = StyleSheet.create({
         height: 45,
         borderWidth: 1,
         marginBottom: 16,
-        padding: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
         borderRadius: 17,
         borderColor: '#000000',
-        borderWidth: 1,
     },
-    saveButton: {
+    button: {
+        height: 45,
         backgroundColor: '#F26419',
         borderRadius: 17,
         paddingHorizontal: 16,
-        paddingVertical: 10,
         justifyContent: 'center',
         alignItems: 'center',
     },

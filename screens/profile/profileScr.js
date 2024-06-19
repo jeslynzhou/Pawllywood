@@ -1,72 +1,36 @@
 import React, { useState } from 'react';
-import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
 import NavigationBar from '../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
 import LogoutModal from './logoutModal';
 
-export default function ProfileScreen({ username: initialUsername, handleSignOut, directToProfile, directToLibrary }) {
+export default function ProfileScreen({ username: initialUsername, handleSignOut, directToLibrary }) {
   const [profileImage, setProfileImage] = useState(require('../../assets/default-profile-picture.png'));
   const [username, setUsername] = useState(initialUsername);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState('Write something about yourself!');
   const [currentScreen, setCurrentScreen] = useState('Profile');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-
-  const handleImagePicker = async () => {
-    // Request permission to access the media library
-    let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (permissionResult.granted === false) {
-      alert('Permission to access camera roll is required.');
-      return;
-    }
-
-    // Launch image picker
-    let pickerResult = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!pickerResult.cancelled) {
-      setProfileImage({ uri: pickerResult.uri });
-    }
-  };
-
-  const handleTakePhoto = async () => {
-    let permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-
-    if (permissionResult.granted === false) {
-      alert('Permission to access camera is required.');
-      return;
-    }
-
-    let pickerResult = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!pickerResult.cancelled) {
-      setProfileImage({ uri: pickerResult.uri });
-    }
-  };
-
-  const MAX_DESCRIPTION_LENGTH = 80;
-  const handleDescriptionChange = (text) => {
-    if (text.length <= MAX_DESCRIPTION_LENGTH) {
-      setDescription(text);
-    }
-  };
 
   const handleEditProfile = () => {
     setCurrentScreen('EditProfile');
   };
+
+  const updateProfile = (newUsername, newProfileImage, newDescription) => {
+    setUsername(newUsername);
+    setProfileImage(newProfileImage);
+    setDescription(newDescription);
+    setCurrentScreen('Profile');
+  };
+
+  const closeEditProfile = () => {
+    setCurrentScreen('Profile');
+  };
+
   const handleAddingPets = () => {
     console.log('Adding pet!');
-  }
+  };
 
   const openLogoutModal = () => {
     setShowLogoutModal(true);
@@ -88,23 +52,16 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
           <View style={styles.profileInfoContainer}>
             <View style={styles.profileInfoContent}>
               {/* Profile Picture */}
-              <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageContainer}>
+              <View style={styles.profileImageContainer}>
                 <Image source={profileImage} style={styles.profileImage} />
-              </TouchableOpacity>
+              </View>
 
-              {/* Username and Bio description */}
+              {/* Username and Description */}
               <View style={styles.profileTextContainer}>
                 <View style={styles.usernameRow}>
                   <Text style={styles.usernameInput}>{username}</Text>
+                  <Text style={styles.descriptionInput}>{description}</Text>
                 </View>
-                <TextInput
-                  style={styles.descriptionInput}
-                  placeholder="Write something about yourself"
-                  multiline
-                  numberOfLines={3}
-                  value={description}
-                  onChangeText={handleDescriptionChange}
-                />
                 <View style={styles.functionButtonBox}>
                   <TouchableOpacity onPress={handleEditProfile} style={styles.functionButton}>
                     <Text style={styles.functionButtonText}>Edit Profile</Text>
@@ -185,7 +142,6 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
           {/* Navigation Bar */}
           <NavigationBar
             activeScreen={currentScreen}
-            directToProfile={directToProfile}
             directToLibrary={directToLibrary}
           />
         </View>
@@ -198,8 +154,10 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
       {currentScreen === 'EditProfile' && (
         <EditProfileScreen
           username={username}
-          setUsername={setUsername}
-          closeEditProfile={() => setCurrentScreen('Profile')}
+          profileImage={profileImage}
+          description={description}
+          updateProfile={updateProfile}
+          closeEditProfile={closeEditProfile}
         />
       )}
     </>
@@ -215,7 +173,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
-    paddingTop: 40,
+    paddingTop: 50,
     borderRadius: 40,
     marginTop: -10,
     borderWidth: 1,
@@ -242,8 +200,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   usernameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     marginTop: 20,
   },
@@ -252,25 +210,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   descriptionInput: {
-    fontSize: 16,
+    fontSize: 14,
   },
   functionButtonBox: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignSelf: 'flex-start',
     marginVertical: '5%',
-    marginLeft: -15,
   },
   functionButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderColor: '#000000',
     borderWidth: 1,
     borderRadius: 9,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    marginHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginRight: 30,
   },
   functionButtonText: {
     fontSize: 10,

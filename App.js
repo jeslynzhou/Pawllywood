@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import AuthScreen from './screens/auth/AuthScreen/authScr.js';
 import ProfileScreen from './screens/profile/profileScr.js';
 import AuthenticatedScreen from './screens/auth/AuthenticatedScreen/authenticatedScr.js';
@@ -90,12 +90,12 @@ const App = () => {
     return <SplashScreen onTimeout={handleSplashScreenTimeout} />;
   }
 
-  const directToLibrary = () => {
-    setCurrentScreen('Library');
-  };
-
   const directToProfile = () => {
     setCurrentScreen('Profile');
+  };
+
+  const directToLibrary = () => {
+    setCurrentScreen('Library');
   };
 
   return (
