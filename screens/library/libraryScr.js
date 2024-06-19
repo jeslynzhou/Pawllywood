@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
 import { getDocs, collection } from 'firebase/firestore';
-import { database } from '../../initializeFB';
+import { db } from '../../initializeFB';
 import NavigationBar from '../../components/navigationBar';
 
-export default function LibraryScreen({ directToProfile }) {
+export default function LibraryScreen({ directToProfile, directToLibrary }) {
   const [currentScreen, setCurrentScreen] = useState('Library');
   const [searchQuery, setSearchQuery] = useState('');
   const [breeds, setBreeds] = useState([]);
@@ -17,7 +17,7 @@ export default function LibraryScreen({ directToProfile }) {
     const fetchBreeds = async () => {
       try {
         const breedsList = [];
-        const querySnapshot = await getDocs(collection(database, 'breeds'));
+        const querySnapshot = await getDocs(collection(db, 'breeds'));
         querySnapshot.forEach(doc => {
           breedsList.push({
             id: doc.id,
@@ -145,6 +145,7 @@ export default function LibraryScreen({ directToProfile }) {
       <NavigationBar
         activeScreen={currentScreen}
         directToProfile={directToProfile}
+        directToLibrary={directToLibrary}
       />
     </View>
   );
