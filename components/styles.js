@@ -4,21 +4,16 @@ export const styles = StyleSheet.create({
     // for App.js
     appContainer: {
         flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 16,
+        justifyContent: 'space-between',
         backgroundColor: '#FCF9D9',
     },
     authContainer: {
         width: '100%',
         height: '90%',
         backgroundColor: '#FCF9D9',
-        marginTop: '10%',
+        marginTop: 20,
         paddingHorizontal: 16,
-    },
-    profileContainer: {
-        flex: 1,
-        justifyContent: 'center',
+        paddingVertical: 16,
     },
     title: {
         fontSize: 25,
@@ -28,7 +23,7 @@ export const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     labels: {
-        fontSize: 15,
+        fontSize: 18,
         fontWeight: 'bold',
         margin: 5,
     },
@@ -70,7 +65,6 @@ export const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
     },
-
     image: {
         alignSelf: 'center',
         resizeMode: 'cover',

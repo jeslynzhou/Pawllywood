@@ -5,7 +5,7 @@ const AuthenticatedScreen = ({ user, navigateToProfile }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       navigateToProfile();
-    }, 2000); // Redirect after 3 seconds
+    }, 2000); // Redirect after 2 seconds
 
     return () => clearTimeout(timer);
   }, []);
@@ -20,7 +20,7 @@ const AuthenticatedScreen = ({ user, navigateToProfile }) => {
   const imageSize = height * 0.58; // size of image (dogs and cats)
   const imagePosition = {
     bottom: -0.01 * imageSize,
-    left: -0.4 * width,
+    left: -0.15 * width,
   }; // position of image
   // title container
   const titleCmarginTop = height * 0.08;
@@ -48,7 +48,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   titleContainer: {
-    marginLeft: -70, // No margin from the left
+    marginTop: '3%',
+    marginLeft: 5, // No margin from the left
   },
   title: {
     fontWeight: 'bold',
