@@ -5,7 +5,6 @@ export const styles = StyleSheet.create({
     appContainer: {
         flexGrow: 1,
         justifyContent: 'space-between',
-        padding: 20,
         backgroundColor: '#FCF9D9',
     },
     authContainer: {
@@ -14,6 +13,7 @@ export const styles = StyleSheet.create({
         backgroundColor: '#FCF9D9',
         marginTop: '10%',
         paddingHorizontal: 16,
+        paddingVertical: 16,
     },
     title: {
         fontSize: 25,
@@ -23,7 +23,7 @@ export const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     labels: {
-        fontSize: 15,
+        fontSize: 18,
         fontWeight: 'bold',
         margin: 5,
     },

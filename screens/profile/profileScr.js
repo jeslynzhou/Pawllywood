@@ -83,119 +83,157 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
 
   return (
     <>
-      <View style={styles.profileInfoContainer}>
-        {/* Profile Picture */}
-        <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageContainer}>
-          <Image source={profileImage} style={styles.profileImage} />
-        </TouchableOpacity>
+      <View style={styles.profileInfoBox}>
+        <View style={styles.profileInfoContainer}>
+          {/* Profile Picture */}
+          <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageContainer}>
+            <Image source={profileImage} style={styles.profileImage} />
+          </TouchableOpacity>
 
-        {/* Username and Bio description */}
-        <View style={styles.profileTextContainer}>
-          <View style={styles.usernameRow}>
-            <Text style={styles.usernameInput}>{username}</Text>
-            <TouchableOpacity onPress={openUsernameModal}>
-              <Ionicons name="pencil-outline" size={24} color="black" />
-            </TouchableOpacity>
+          {/* Username and Bio description */}
+          <View style={styles.profileTextContainer}>
+            <View style={styles.usernameRow}>
+              <Text style={styles.usernameInput}>{username}</Text>
+              <TouchableOpacity onPress={openUsernameModal}>
+                <Ionicons name="pencil-outline" size={24} color="black" />
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.descriptionInput}
+              placeholder="Write something about yourself"
+              multiline
+              numberOfLines={3}
+              value={description}
+              onChangeText={handleDescriptionChange}
+            />
           </View>
-          <TextInput
-            style={styles.descriptionInput}
-            placeholder="Write something about yourself"
-            multiline
-            numberOfLines={3}
-            value={description}
-            onChangeText={handleDescriptionChange}
-          />
         </View>
       </View>
 
-      <View style={styles.profileContainer}>
-        {/* My Pets and My Posts Button */}
-        <View style={styles.functionButtonContainer}>
+      {/* Function Button Groups */}
+      <View style={styles.functionButtonGroup}>
+        {/* Group 1: My Pets and My Posts */}
+        <View style={styles.functionBox}>
           <TouchableOpacity onPress={() => console.log('Navigate to My Pets')}>
             <View style={styles.functionButton}>
               <Ionicons name="paw-outline" size={24} color="black" />
               <Text style={styles.functionButtonText}>My Pets</Text>
+              <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
             </View>
           </TouchableOpacity>
+
+          <View style={styles.separatorLine} />
+
           <TouchableOpacity onPress={() => console.log('Navigate to My Posts')}>
             <View style={styles.functionButton}>
               <Ionicons name="newspaper-outline" size={24} color="black" />
-              <Text style={styles.functionButtonText}>My Post</Text>
+              <Text style={styles.functionButtonText}>My Posts</Text>
+              <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
             </View>
           </TouchableOpacity>
         </View>
 
-        {/* Log out button */}
-        <TouchableOpacity onPress={handleSignOut} style={styles.button}>
-          <Text style={styles.buttonText}>Log out</Text>
-        </TouchableOpacity>
+        {/* Group 2: Friends, Message, Notification */}
+        <View style={styles.functionBox}>
+          <TouchableOpacity onPress={() => console.log('Navigate to Friends')}>
+            <View style={styles.functionButton}>
+              <Ionicons name="people-outline" size={24} color="black" />
+              <Text style={styles.functionButtonText}>Friends</Text>
+              <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
+            </View>
+          </TouchableOpacity>
 
-        {/* Modal for Username Change */}
-        <Modal
-          visible={isEditingUsername}
-          animationType="slide"
-          transparent={true}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Change Username</Text>
-              <TextInput
-                style={styles.modalInput}
-                placeholder="Enter new username"
-                value={newUsername}
-                onChangeText={handleUsernameChange}
-              />
-              <View style={styles.modalButtonContainer}>
-                <TouchableOpacity onPress={closeUsernameModal} style={styles.button}>
-                  <Text style={styles.buttonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={saveUsername} style={styles.button}>
-                  <Text style={styles.buttonText}>Save</Text>
-                </TouchableOpacity>
-              </View>
+          <View style={styles.separatorLine} />
+
+          <TouchableOpacity onPress={() => console.log('Navigate to Message')}>
+            <View style={styles.functionButton}>
+              <Ionicons name="chatbubble-ellipses-outline" size={24} color="black" />
+              <Text style={styles.functionButtonText}>Message</Text>
+              <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.separatorLine} />
+
+          <TouchableOpacity onPress={() => console.log('Navigate to Notification')}>
+            <View style={styles.functionButton}>
+              <Ionicons name="notifications-outline" size={24} color="black" />
+              <Text style={styles.functionButtonText}>Notification</Text>
+              <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
+            </View>
+          </TouchableOpacity>
+        </View>
+      </View >
+
+      {/* Log out button */}
+      < TouchableOpacity onPress={handleSignOut} style={styles.button} >
+        <Text style={styles.buttonText}>Log out</Text>
+      </TouchableOpacity >
+
+      {/* Modal for Username Change */}
+      < Modal
+        visible={isEditingUsername}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Change Username</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Enter new username"
+              value={newUsername}
+              onChangeText={handleUsernameChange}
+            />
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity onPress={closeUsernameModal} style={styles.modalButton}>
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={saveUsername} style={styles.modalButtonHighlighted}>
+                <Text style={styles.buttonText}>Save</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </Modal>
+        </View>
+      </Modal >
 
-        {/* Navigation Bar */}
-        <NavigationBar
-          activeScreen={currentScreen}
-          directToProfile={directToProfile}
-          directToLibrary={directToLibrary}
-        />
-      </View >
+      {/* Navigation Bar */}
+      < NavigationBar
+        activeScreen={currentScreen}
+        directToProfile={directToProfile}
+        directToLibrary={directToLibrary}
+      />
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  profileContainer: {
-    flex: 1,
-    backgroundColor: '#FCF9D9',
-    justifyContent: 'space-between',
-    width: '100%',
-    height: '90%',
-    backgroundColor: '#FCF9D9',
-    marginTop: '10%',
-    paddingHorizontal: 5,
+  profileInfoBox: {
+    marginBottom: 15,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingTop: 50,
+    borderRadius: 40,
+    marginTop: -10,
+    borderWidth: 1,
+    borderColor: '#000000',
   },
   profileInfoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: '10%',
-    marginBottom: 20,
-    backgroundColor: '#ffffff',
-    padding: 10,
-    borderRadius: 17,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   profileImageContainer: {
-    marginRight: 20,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
   },
   profileImage: {
-    width: 100,
-    height: 100,
+    width: '100%',
+    height: '100%',
     borderRadius: 50,
   },
   profileTextContainer: {
@@ -205,7 +243,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginTop: 20,
   },
   usernameInput: {
     fontSize: 18,
@@ -213,30 +251,41 @@ const styles = StyleSheet.create({
   },
   descriptionInput: {
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
     padding: 10,
     marginBottom: 10,
   },
-  functionButtonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'space-around',
+  savedDescription: {
+    marginTop: 10,
+    color: 'green',
+  },
+  functionButtonGroup: {
+    justifyContent: 'space-between',
     marginBottom: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  functionBox: {
+    borderRadius: 17,
+    borderWidth: 1,
+    borderColor: '#000000',
+    marginBottom: 20,
+    backgroundColor: '#FFFFFF',
   },
   functionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 10,
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
   },
   functionButtonText: {
     marginLeft: 10,
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  separatorLine: {
+    height: 1,
+    backgroundColor: '#CCCCCC',
   },
   button: {
     height: 45,
@@ -245,17 +294,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 17,
     paddingHorizontal: 16,
+    marginHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#fff',
-  },
-  savedDescription: {
-    marginTop: 10,
-    color: 'green',
+    color: '#FFFFFF',
   },
   modalContainer: {
     flex: 1,
@@ -264,8 +310,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 17,
     padding: 20,
     minWidth: 300,
     maxWidth: '80%',
@@ -277,8 +323,8 @@ const styles = StyleSheet.create({
   },
   modalInput: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    borderColor: '#CCCCCC',
+    borderRadius: 17,
     padding: 10,
     marginBottom: 10,
   },
@@ -286,6 +332,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
+  modalButtonHighlighted: {
+    flex: 1,
+    height: 45,
+    backgroundColor: '#F26419',
+    borderRadius: 17,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  modalButton: {
+    flex: 1,
+    height: 45,
+    backgroundColor: '#CCCCCC',
+    borderRadius: 17,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+
+
 });
 
 
