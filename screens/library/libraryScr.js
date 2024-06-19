@@ -37,7 +37,7 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
   }, []);
 
   const { width } = Dimensions.get('window');
-  const imageL = width * 0.3;
+  const imageL = width * 0.25;
 
   const filteredBreeds = breeds.filter(breed =>
     breed.breed.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   libContainer: {
     flex: 1,
     width: '100%',
-    marginTop: '3%',
+    marginTop: 5,
   },
   centeredContainer: {
     flex: 1,
@@ -169,8 +169,8 @@ const styles = StyleSheet.create({
     marginTop: 50,
     marginBottom: 10,
     borderRadius: 17,
-    marginHorizontal: 10,
     borderWidth: 1,
+    marginHorizontal: 16,
   },
   typeButton: {
     flex: 1,
@@ -181,24 +181,24 @@ const styles = StyleSheet.create({
   },
   selectedTypeButtonDog: {
     backgroundColor: '#F26419',
-    borderTopLeftRadius: 17,
-    borderBottomLeftRadius: 17,
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
   },
   selectedTypeButtonCat: {
     backgroundColor: '#F26419',
-    borderTopRightRadius: 17,
-    borderBottomRightRadius: 17,
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
   },
   searchContainer: {
     marginTop: 5,
     marginBottom: 5,
+    marginHorizontal: 16,
   },
   searchInput: {
     height: 40,
     borderWidth: 1,
     borderRadius: 17,
     paddingHorizontal: 20,
-    marginHorizontal: 10,
     backgroundColor: 'white',
   },
   breedListContainer: {
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     marginBottom: 10,
-    marginHorizontal: 10,
+    marginHorizontal: 16,
   },
   breedList: {
     flexGrow: 1,
@@ -228,10 +228,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginVertical: 5,
+    marginHorizontal: 8,
   },
   aspectButton: {
     width: '44%',
     marginHorizontal: 10,
+    marginVertical: 10,
     paddingVertical: 5,
     borderWidth: 1,
     borderRadius: 17,
