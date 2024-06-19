@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     },
     modalButton: {
         padding: 10,
-        alignSelf: 'center',
+        alignItems: 'center',
     },
     modalButtonTextHighlighted: {
         fontSize: 16,

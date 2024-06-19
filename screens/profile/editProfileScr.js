@@ -9,18 +9,15 @@ export default function EditProfileScreen({ username: initialUsername, profileIm
     const [description, setDescription] = useState(initialDescription);
 
     const handleImagePicker = async () => {
-        // Request permission to access the media library
         let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
         if (permissionResult.granted === false) {
             alert('Permission to access camera roll is required.');
             return;
         }
 
-        // Launch image picker
         let pickerResult = await ImagePicker.launchImageLibraryAsync({
             allowsEditing: true,
-            aspect: [4, 3],
+            aspect: [1, 1],
             quality: 1,
         });
 
@@ -60,7 +57,6 @@ export default function EditProfileScreen({ username: initialUsername, profileIm
                     <Text style={styles.profileImageLabel}>Edit picture</Text>
                 </TouchableOpacity>
 
-
                 {/* Username */}
                 <Text style={styles.label}>Username</Text>
                 <TextInput
@@ -75,8 +71,6 @@ export default function EditProfileScreen({ username: initialUsername, profileIm
                 <TextInput
                     style={styles.input}
                     placeholder={initialDescription}
-                    multiline
-                    numberOfLines={3}
                     value={description}
                     onChangeText={handleDescriptionChange}
                 />

@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   },
   featurePanelText: {
     marginLeft: 10,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
   },
   separatorLine: {
