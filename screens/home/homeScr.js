@@ -8,6 +8,9 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
     const [currentScreen, setCurrentScreen] = useState('Home');
     return (
         <View style={styles.homeContainer}>
+            {/* Header */}
+            <View style={styles.header}>
+            </View>
             <Text>Home Screen</Text>
             {/* Navigation Bar */}
             <NavigationBar
