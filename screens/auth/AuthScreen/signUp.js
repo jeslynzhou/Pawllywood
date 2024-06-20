@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   labels: {
     fontSize: 18,
     fontWeight: 'bold',
-    margin: 5,
+    marginBottom: 3,
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderWidth: 1,
     borderRadius: 17,
-    marginBottom: 16,
+    marginBottom: 10,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
@@ -96,9 +96,9 @@ const styles = StyleSheet.create({
     height: 45,
     backgroundColor: '#F26419',
     borderRadius: 17,
-    paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 15,
   },
   buttonText: {
     fontSize: 16,

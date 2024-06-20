@@ -1,8 +1,7 @@
 import React from 'react';
 import LogInScreen from './logIn';
 import SignUpScreen from './signUp';
-import { View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
-import { styles } from '../../../components/styles';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 
 const AuthScreen = ({
   username, setUsername,
@@ -57,5 +56,35 @@ const AuthScreen = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  authContainer: {
+    width: '100%',
+    height: '90%',
+    backgroundColor: '#FCF9D9',
+    marginTop: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  title: {
+    fontSize: 25,
+    marginBottom: 16,
+    textAlign: 'left',
+    marginTop: 20,
+    fontWeight: 'bold',
+  },
+  toggleButton: {
+    marginTop: 10,
+    alignSelf: 'center',
+  },
+  toggleButtonText: {
+    color: '#F26419',
+    fontWeight: 'bold',
+  },
+  image: {
+    alignSelf: 'center',
+    resizeMode: 'cover',
+  },
+});
 
 export default AuthScreen;
