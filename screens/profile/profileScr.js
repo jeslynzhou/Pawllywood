@@ -8,7 +8,7 @@ import LogoutModal from './logoutModal';
 
 export default function ProfileScreen({ username: initialUsername, handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
-  const [profileImage, setProfileImage] = useState(require('../../assets/default-profile-picture.png'));
+  const [profileImage, setProfileImage] = useState(require('../../assets/profile_images/default_profile_picture.png'));
   const [username, setUsername] = useState(initialUsername);
   const [description, setDescription] = useState('Write something about yourself!');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
