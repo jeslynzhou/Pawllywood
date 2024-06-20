@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 
-const AuthenticatedScreen = ({ user, directToProfile }) => {
+const AuthenticatedScreen = ({ user, directToHome }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      directToProfile();
+      directToHome();
     }, 2000); // Redirect after 2 seconds
 
     return () => clearTimeout(timer);

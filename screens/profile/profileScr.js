@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     borderWidth: 1,
     borderColor: '#000000',
-    marginBottom: 10,
+    marginBottom: 15,
     backgroundColor: '#FFFFFF',
   },
   featurePanel: {
