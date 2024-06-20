@@ -72,16 +72,17 @@ const styles = StyleSheet.create({
         marginBottom: -5,
     },
     navBarText: {
-        marginTop: 5,
-        fontSize: 12,
+        fontSize: 10,
         color: '#FFFFFF',
+        marginTop: 5,
     },
     activeNavButton: {
         borderRadius: 10,
     },
     activeNavText: {
-        color: '#F26419',
+        fontSize: 10,
         fontWeight: 'bold',
+        color: '#F26419',
     },
     activeIcon: {
         backgroundColor: '#F26419',

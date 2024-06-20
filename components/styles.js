@@ -52,7 +52,7 @@ export const styles = StyleSheet.create({
         color: '#FFFFFF',
     },
     toggleButton: {
-        marginTop: 20,
+        marginTop: 10,
         alignSelf: 'center',
     },
     toggleButtonText: {
