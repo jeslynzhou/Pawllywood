@@ -58,7 +58,7 @@ export default function EditProfileScreen({ username: initialUsername, profileIm
                 </TouchableOpacity>
 
                 {/* Username */}
-                <Text style={styles.label}>Username</Text>
+                <Text style={styles.labels}>Username</Text>
                 <TextInput
                     style={styles.input}
                     placeholder={initialUsername}
@@ -67,7 +67,7 @@ export default function EditProfileScreen({ username: initialUsername, profileIm
                 />
 
                 {/* Description */}
-                <Text style={styles.label}>Description</Text>
+                <Text style={styles.labels}>Description</Text>
                 <TextInput
                     style={styles.input}
                     placeholder={initialDescription}
@@ -82,7 +82,7 @@ export default function EditProfileScreen({ username: initialUsername, profileIm
             </View>
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     editProfileContainer: {
@@ -122,16 +122,15 @@ const styles = StyleSheet.create({
     },
     profileImageLabelContainer: {
         alignSelf: 'center',
-        marginTop: 5,
+        margin: 10,
     },
     profileImageLabel: {
         fontSize: 14,
     },
-    label: {
+    labels: {
         fontSize: 15,
         fontWeight: 'bold',
         color: '#616161',
-        marginTop: 10,
         marginBottom: 5,
     },
     input: {
@@ -139,7 +138,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginBottom: 16,
         paddingHorizontal: 12,
-        paddingVertical: 8,
         borderRadius: 17,
         borderColor: '#000000',
     },
@@ -147,9 +145,9 @@ const styles = StyleSheet.create({
         height: 45,
         backgroundColor: '#F26419',
         borderRadius: 17,
-        paddingHorizontal: 16,
         justifyContent: 'center',
         alignItems: 'center',
+        marginTop: 5,
     },
     buttonText: {
         fontSize: 16,

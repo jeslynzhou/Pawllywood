@@ -107,7 +107,7 @@ const App = () => {
         <AuthenticatedScreen
           user={user}
           handleAuthentication={() => setCurrentScreen('Auth')}
-          directToProfile={directToProfile}
+          directToHome={directToHome}
         />
       )}
       {currentScreen === 'Profile' && (
