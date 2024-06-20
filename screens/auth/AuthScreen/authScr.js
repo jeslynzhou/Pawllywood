@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../../initializeFB';
 import LogInScreen from './logIn';
 import SignUpScreen from './signUp';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+
 
 const AuthScreen = ({
   username, setUsername,
@@ -9,11 +12,31 @@ const AuthScreen = ({
   password, setPassword,
   retypePassword, setRetypePassword,
   isLogin, setIsLogin,
-  handleAuthentication
+  setCurrentScreen
 }) => {
-  const { width, height } = Dimensions.get('window');
+  const { height } = Dimensions.get('window');
   // image
-  const imageSize = height * 0.2; // size of image (dogs and cats)
+  const imageSize = height * 0.2;
+
+  const handleAuthentication = async () => {
+    try {
+      if (isLogin) {
+        await signInWithEmailAndPassword(auth, email, password);
+        setCurrentScreen('Authenticated');
+        console.log('You have signed in successfully!');
+      } else {
+        if (password !== retypePassword) {
+          console.error("Passwords don't match");
+          return;
+        }
+        await createUserWithEmailAndPassword(auth, email, password);
+        setCurrentScreen('Authenticated');
+        console.log('You have created an account successfully!');
+      }
+    } catch (error) {
+      console.error('Authentication error:', error.message);
+    }
+  };
 
   return (
     <View style={styles.authContainer}>
