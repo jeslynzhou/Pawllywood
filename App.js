@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView } from 'react-native';
+
 import AuthScreen from './screens/auth/AuthScreen/authScr.js';
 import AuthenticatedScreen from './screens/auth/AuthenticatedScreen/authenticatedScr.js';
 import SplashScreen from './screens/auth/AuthScreen/splashScr.js';
 import ProfileScreen from './screens/profile/profileScr.js';
+import NotebookScreen from './screens/notebook/notebookScr.js';
+import HomeScreen from './screens/home/homeScr.js';
 import LibraryScreen from './screens/library/libraryScr.js';
+import ForumScreen from './screens/forum/forumScr.js';
+
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './initializeFB.js'; // Use the configured auth
 import { styles } from './components/styles.js';
@@ -65,8 +70,20 @@ const App = () => {
     setCurrentScreen('Profile');
   };
 
+  const directToNotebook = () => {
+    setCurrentScreen('Notebook')
+  };
+
+  const directToHome = () => {
+    setCurrentScreen('Home');
+  };
+
   const directToLibrary = () => {
     setCurrentScreen('Library');
+  };
+
+  const directToForum = () => {
+    setCurrentScreen('Forum');
   };
 
   return (
@@ -97,12 +114,42 @@ const App = () => {
         <ProfileScreen
           user={user}
           handleSignOut={handleSignOut}
+          directToNotebook={directToNotebook}
+          directToHome={directToHome}
           directToLibrary={directToLibrary}
+          directToForum={directToForum}
+        />
+      )}
+      {currentScreen === 'Notebook' && (
+        <NotebookScreen
+          directToProfile={directToProfile}
+          directToHome={directToHome}
+          directToLibrary={directToLibrary}
+          directToForum={directToForum}
+        />
+      )}
+      {currentScreen === 'Home' && (
+        <HomeScreen
+          directToProfile={directToProfile}
+          directToNotebook={directToNotebook}
+          directToLibrary={directToLibrary}
+          directToForum={directToForum}
         />
       )}
       {currentScreen === 'Library' && (
         <LibraryScreen
           directToProfile={directToProfile}
+          directToNotebook={directToNotebook}
+          directToHome={directToHome}
+          directToForum={directToForum}
+        />
+      )}
+      {currentScreen === 'Forum' && (
+        <ForumScreen
+          directToProfile={directToProfile}
+          directToNotebook={directToNotebook}
+          directToHome={directToHome}
+          directToLibrary={directToLibrary}
         />
       )}
     </ScrollView>
