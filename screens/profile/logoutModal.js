@@ -1,28 +1,30 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 
-const LogoutModal = ({ visible, onClose, onLogout }) => (
-    <Modal visible={visible} transparent animationType="slide">
-        <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Log out of your account?</Text>
-                <View style={styles.modalButtonContainer}>
-                    <View style={styles.separatorLine} />
+export default function LogoutModal({ visible, onClose, onLogout }) {
+    return (
+        <Modal visible={visible} transparent animationType="slide">
+            <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>Log out of your account?</Text>
+                    <View style={styles.modalButtonContainer}>
+                        <View style={styles.separatorLine} />
 
-                    <TouchableOpacity onPress={onLogout} style={styles.modalButton}>
-                        <Text style={styles.modalButtonTextHighlighted}>Log out</Text>
-                    </TouchableOpacity>
+                        <TouchableOpacity onPress={onLogout} style={styles.modalButton}>
+                            <Text style={styles.modalButtonTextHighlighted}>Log out</Text>
+                        </TouchableOpacity>
 
-                    <View style={styles.separatorLine} />
+                        <View style={styles.separatorLine} />
 
-                    <TouchableOpacity onPress={onClose} style={styles.modalButton}>
-                        <Text style={styles.modalButtonText}>Cancel</Text>
-                    </TouchableOpacity>
+                        <TouchableOpacity onPress={onClose} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
-        </View>
-    </Modal>
-);
+        </Modal>
+    );
+};
 
 const styles = StyleSheet.create({
     modalContainer: {
@@ -64,5 +66,3 @@ const styles = StyleSheet.create({
         backgroundColor: '#CCCCCC',
     },
 });
-
-export default LogoutModal;

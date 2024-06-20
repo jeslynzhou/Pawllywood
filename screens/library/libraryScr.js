@@ -4,7 +4,7 @@ import { getDocs, collection } from 'firebase/firestore';
 import { db } from '../../initializeFB';
 import NavigationBar from '../../components/navigationBar';
 
-export default function LibraryScreen({ directToProfile, directToLibrary }) {
+export default function LibraryScreen({ directToProfile, directToNotebook, directToHome, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Library');
   const [searchQuery, setSearchQuery] = useState('');
   const [breeds, setBreeds] = useState([]);
@@ -145,7 +145,9 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
       <NavigationBar
         activeScreen={currentScreen}
         directToProfile={directToProfile}
-        directToLibrary={directToLibrary}
+        directToNotebook={directToNotebook}
+        directToHome={directToHome}
+        directToForum={directToForum}
       />
     </View>
   );

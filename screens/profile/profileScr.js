@@ -1,47 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { updateDoc, doc } from 'firebase/firestore';
-import { db } from '../../initializeFB';
 
 import NavigationBar from '../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
 import LogoutModal from './logoutModal';
 
-export default function ProfileScreen({ user, handleSignOut, directToLibrary }) {
-  const [profileImage, setProfileImage] = useState(require('../../assets/default-profile-picture.png'));
-  const [username, setUsername] = useState('');
-  const [description, setDescription] = useState('');
+export default function ProfileScreen({ username: initialUsername, handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
+  const [profileImage, setProfileImage] = useState(require('../../assets/default-profile-picture.png'));
+  const [username, setUsername] = useState(initialUsername);
+  const [description, setDescription] = useState('Write something about yourself!');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      setUsername(user.displayName || '');
-      setProfileImage(user.photoURL ? { uri: user.photoURL } : null);
-      setDescription(user.description || '');
-    }
-  }, [user]);
 
   const handleEditProfile = () => {
     setCurrentScreen('EditProfile');
   };
 
-  const updateProfile = async (newUsername, newProfileImage, newDescription) => {
-    try {
-      const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, {
-        displayName: newUsername,
-        photoURL: newProfileImage,
-        description: newDescription,
-      });
-      setUsername(newUsername);
-      setProfileImage(newProfileImage ? { uri: newProfileImage } : null);
-      setDescription(newDescription);
-      setCurrentScreen('Profile');
-    } catch (error) {
-      console.log('Error updating profile: ', error);
-    }
+  const updateProfile = (newUsername, newProfileImage, newDescription) => {
+    setUsername(newUsername);
+    setProfileImage(newProfileImage);
+    setDescription(newDescription);
+    setCurrentScreen('Profile');
   };
 
   const closeEditProfile = () => {
@@ -162,7 +142,10 @@ export default function ProfileScreen({ user, handleSignOut, directToLibrary }) 
           {/* Navigation Bar */}
           <NavigationBar
             activeScreen={currentScreen}
+            directToNotebook={directToNotebook}
+            directToHome={directToHome}
             directToLibrary={directToLibrary}
+            directToForum={directToForum}
           />
         </View>
       )}

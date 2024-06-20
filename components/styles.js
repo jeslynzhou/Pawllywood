@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
     },
     authContainer: {
         width: '100%',
-        height: '90%',
+        height: '80%',
         backgroundColor: '#FCF9D9',
         marginTop: 20,
         paddingHorizontal: 16,
