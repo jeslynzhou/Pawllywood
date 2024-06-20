@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 
-const AuthenticatedScreen = ({ user, navigateToProfile }) => {
+const AuthenticatedScreen = ({ user, directToProfile }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigateToProfile();
+      directToProfile();
     }, 2000); // Redirect after 2 seconds
 
     return () => clearTimeout(timer);
@@ -29,7 +29,7 @@ const AuthenticatedScreen = ({ user, navigateToProfile }) => {
     <View style={styles.container}>
       <View style={[styles.titleContainer, { marginTop: titleCmarginTop }]}>
         <Text style={[styles.title, { fontSize, lineHeight: fontSize, marginVertical }]}>Welcome</Text>
-        <Text style={[styles.usernameText, { fontSize: usernameFontSize, lineHeight: usernameFontSize, marginVertical }]}>{user.username}</Text>
+        <Text style={[styles.usernameText, { fontSize: usernameFontSize, lineHeight: usernameFontSize, marginVertical }]}>{user.email}</Text>
       </View>
       <Image
         source={require('../../../assets/app_images/authenticatedScr_Background.png')}
