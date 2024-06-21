@@ -2,7 +2,15 @@ import React, { useState } from 'react';
 import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 
-export default function EditPetInfoScreen({ closeEditPetInfo }) {
+export default function EditPetInfoScreen({ petInfo, setPetInfo, closeEditPetInfo }) {
+    const [editedPetInfo, setEditedPetInfo] = useState({ ...petInfo });
+
+    const handleSaveChanges = () => {
+        setPetInfo(editedPetInfo);
+        closeEditPetInfo();
+        console.log('You have saved changes successfully!');
+    };
+
     return (
         <View style={styles.editProfileContainer}>
             {/* Header */}
@@ -19,30 +27,43 @@ export default function EditPetInfoScreen({ closeEditPetInfo }) {
                 <Text style={styles.labels}>Pet name</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder='Type your pet name here'
+                    value={editedPetInfo.name}
+                    onChangeText={(text) => setEditedPetInfo({ ...editedPetInfo, name: text })}
+                    placeholder="Name"
                 />
 
                 {/* Breed */}
                 <Text style={styles.labels}>Breed</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Type your pet's breed here"
+                    value={editedPetInfo.breed}
+                    onChangeText={(text) => setEditedPetInfo({ ...editedPetInfo, breed: text })}
+                    placeholder="Breed"
                 />
 
                 {/* Age */}
                 <Text style={styles.labels}>Age</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Type your pet's age here"
+                    value={editedPetInfo.age}
+                    onChangeText={(text) => setEditedPetInfo({ ...editedPetInfo, age: text })}
+                    placeholder="Age"
                 />
 
                 {/* Gender */}
                 <Text style={styles.labels}>Gender</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Type your pet's gender here"
+                    value={editedPetInfo.gender}
+                    onChangeText={(text) => setEditedPetInfo({ ...editedPetInfo, gender: text })}
+                    placeholder="Gender"
                 />
             </View>
+
+            {/* Save button */}
+            <TouchableOpacity onPress={handleSaveChanges} style={styles.button}>
+                <Text style={styles.buttonText}>Save changes</Text>
+            </TouchableOpacity>
         </View>
     );
 };
