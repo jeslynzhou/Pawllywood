@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import NavigationBar from '../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
-import LogoutModal from './logoutModal';
+import LogoutModal from './components/logoutModal';
 
 export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');

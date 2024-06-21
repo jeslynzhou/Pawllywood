@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 
 export default function LogoutModal({ visible, onClose, onLogout }) {
     return (
-        <Modal visible={visible} transparent animationType="slide">
+        <Modal visible={visible} transparent={true} animationType="slide">
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Log out of your account?</Text>
