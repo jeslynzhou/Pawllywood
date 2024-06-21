@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Swiper from 'react-native-swiper';
 
 import NavigationBar from '../../components/navigationBar';
 import EditPetInfoScreen from './editPetInfo';
 
 export default function HomeScreen({ directToProfile, directToNotebook, directToLibrary, directToForum }) {
     const [currentScreen, setCurrentScreen] = useState('Home');
+    const [petInfo, setPetInfo] = useState({
+        name: '',
+        picture: require('../../assets/home_images/default_pet_image_square.png'),
+        breed: '',
+        age: '',
+        gender: '',
+    });
 
     const { width, height } = Dimensions.get('window');
     const logoHeightSize = height * 0.1;
@@ -45,13 +51,21 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                             <View style={styles.petInfoContainer}>
                                 {/* Pet Picture & Name */}
                                 <View style={styles.pictureNameContainer}>
-                                    <Image style={styles.petImageContainer} />
-                                    <Text style={styles.petName}>Peanut</Text>
+                                    <View style={styles.petImageContainer}>
+                                        <Image
+                                            source={petInfo.picture}
+                                            style={styles.petImage}
+                                            resizeMode='cover'
+                                        />
+                                    </View>
+                                    <Text style={styles.petName}>{petInfo.name}</Text>
                                 </View>
 
                                 {/* Pet Information */}
                                 <View style={styles.infoContainer}>
-
+                                    <Text style={styles.input}>Breed: {petInfo.breed}</Text>
+                                    <Text style={styles.input}>Age: {petInfo.age}</Text>
+                                    <Text style={styles.input}>Gender: {petInfo.gender}</Text>
                                 </View>
                             </View>
                         </View>
@@ -80,6 +94,8 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
             )}
             {currentScreen === 'EditPetInfo' && (
                 <EditPetInfoScreen
+                    petInfo={petInfo}
+                    setPetInfo={setPetInfo}
                     closeEditPetInfo={closeEditPetInfo}
                 />
             )}
@@ -110,7 +126,6 @@ const styles = StyleSheet.create({
         marginVertical: 5,
     },
     petInfoBox: {
-        flex: 1,
         flexDirection: 'column',
         backgroundColor: '#FFFFFF',
         borderWidth: 1,
@@ -120,7 +135,7 @@ const styles = StyleSheet.create({
         paddingTop: 5,
         paddingBottom: 12,
         marginBottom: 7,
-        height: 190, //might delete later
+        height: 220, //might delete later
     },
     editButton: {
         alignSelf: 'flex-end',
@@ -129,21 +144,34 @@ const styles = StyleSheet.create({
         flex: 1,
         borderWidth: 1,
         flexDirection: 'row',
-        padding: 7,
     },
     pictureNameContainer: {
-        borderWidth: 1,
-        padding: 5,
+        flex: 1,
+        alignItems: 'center',
     },
     petImageContainer: {
-
+        width: 160,
+        height: 160,
+        borderWidth: 1,
+        borderRadius: 17,
+        overflow: 'hidden',
+    },
+    petImage: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
     },
     petName: {
-
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginTop: 5,
     },
     infoContainer: {
         flex: 1,
+        justifyContent: 'center',
         borderWidth: 1,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
     },
     notesBox: {
         flex: 1,

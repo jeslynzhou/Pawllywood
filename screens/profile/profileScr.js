@@ -9,8 +9,8 @@ import LogoutModal from './logoutModal';
 export default function ProfileScreen({ username: initialUsername, handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
   const [profileImage, setProfileImage] = useState(require('../../assets/profile_images/default_profile_picture.png'));
-  const [username, setUsername] = useState(initialUsername);
-  const [description, setDescription] = useState('Write something about yourself!');
+  const [username, setUsername] = useState('');
+  const [description, setDescription] = useState('');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleEditProfile = () => {
@@ -194,6 +194,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
+    borderWidth: 1,
   },
   profileImage: {
     width: '100%',
