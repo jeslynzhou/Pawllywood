@@ -3,9 +3,12 @@ import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet, Alert } fro
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
+import BirthDateModal from './components/birthDateModal';
+
 export default function EditPetProfileScreen({ petProfile, setPetProfile, closeEditPetProfile }) {
     const [editedPetProfile, setEditedPetProfile] = useState({ ...petProfile });
     const [profileImage, setProfileImage] = useState(petProfile.profileImage);
+    const [showBirthDateModal, setShowBirthDateModal] = useState(false);
 
     useEffect(() => {
         setProfileImage(petProfile.picture);
@@ -36,6 +39,18 @@ export default function EditPetProfileScreen({ petProfile, setPetProfile, closeE
             setProfileImage(pickerResult.uri);
             setEditedPetProfile({ ...editedPetProfile, picture: pickerResult.uri });
         }
+    };
+
+    const openBirthDateModal = () => {
+        setShowBirthDateModal(true);
+    };
+
+    const closeBirthDateModal = () => {
+        setShowBirthDateModal(false);
+    };
+
+    const handleDateSelect = (date) => {
+        setEditedPetProfile({ ...editedPetProfile, birthDate: date });
     };
 
     return (
@@ -76,6 +91,16 @@ export default function EditPetProfileScreen({ petProfile, setPetProfile, closeE
                     placeholder="Type your pet's breed here"
                 />
 
+                {/* Birth Date */}
+                <Text style={styles.labels}>Birth Date</Text>
+                <TouchableOpacity onPress={openBirthDateModal} style={styles.input}>
+                    <View style={styles.dateTextContainer}>
+                        <Text style={[{ color: editedPetProfile.birthDate ? '#000000' : '#6E6E6E' }]}>
+                            {editedPetProfile.birthDate || "Select your pet's birthdate"}
+                        </Text>
+                    </View>
+                </TouchableOpacity>
+
                 {/* Age */}
                 <Text style={styles.labels}>Age</Text>
                 <TextInput
@@ -99,6 +124,13 @@ export default function EditPetProfileScreen({ petProfile, setPetProfile, closeE
             <TouchableOpacity onPress={handleSaveChanges} style={styles.button}>
                 <Text style={styles.buttonText}>Save changes</Text>
             </TouchableOpacity>
+
+            {/* Birth Date Modal */}
+            <BirthDateModal
+                visible={showBirthDateModal}
+                onDateSelect={handleDateSelect}
+                onClose={closeBirthDateModal}
+            />
         </View>
     );
 };
@@ -174,14 +206,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#FFFFFF',
     },
-    labelsAndCharacterCount: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    characterCountText: {
-        fontSize: 12,
-        color: '#616161',
-        alignSelf: 'center',
-        marginRight: 10,
+    dateTextContainer: {
+        flex: 1,
+        justifyContent: 'center',
     },
 });
