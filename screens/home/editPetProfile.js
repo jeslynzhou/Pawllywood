@@ -3,20 +3,19 @@ import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet, Alert } fro
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function EditProfileScreen({ userProfile, setUserProfile, closeEditUserProfile }) {
-    const [editedUserProfile, setEditedUserProfile] = useState({ ...userProfile });
-    const [profileImage, setProfileImage] = useState(userProfile.profileImage);
-    const [descriptionLength, setDescriptionLength] = useState(userProfile.description.length);
+export default function EditPetProfileScreen({ petProfile, setPetProfile, closeEditPetProfile }) {
+    const [editedPetProfile, setEditedPetProfile] = useState({ ...petProfile });
+    const [profileImage, setProfileImage] = useState(petProfile.profileImage);
 
     useEffect(() => {
-        setProfileImage(userProfile.profileImage);
-        setDescriptionLength(userProfile.description.length);
-        setEditedUserProfile({ ...userProfile });
-    }, [userProfile]);
+        setProfileImage(petProfile.picture);
+        setEditedPetProfile({ ...petProfile });
+    }, [petProfile]);
 
     const handleSaveChanges = () => {
-        setUserProfile(editedUserProfile);
-        closeEditUserProfile();
+        setPetProfile(editedPetProfile);
+        closeEditPetProfile();
+        console.log('You have saved changes successfully!');
     };
 
     const handleImagePicker = async () => {
@@ -33,16 +32,9 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
             quality: 1,
         });
 
-        if (!pickerResult.cancelled) {
-            setProfileImage(pickerResult.uri); // Ensure pickerResult.uri is a string URI
-            setEditedUserProfile({ ...editedUserProfile, profileImage: pickerResult.uri });
-        }
-    };
-
-    const handleDescriptionChanges = (text) => {
-        if (text.length <= 80) {
-            setEditedUserProfile({ ...editedUserProfile, description: text });
-            setDescriptionLength(text.length);
+        if (!pickerResult.canceled) {
+            setProfileImage(pickerResult.uri);
+            setEditedPetProfile({ ...editedPetProfile, picture: pickerResult.uri });
         }
     };
 
@@ -50,15 +42,15 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
         <View style={styles.editProfileContainer}>
             {/* Header */}
             <View style={styles.headerContainer}>
-                <TouchableOpacity onPress={closeEditUserProfile} style={styles.backButton}>
+                <TouchableOpacity onPress={closeEditPetProfile} style={styles.backButton}>
                     <Ionicons name="arrow-back-outline" size={24} color="black" />
                 </TouchableOpacity>
-                <Text style={styles.headerText}>Edit profile</Text>
+                <Text style={styles.headerText}>Edit Pet Profile</Text>
             </View>
 
-            {/* Edit Profile Form */}
+            {/* Edit Pet Profile Form */}
             <View style={styles.contentContainer}>
-                {/* Profile Picture */}
+                {/* Pet Picture */}
                 <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageContainer}>
                     <Image source={{ uri: profileImage }} style={styles.profileImage} />
                 </TouchableOpacity>
@@ -66,34 +58,47 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
                     <Text style={styles.profileImageLabel}>Edit picture</Text>
                 </TouchableOpacity>
 
-                {/* Username */}
-                <Text style={styles.labels}>Username</Text>
+                {/* Pet name */}
+                <Text style={styles.labels}>Pet Name</Text>
                 <TextInput
                     style={styles.input}
-                    value={editedUserProfile.username}
-                    onChangeText={(text) => setEditedUserProfile({ ...editedUserProfile, username: text })}
-                    placeholder="Type your username here"
+                    value={editedPetProfile.name}
+                    onChangeText={(text) => setEditedPetProfile({ ...editedPetProfile, name: text })}
+                    placeholder="Type your pet's name here"
                 />
 
-                {/* Description */}
-                <View style={styles.labelsAndCharacterCount}>
-                    <Text style={styles.labels}>Description</Text>
-                    <Text style={styles.characterCountText}>{descriptionLength}/80</Text>
-                </View>
+                {/* Breed */}
+                <Text style={styles.labels}>Breed</Text>
                 <TextInput
                     style={styles.input}
-                    value={editedUserProfile.description}
-                    onChangeText={handleDescriptionChanges}
-                    placeholder="Type your description here"
-                    maxLength={80}
-                    multiline
+                    value={editedPetProfile.breed}
+                    onChangeText={(text) => setEditedPetProfile({ ...editedPetProfile, breed: text })}
+                    placeholder="Type your pet's breed here"
                 />
 
-                {/* Save button */}
-                <TouchableOpacity onPress={handleSaveChanges} style={styles.button}>
-                    <Text style={styles.buttonText}>Save changes</Text>
-                </TouchableOpacity>
+                {/* Age */}
+                <Text style={styles.labels}>Age</Text>
+                <TextInput
+                    style={styles.input}
+                    value={editedPetProfile.age}
+                    onChangeText={(text) => setEditedPetProfile({ ...editedPetProfile, age: text })}
+                    placeholder="Type your pet's age here"
+                />
+
+                {/* Gender */}
+                <Text style={styles.labels}>Gender</Text>
+                <TextInput
+                    style={styles.input}
+                    value={editedPetProfile.gender}
+                    onChangeText={(text) => setEditedPetProfile({ ...editedPetProfile, gender: text })}
+                    placeholder="Type your pet's gender here"
+                />
             </View>
+
+            {/* Save button */}
+            <TouchableOpacity onPress={handleSaveChanges} style={styles.button}>
+                <Text style={styles.buttonText}>Save changes</Text>
+            </TouchableOpacity>
         </View>
     );
 };

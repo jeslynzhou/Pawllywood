@@ -6,25 +6,20 @@ import NavigationBar from '../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
 import LogoutModal from './logoutModal';
 
-export default function ProfileScreen({ username: initialUsername, handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
+export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
-  const [profileImage, setProfileImage] = useState(require('../../assets/profile_images/default_profile_picture.png'));
-  const [username, setUsername] = useState('');
-  const [description, setDescription] = useState('');
+  const [userProfile, setUserProfile] = useState({
+    username: '',
+    picture: require('../../assets/profile_images/default_profile_picture.png'),
+    description: '',
+  });
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleEditProfile = () => {
     setCurrentScreen('EditProfile');
   };
 
-  const updateProfile = (newUsername, newProfileImage, newDescription) => {
-    setUsername(newUsername);
-    setProfileImage(newProfileImage);
-    setDescription(newDescription);
-    setCurrentScreen('Profile');
-  };
-
-  const closeEditProfile = () => {
+  const closeEditUserProfile = () => {
     setCurrentScreen('Profile');
   };
 
@@ -53,14 +48,14 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
             <View style={styles.profileInfoContent}>
               {/* Profile Picture */}
               <View style={styles.profileImageContainer}>
-                <Image source={profileImage} style={styles.profileImage} />
+                <Image source={userProfile.picture} style={styles.profileImage} />
               </View>
 
               {/* Username and Description */}
               <View style={styles.profileTextContainer}>
                 <View style={styles.usernameRow}>
-                  <Text style={styles.usernameInput}>{username}</Text>
-                  <Text style={styles.descriptionInput}>{description}</Text>
+                  <Text style={styles.usernameInput}>{userProfile.username}</Text>
+                  <Text style={styles.descriptionInput}>{userProfile.description}</Text>
                 </View>
                 <View style={styles.functionButtonBox}>
                   <TouchableOpacity onPress={handleEditProfile} style={styles.functionButton}>
@@ -149,20 +144,18 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
           />
         </View>
       )}
+      {currentScreen === 'EditProfile' && (
+        <EditProfileScreen
+          userProfile={userProfile}
+          setUserProfile={setUserProfile}
+          closeEditUserProfile={closeEditUserProfile}
+        />
+      )}
       <LogoutModal
         visible={showLogoutModal}
         onClose={closeLogoutModal}
         onLogout={handleLogout}
       />
-      {currentScreen === 'EditProfile' && (
-        <EditProfileScreen
-          username={username}
-          profileImage={profileImage}
-          description={description}
-          updateProfile={updateProfile}
-          closeEditProfile={closeEditProfile}
-        />
-      )}
     </>
   );
 };
