@@ -11,7 +11,7 @@ export default function LogoutModal({ visible, onClose, onLogout }) {
                         <View style={styles.separatorLine} />
 
                         <TouchableOpacity onPress={onLogout} style={styles.modalButton}>
-                            <Text style={styles.modalButtonTextHighlighted}>Log out</Text>
+                            <Text style={[styles.modalButtonText, { fontWeight: 'bold', color: '#F26419' }]}>Log out</Text>
                         </TouchableOpacity>
 
                         <View style={styles.separatorLine} />
@@ -52,11 +52,6 @@ const styles = StyleSheet.create({
     modalButton: {
         padding: 10,
         alignItems: 'center',
-    },
-    modalButtonTextHighlighted: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#F26419',
     },
     modalButtonText: {
         fontSize: 16,
