@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Touchable } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import DatePicker from 'react-native-modern-datepicker';
 
 export default function BirthDateModal({ initialDate, visible, onDateSelect, onClose }) {
