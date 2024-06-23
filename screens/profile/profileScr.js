@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+import { db, auth } from '../../initializeFB';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import NavigationBar from '../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
@@ -15,8 +18,49 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
   });
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const docRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            setUserProfile(docSnap.data());
+          } else {
+            console.log('No such document!');
+          }
+        } else {
+          console.log('No user is currently signed in.');
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error.message);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
   const handleEditProfile = () => {
     setCurrentScreen('EditProfile');
+  };
+
+  const handleUpdateProfile = async (updatedProfile) => {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        await setDoc(userRef, updatedProfile, { merge: true });
+        setUserProfile(updatedProfile);
+        setCurrentScreen('Profile');
+        console.log('Profile updated successfully!');
+      } else {
+        console.log('No user is currently signed in.');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error.message);
+    }
   };
 
   const closeEditUserProfile = () => {
@@ -147,7 +191,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       {currentScreen === 'EditProfile' && (
         <EditProfileScreen
           userProfile={userProfile}
-          setUserProfile={setUserProfile}
+          setUserProfile={handleUpdateProfile}
           closeEditUserProfile={closeEditUserProfile}
         />
       )}

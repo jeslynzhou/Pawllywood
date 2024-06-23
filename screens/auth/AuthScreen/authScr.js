@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../../initializeFB';
+
+import { auth, db } from '../../../initializeFB';
+import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
+
 import LogInScreen from './logIn';
 import SignUpScreen from './signUp';
 
@@ -29,7 +32,26 @@ const AuthScreen = ({
           console.error("Passwords don't match");
           return;
         }
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        await setDoc(doc(db, 'users', user.uid), {
+          username: username,
+          email: email,
+          picture: require('../../../assets/profile_images/default_profile_picture.png'),
+          description: ''
+        });
+
+        const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
+        await addDoc(petsCollectionRef, {
+          name: '',
+          picture: require('../../../assets/home_images/default_pet_image_square.png'),
+          breed: '',
+          birthDate: '',
+          age: '',
+          gender: '',
+        });
+
         setCurrentScreen('Authenticated');
         console.log('You have created an account successfully!');
       }

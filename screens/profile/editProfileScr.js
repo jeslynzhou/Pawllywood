@@ -60,7 +60,7 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
             <View style={styles.contentContainer}>
                 {/* Profile Picture */}
                 <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageContainer}>
-                    <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                    <Image source={{ uri: editedUserProfile.profileImage }} style={styles.profileImage} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageLabelContainer}>
                     <Text style={styles.profileImageLabel}>Edit picture</Text>
