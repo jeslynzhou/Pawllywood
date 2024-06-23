@@ -161,10 +161,10 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
     },
     profileImageContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
+        width: 160,
+        height: 160,
         borderWidth: 1,
+        borderRadius: 17,
         overflow: 'hidden',
         justifyContent: 'center',
         alignSelf: 'center',

@@ -144,7 +144,6 @@ const styles = StyleSheet.create({
     },
     petProfileContainer: {
         flex: 1,
-        borderWidth: 1,
         flexDirection: 'row',
     },
     pictureNameContainer: {
@@ -171,7 +170,6 @@ const styles = StyleSheet.create({
     infoContainer: {
         flex: 1,
         justifyContent: 'center',
-        borderWidth: 1,
         paddingHorizontal: 10,
         paddingBottom: 23,
     },
