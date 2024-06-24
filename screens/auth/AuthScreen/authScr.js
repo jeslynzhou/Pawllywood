@@ -50,6 +50,7 @@ const AuthScreen = ({
           birthDate: '',
           age: '',
           gender: '',
+          notes: '',
         });
 
         setCurrentScreen('Authenticated');
