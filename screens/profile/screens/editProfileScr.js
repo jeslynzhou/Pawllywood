@@ -3,10 +3,10 @@ import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet, Alert } fro
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
-import { db, auth } from '../../initializeFB';
+import { db, auth } from '../../../initializeFB';
 import { doc, setDoc } from 'firebase/firestore';
 
-import UploadImageModal from './components/uploapImageModal';
+import UploadImageModal from '../components/uploapImageModal';
 
 export default function EditProfileScreen({ userProfile, setUserProfile, closeEditUserProfile }) {
     const [editedUserProfile, setEditedUserProfile] = useState({ ...userProfile });
