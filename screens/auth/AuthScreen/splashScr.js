@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sloganContainer: {
-    marginLeft: 3,
+    marginLeft: 15,
   },
   slogan: {
     fontWeight: 'bold',
