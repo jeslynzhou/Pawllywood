@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { db, auth } from '../../initializeFB';
+import { db, auth } from '../../../initializeFB';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-import NavigationBar from '../../components/navigationBar';
+import NavigationBar from '../../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
-import LogoutModal from './components/logoutModal';
+import LogoutModal from '../components/logoutModal';
 
 export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');

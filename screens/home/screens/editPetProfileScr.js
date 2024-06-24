@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet, Alert } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { getFormatedDate } from 'react-native-modern-datepicker';
 
-import BirthDateModal from './components/birthDateModal';
+import BirthDateModal from '../components/birthDateModal';
 
 
 export default function EditPetProfileScreen({ petProfile, setPetProfile, closeEditPetProfile }) {
