@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions, PanResponder } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Dimensions,
+  PanResponder,
+  Modal, // Import Modal component
+} from 'react-native';
 import { getDocs, collection } from 'firebase/firestore';
 import { db } from '../../initializeFB';
 import NavigationBar from '../../components/navigationBar';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function LibraryScreen({ directToProfile, directToLibrary }) {
+export default function LibraryScreen({ directToProfile, directToNotebook, directToLibrary, directToForum, directToHome }) {
   const [currentScreen, setCurrentScreen] = useState('Library');
   const [searchQuery, setSearchQuery] = useState('');
   const [breeds, setBreeds] = useState([]);
@@ -14,6 +25,7 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
   const [isSearching, setIsSearching] = useState(false);
   const [selectedBreed, setSelectedBreed] = useState(null);
   const [selectedAspect, setSelectedAspect] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
 
   useEffect(() => {
     const fetchBreeds = async () => {
@@ -47,22 +59,24 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
     fetchBreeds();
   }, []);
 
-  const { width } = Dimensions.get('window');
+  const { height, width } = Dimensions.get('window');
   const imageL = width * 0.25;
+  const marginTopContentContainer = height * 0.18;
 
-  const filteredBreeds = breeds.filter(breed =>
-    breed.breed.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (selectedType ? breed.type === selectedType : true)
+  const filteredBreeds = breeds.filter(
+    breed =>
+      breed.breed.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (selectedType ? breed.type === selectedType : true)
   );
 
-  const handleBreedSelect = (breed) => {
+  const handleBreedSelect = breed => {
     setSelectedBreed(breed);
     setSearchQuery(breed.breed);
     setIsSearching(false);
     setSelectedAspect(null);
   };
 
-  const handleTypeSelect = (type) => {
+  const handleTypeSelect = type => {
     setSelectedType(type);
     setSearchQuery('');
     setSelectedBreed(null);
@@ -70,30 +84,39 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
     setIsSearching(false);
   };
 
+  const handleAspectPress = (aspectName) => {
+    if (!selectedBreed) {
+      setIsModalVisible(true);
+    } else {
+      setSelectedAspect(aspectName);
+    }
+  };
+
   const renderAspectButtons = () => {
-    const aspects = selectedType === 'dog'
-      ? [
-        { name: 'About', image: require('../../assets/library_images/aboutDogs.png') },
-        { name: 'Health', image: require('../../assets/library_images/healthDogs.png') },
-        { name: 'Grooming', image: require('../../assets/library_images/groomingDogs.png') },
-        { name: 'Exercise', image: require('../../assets/library_images/exerciseDogs.png') },
-        { name: 'Training', image: require('../../assets/library_images/trainingDogs.png') },
-        { name: 'Nutrition', image: require('../../assets/library_images/nutritionDogs.png') },
-      ]
-      : [
-        { name: 'About', image: require('../../assets/library_images/aboutCats.png') },
-        { name: 'Appearance and Colours', image: require('../../assets/library_images/coloursCats.png') },
-        { name: 'Personality', image: require('../../assets/library_images/personalitiesCats.png') },
-        { name: 'Care', image: require('../../assets/library_images/careCats.png') },
-        { name: 'Health', image: require('../../assets/library_images/healthCats.png') },
-      ];
+    const aspects =
+      selectedType === 'dog'
+        ? [
+            { name: 'About', image: require('../../assets/library_images/aboutDogs.png') },
+            { name: 'Health', image: require('../../assets/library_images/healthDogs.png') },
+            { name: 'Grooming', image: require('../../assets/library_images/groomingDogs.png') },
+            { name: 'Exercise', image: require('../../assets/library_images/exerciseDogs.png') },
+            { name: 'Training', image: require('../../assets/library_images/trainingDogs.png') },
+            { name: 'Nutrition', image: require('../../assets/library_images/nutritionDogs.png') },
+          ]
+        : [
+            { name: 'About', image: require('../../assets/library_images/aboutCats.png') },
+            { name: 'Appearance and Colours', image: require('../../assets/library_images/coloursCats.png') },
+            { name: 'Personality', image: require('../../assets/library_images/personalitiesCats.png') },
+            { name: 'Care', image: require('../../assets/library_images/careCats.png') },
+            { name: 'Health', image: require('../../assets/library_images/healthCats.png') },
+          ];
     return (
       <View style={styles.aspectButtonContainer}>
         {aspects.map((aspect, index) => (
           <TouchableOpacity
             key={index}
             style={styles.aspectButton}
-            onPress={() => setSelectedAspect(aspect.name)}
+            onPress={() => handleAspectPress(aspect.name)} // Update onPress handler
           >
             <Image source={aspect.image} style={{ width: imageL, height: imageL, marginBottom: 5 }} />
             <Text style={styles.buttonText}>{aspect.name}</Text>
@@ -105,23 +128,24 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
 
   const renderAspectContent = () => {
     const contentMap = {
-      'About': selectedBreed.about,
-      'Health': selectedBreed.health,
-      'Grooming': selectedBreed.grooming,
-      'Exercise': selectedBreed.exercise,
-      'Training': selectedBreed.training,
-      'Nutrition': selectedBreed.nutrition,
+      About: selectedBreed.about,
+      Health: selectedBreed.health,
+      Grooming: selectedBreed.grooming,
+      Exercise: selectedBreed.exercise,
+      Training: selectedBreed.training,
+      Nutrition: selectedBreed.nutrition,
       'Appearance and Colours': selectedBreed.appearance_and_colours,
-      'Personality': selectedBreed.personality,
-      'Care': selectedBreed.care,
+      Personality: selectedBreed.personality,
+      Care: selectedBreed.care,
     };
-
-    const aspects = selectedType === 'dog'
-      ? ['About', 'Health', 'Grooming', 'Exercise', 'Training', 'Nutrition']
-      : ['About', 'Appearance and Colours', 'Personality', 'Care', 'Health'];
-
+  
+    const aspects =
+      selectedType === 'dog'
+        ? ['About', 'Health', 'Grooming', 'Exercise', 'Training', 'Nutrition']
+        : ['About', 'Appearance and Colours', 'Personality', 'Care', 'Health'];
+  
     const aspectIndex = aspects.indexOf(selectedAspect);
-
+  
     const panResponder = PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 20,
       onPanResponderRelease: (evt, gestureState) => {
@@ -132,14 +156,16 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
         }
       },
     });
-
+  
     return (
-      <View style={styles.contentContainer} {...panResponder.panHandlers}>
+      <View style={[styles.contentContainer, { marginTop: marginTopContentContainer }]} {...panResponder.panHandlers}>
         <View style={styles.headerContainer}>
           <TouchableOpacity style={styles.returnButton} onPress={() => setSelectedAspect(null)}>
-            <Ionicons name="arrow-back-outline" size={24} color='#000000' />
+            <Ionicons name="arrow-back-outline" size={24} color="#000000" />
           </TouchableOpacity>
-          <Text style={styles.headerText}>{selectedBreed.breed} - {selectedAspect}</Text>
+          <Text style={styles.headerText}>
+            {selectedBreed.breed} - {selectedAspect}
+          </Text>
         </View>
         <ScrollView
           style={styles.topButtonsContainer}
@@ -149,17 +175,14 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
           {aspects.map((aspect, index) => (
             <TouchableOpacity
               key={index}
-              style={[
-                styles.topButton,
-                selectedAspect === aspect && styles.selectedTopButton
-              ]}
+              style={[styles.topButton, selectedAspect === aspect && styles.selectedTopButton]}
               onPress={() => setSelectedAspect(aspect)}
             >
               <Text style={styles.topButtonText}>{aspect}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
-        <ScrollView>
+        <ScrollView style={styles.scrollViewContent}>
           <Text style={styles.contentText}>{contentMap[selectedAspect]}</Text>
         </ScrollView>
       </View>
@@ -173,24 +196,19 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
       </View>
     );
   }
+
   return (
     <View style={styles.libContainer}>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={[
-            styles.typeButton,
-            selectedType === 'dog' && styles.selectedTypeButtonDog
-          ]}
+          style={[styles.typeButton, selectedType === 'dog' && styles.selectedTypeButtonDog]}
           onPress={() => handleTypeSelect('dog')}
         >
           <Text style={styles.buttonText}>Dog</Text>
         </TouchableOpacity>
         <View style={styles.verticalLine} />
         <TouchableOpacity
-          style={[
-            styles.typeButton,
-            selectedType === 'cat' && styles.selectedTypeButtonCat
-          ]}
+          style={[styles.typeButton, selectedType === 'cat' && styles.selectedTypeButtonCat]}
           onPress={() => handleTypeSelect('cat')}
         >
           <Text style={styles.buttonText}>Cat</Text>
@@ -206,7 +224,7 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
         />
       </View>
       {isSearching && (
-        <View style={styles.breedListContainer}>
+        <View style={[styles.breedListContainer, { zIndex: 1 }]}>
           <ScrollView style={styles.breedList}>
             {filteredBreeds.map(breed => (
               <TouchableOpacity key={breed.id} style={styles.breedBlock} onPress={() => handleBreedSelect(breed)}>
@@ -218,15 +236,35 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
       )}
       {selectedType && !isSearching && !selectedAspect && renderAspectButtons()}
       {selectedAspect && renderAspectContent()}
+      {/* Modal Implementation */}
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>Please select a breed first!</Text>
+            <TouchableOpacity onPress={() => setIsModalVisible(false)} style={styles.modalButton}>
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       {/* Navigation Bar (Footer) */}
       <NavigationBar
         activeScreen={currentScreen}
         directToProfile={directToProfile}
+        directToNotebook={directToNotebook}
         directToLibrary={directToLibrary}
+        directToForum={directToForum}
+        directToHome={directToHome}
       />
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   libContainer: {
     flex: 1,
@@ -327,7 +365,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   contentContainer: {
+    flex: 1,
     padding: 16,
+    position: 'absolute',
+    width: '100%',
+    height: '75%',
   },
   headerContainer: {
     flexDirection: 'row',
@@ -338,13 +380,15 @@ const styles = StyleSheet.create({
     borderRadius: 17,
   },
   headerText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginLeft: 8,
   },
   topButtonsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    marginTop: 10,
+    maxHeight: 60,
   },
   topButton: {
     padding: 10,
@@ -361,8 +405,41 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
+  scrollViewContent: {
+    flex: 1,
+  },
   contentText: {
     fontSize: 16,
-    marginTop: 20,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 17,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#F26419',
+    borderRadius: 17,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    color: 'white',
+    textAlign: 'center',
   },
 });
