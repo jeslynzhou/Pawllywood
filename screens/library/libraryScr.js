@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions, PanResponder } from 'react-native';
 import { getDocs, collection } from 'firebase/firestore';
 import { db } from '../../initializeFB';
 import NavigationBar from '../../components/navigationBar';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function LibraryScreen({ directToProfile, directToLibrary }) {
   const [currentScreen, setCurrentScreen] = useState('Library');
@@ -12,6 +13,7 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
   const [selectedType, setSelectedType] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [selectedBreed, setSelectedBreed] = useState(null);
+  const [selectedAspect, setSelectedAspect] = useState(null);
 
   useEffect(() => {
     const fetchBreeds = async () => {
@@ -23,6 +25,15 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
             id: doc.id,
             breed: doc.data().breed,
             type: doc.data()['dog/cat'],
+            about: doc.data().about,
+            health: doc.data().health,
+            grooming: doc.data().grooming,
+            exercise: doc.data().exercise,
+            training: doc.data().training,
+            nutrition: doc.data().nutrition,
+            appearance_and_colours: doc.data().appearance,
+            personality: doc.data().personality,
+            care: doc.data().care,
           });
         });
         setBreeds(breedsList);
@@ -48,6 +59,15 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
     setSelectedBreed(breed);
     setSearchQuery(breed.breed);
     setIsSearching(false);
+    setSelectedAspect(null);
+  };
+
+  const handleTypeSelect = (type) => {
+    setSelectedType(type);
+    setSearchQuery('');
+    setSelectedBreed(null);
+    setSelectedAspect(null);
+    setIsSearching(false);
   };
 
   const renderAspectButtons = () => {
@@ -67,14 +87,13 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
         { name: 'Care', image: require('../../assets/library_images/careCats.png') },
         { name: 'Health', image: require('../../assets/library_images/healthCats.png') },
       ];
-
     return (
       <View style={styles.aspectButtonContainer}>
         {aspects.map((aspect, index) => (
           <TouchableOpacity
             key={index}
             style={styles.aspectButton}
-            onPress={() => directToOtherPage(aspect.name)}
+            onPress={() => setSelectedAspect(aspect.name)}
           >
             <Image source={aspect.image} style={{ width: imageL, height: imageL, marginBottom: 5 }} />
             <Text style={styles.buttonText}>{aspect.name}</Text>
@@ -84,9 +103,67 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
     );
   };
 
-  const directToOtherPage = (aspect) => {
-    // Replace this with actual navigation logic
-    console.log(`Navigating to ${aspect} page of ${selectedBreed.breed}`);
+  const renderAspectContent = () => {
+    const contentMap = {
+      'About': selectedBreed.about,
+      'Health': selectedBreed.health,
+      'Grooming': selectedBreed.grooming,
+      'Exercise': selectedBreed.exercise,
+      'Training': selectedBreed.training,
+      'Nutrition': selectedBreed.nutrition,
+      'Appearance and Colours': selectedBreed.appearance_and_colours,
+      'Personality': selectedBreed.personality,
+      'Care': selectedBreed.care,
+    };
+
+    const aspects = selectedType === 'dog'
+      ? ['About', 'Health', 'Grooming', 'Exercise', 'Training', 'Nutrition']
+      : ['About', 'Appearance and Colours', 'Personality', 'Care', 'Health'];
+
+    const aspectIndex = aspects.indexOf(selectedAspect);
+
+    const panResponder = PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 20,
+      onPanResponderRelease: (evt, gestureState) => {
+        if (gestureState.dx > 20 && aspectIndex > 0) {
+          setSelectedAspect(aspects[aspectIndex - 1]);
+        } else if (gestureState.dx < -20 && aspectIndex < aspects.length - 1) {
+          setSelectedAspect(aspects[aspectIndex + 1]);
+        }
+      },
+    });
+
+    return (
+      <View style={styles.contentContainer} {...panResponder.panHandlers}>
+        <View style={styles.headerContainer}>
+          <TouchableOpacity style={styles.returnButton} onPress={() => setSelectedAspect(null)}>
+            <Ionicons name="arrow-back-outline" size={24} color='#000000' />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>{selectedBreed.breed} - {selectedAspect}</Text>
+        </View>
+        <ScrollView
+          style={styles.topButtonsContainer}
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+        >
+          {aspects.map((aspect, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.topButton,
+                selectedAspect === aspect && styles.selectedTopButton
+              ]}
+              onPress={() => setSelectedAspect(aspect)}
+            >
+              <Text style={styles.topButtonText}>{aspect}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+        <ScrollView>
+          <Text style={styles.contentText}>{contentMap[selectedAspect]}</Text>
+        </ScrollView>
+      </View>
+    );
   };
 
   if (loading) {
@@ -96,7 +173,6 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
       </View>
     );
   }
-
   return (
     <View style={styles.libContainer}>
       <View style={styles.buttonContainer}>
@@ -105,7 +181,7 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
             styles.typeButton,
             selectedType === 'dog' && styles.selectedTypeButtonDog
           ]}
-          onPress={() => setSelectedType('dog')}
+          onPress={() => handleTypeSelect('dog')}
         >
           <Text style={styles.buttonText}>Dog</Text>
         </TouchableOpacity>
@@ -115,7 +191,7 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
             styles.typeButton,
             selectedType === 'cat' && styles.selectedTypeButtonCat
           ]}
-          onPress={() => setSelectedType('cat')}
+          onPress={() => handleTypeSelect('cat')}
         >
           <Text style={styles.buttonText}>Cat</Text>
         </TouchableOpacity>
@@ -140,7 +216,8 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
           </ScrollView>
         </View>
       )}
-      {selectedType && !isSearching && renderAspectButtons()}
+      {selectedType && !isSearching && !selectedAspect && renderAspectButtons()}
+      {selectedAspect && renderAspectContent()}
       {/* Navigation Bar (Footer) */}
       <NavigationBar
         activeScreen={currentScreen}
@@ -150,7 +227,6 @@ export default function LibraryScreen({ directToProfile, directToLibrary }) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   libContainer: {
     flex: 1,
@@ -237,7 +313,6 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderWidth: 1,
     borderRadius: 17,
-    marginVertical: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -250,5 +325,44 @@ const styles = StyleSheet.create({
     width: 1,
     height: '100%',
     backgroundColor: 'black',
+  },
+  contentContainer: {
+    padding: 16,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  returnButton: {
+    padding: 10,
+    borderRadius: 17,
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  topButtonsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  topButton: {
+    padding: 10,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderRadius: 17,
+    margin: 5,
+  },
+  selectedTopButton: {
+    backgroundColor: '#F26419',
+  },
+  topButtonText: {
+    fontSize: 14,
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  contentText: {
+    fontSize: 16,
+    marginTop: 20,
   },
 });

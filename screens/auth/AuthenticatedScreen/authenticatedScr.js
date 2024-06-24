@@ -1,35 +1,54 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 
-const AuthenticatedScreen = ({ user, navigateToProfile }) => {
+import { db } from '../../../initializeFB';
+import { doc, getDoc } from 'firebase/firestore';
+
+const AuthenticatedScreen = ({ user, directToHome }) => {
+  const [userData, setUserData] = useState(null);
+
   useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setUserData(docSnap.data());
+        } else {
+          console.log('No such document!');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error.message);
+      }
+    };
+
+    fetchUserData();
+
     const timer = setTimeout(() => {
-      navigateToProfile();
-    }, 2000); // Redirect after 2 seconds
+      directToHome();
+    }, 2000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [user]);
 
   const { width, height } = Dimensions.get('window');
-  // title
-  const fontSize = height * 0.055; // size of title
-  const marginVertical = fontSize * 0.05; // vertical margin of title to be 5% of font size
-  // email text
-  const usernameFontSize = height * 0.025; // size of email text (adjusted for more appropriate size)
-  // image
-  const imageSize = height * 0.58; // size of image (dogs and cats)
+  const fontSize = height * 0.055;
+  const marginVertical = fontSize * 0.05;
+  const usernameFontSize = height * 0.025;
+  const imageSize = height * 0.58;
   const imagePosition = {
     bottom: 0.01 * imageSize,
     left: -0.15 * width,
-  }; // position of image
-  // title container
+  };
   const titleCmarginTop = height * 0.08;
 
   return (
     <View style={styles.container}>
       <View style={[styles.titleContainer, { marginTop: titleCmarginTop }]}>
         <Text style={[styles.title, { fontSize, lineHeight: fontSize, marginVertical }]}>Welcome</Text>
-        <Text style={[styles.usernameText, { fontSize: usernameFontSize, lineHeight: usernameFontSize, marginVertical }]}>{user.username}</Text>
+        <Text style={[styles.usernameText, { fontSize: usernameFontSize, lineHeight: usernameFontSize, marginVertical }]}>
+          {userData && userData.username}
+        </Text>
       </View>
       <Image
         source={require('../../../assets/app_images/authenticatedScr_Background.png')}
@@ -43,19 +62,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FCF9D9',
-    justifyContent: 'flex-start', // Align content to the top
-    alignItems: 'flex-start', // Align content to the left
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
     padding: 20,
   },
   titleContainer: {
     marginTop: '3%',
-    marginLeft: 5, // No margin from the left
+    marginLeft: 5,
   },
   title: {
     fontWeight: 'bold',
   },
   usernameText: {
-    marginTop: 5, // Space between title and email
+    marginTop: 5,
   },
   image: {
     position: 'absolute',

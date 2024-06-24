@@ -1,30 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import NavigationBar from '../../components/navigationBar';
-import EditProfileScreen from './editProfileScr';
-import LogoutModal from './logoutModal';
+import { db, auth } from '../../../initializeFB';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-export default function ProfileScreen({ username: initialUsername, handleSignOut, directToLibrary }) {
-  const [profileImage, setProfileImage] = useState(require('../../assets/default-profile-picture.png'));
-  const [username, setUsername] = useState(initialUsername);
-  const [description, setDescription] = useState('');
+import NavigationBar from '../../../components/navigationBar';
+import EditProfileScreen from './editProfileScr';
+import LogoutModal from '../components/logoutModal';
+
+export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
+  const [userProfile, setUserProfile] = useState({
+    username: '',
+    picture: null,
+    description: '',
+  });
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const docRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            setUserProfile(docSnap.data());
+          } else {
+            console.log('No such document!');
+          }
+        } else {
+          console.log('No user is currently signed in.');
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error.message);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleEditProfile = () => {
     setCurrentScreen('EditProfile');
   };
 
-  const updateProfile = (newUsername, newProfileImage, newDescription) => {
-    setUsername(newUsername);
-    setProfileImage(newProfileImage);
-    setDescription(newDescription);
-    setCurrentScreen('Profile');
+  const handleUpdateProfile = async (updatedProfile) => {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        await setDoc(userRef, updatedProfile, { merge: true });
+        setUserProfile(updatedProfile);
+        setCurrentScreen('Profile');
+        console.log('Profile updated successfully!');
+      } else {
+        console.log('No user is currently signed in.');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error.message);
+    }
   };
 
-  const closeEditProfile = () => {
+  const closeEditUserProfile = () => {
     setCurrentScreen('Profile');
   };
 
@@ -53,14 +92,14 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
             <View style={styles.profileInfoContent}>
               {/* Profile Picture */}
               <View style={styles.profileImageContainer}>
-                <Image source={profileImage} style={styles.profileImage} />
+                <Image source={userProfile.picture} style={styles.profileImage} />
               </View>
 
               {/* Username and Description */}
               <View style={styles.profileTextContainer}>
                 <View style={styles.usernameRow}>
-                  <Text style={styles.usernameInput}>{username}</Text>
-                  <Text style={styles.descriptionInput}>{description}</Text>
+                  <Text style={styles.usernameInput}>{userProfile.username}</Text>
+                  <Text style={styles.descriptionInput}>{userProfile.description}</Text>
                 </View>
                 <View style={styles.functionButtonBox}>
                   <TouchableOpacity onPress={handleEditProfile} style={styles.functionButton}>
@@ -80,7 +119,7 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
             <View style={styles.featureBox}>
               <TouchableOpacity onPress={() => console.log('Navigate to My Pets')}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="paw-outline" size={24} color="black" />
+                  <Ionicons name="paw-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>My Pets</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -90,7 +129,7 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
 
               <TouchableOpacity onPress={() => console.log('Navigate to My Posts')}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="document-outline" size={24} color="black" />
+                  <Ionicons name="document-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>My Posts</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -101,7 +140,7 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
             <View style={styles.featureBox}>
               <TouchableOpacity onPress={() => console.log('Navigate to Friends')}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="people-outline" size={24} color="black" />
+                  <Ionicons name="people-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>Friends</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -111,7 +150,7 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
 
               <TouchableOpacity onPress={() => console.log('Navigate to Message')}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="chatbubble-ellipses-outline" size={24} color="black" />
+                  <Ionicons name="chatbubble-ellipses-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>Message</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -121,7 +160,7 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
 
               <TouchableOpacity onPress={() => console.log('Navigate to Notification')}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="notifications-outline" size={24} color="black" />
+                  <Ionicons name="notifications-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>Notification</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -131,7 +170,7 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
 
               <TouchableOpacity onPress={openLogoutModal}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="log-out-outline" size={24} color="black" />
+                  <Ionicons name="log-out-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>Log out</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -142,24 +181,25 @@ export default function ProfileScreen({ username: initialUsername, handleSignOut
           {/* Navigation Bar */}
           <NavigationBar
             activeScreen={currentScreen}
+            directToNotebook={directToNotebook}
+            directToHome={directToHome}
             directToLibrary={directToLibrary}
+            directToForum={directToForum}
           />
         </View>
+      )}
+      {currentScreen === 'EditProfile' && (
+        <EditProfileScreen
+          userProfile={userProfile}
+          setUserProfile={handleUpdateProfile}
+          closeEditUserProfile={closeEditUserProfile}
+        />
       )}
       <LogoutModal
         visible={showLogoutModal}
         onClose={closeLogoutModal}
         onLogout={handleLogout}
       />
-      {currentScreen === 'EditProfile' && (
-        <EditProfileScreen
-          username={username}
-          profileImage={profileImage}
-          description={description}
-          updateProfile={updateProfile}
-          closeEditProfile={closeEditProfile}
-        />
-      )}
     </>
   );
 };
@@ -191,6 +231,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
+    borderWidth: 1,
   },
   profileImage: {
     width: '100%',
@@ -240,15 +281,14 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     borderWidth: 1,
     borderColor: '#000000',
-    marginBottom: 10,
+    marginBottom: 15,
     backgroundColor: '#FFFFFF',
   },
   featurePanel: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    padding: 10,
   },
   featurePanelText: {
     marginLeft: 10,
