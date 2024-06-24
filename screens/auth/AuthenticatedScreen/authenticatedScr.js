@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
+
 import { db } from '../../../initializeFB';
 import { doc, getDoc } from 'firebase/firestore';
 
 const AuthenticatedScreen = ({ user, directToHome }) => {
   const [userData, setUserData] = useState(null);
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {

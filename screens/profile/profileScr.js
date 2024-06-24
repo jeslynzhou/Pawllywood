@@ -13,7 +13,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
   const [currentScreen, setCurrentScreen] = useState('Profile');
   const [userProfile, setUserProfile] = useState({
     username: '',
-    picture: require('../../assets/profile_images/default_profile_picture.png'),
+    picture: null,
     description: '',
   });
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -119,7 +119,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
             <View style={styles.featureBox}>
               <TouchableOpacity onPress={() => console.log('Navigate to My Pets')}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="paw-outline" size={24} color="black" />
+                  <Ionicons name="paw-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>My Pets</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -129,7 +129,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
 
               <TouchableOpacity onPress={() => console.log('Navigate to My Posts')}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="document-outline" size={24} color="black" />
+                  <Ionicons name="document-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>My Posts</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -140,7 +140,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
             <View style={styles.featureBox}>
               <TouchableOpacity onPress={() => console.log('Navigate to Friends')}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="people-outline" size={24} color="black" />
+                  <Ionicons name="people-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>Friends</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -150,7 +150,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
 
               <TouchableOpacity onPress={() => console.log('Navigate to Message')}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="chatbubble-ellipses-outline" size={24} color="black" />
+                  <Ionicons name="chatbubble-ellipses-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>Message</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -160,7 +160,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
 
               <TouchableOpacity onPress={() => console.log('Navigate to Notification')}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="notifications-outline" size={24} color="black" />
+                  <Ionicons name="notifications-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>Notification</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -170,7 +170,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
 
               <TouchableOpacity onPress={openLogoutModal}>
                 <View style={styles.featurePanel}>
-                  <Ionicons name="log-out-outline" size={24} color="black" />
+                  <Ionicons name="log-out-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>Log out</Text>
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
@@ -288,8 +288,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    padding: 10,
   },
   featurePanelText: {
     marginLeft: 10,

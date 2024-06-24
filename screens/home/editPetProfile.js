@@ -60,7 +60,7 @@ export default function EditPetProfileScreen({ petProfile, setPetProfile, closeE
             {/* Header */}
             <View style={styles.headerContainer}>
                 <TouchableOpacity onPress={closeEditPetProfile} style={styles.backButton}>
-                    <Ionicons name="arrow-back-outline" size={24} color="black" />
+                    <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>Edit Pet Profile</Text>
             </View>

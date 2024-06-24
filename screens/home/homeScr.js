@@ -9,7 +9,7 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
     const [currentScreen, setCurrentScreen] = useState('Home');
     const [petProfile, setPetProfile] = useState({
         name: '',
-        picture: require('../../assets/home_images/default_pet_image_square.png'),
+        picture: null,
         breed: '',
         birthDate: '',
         age: '',
