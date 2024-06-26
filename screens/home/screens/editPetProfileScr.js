@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 
 import BirthDateModal from '../components/birthDateModal';
 
-
 export default function EditPetProfileScreen({ petProfile, setPetProfile, closeEditPetProfile }) {
     const [editedPetProfile, setEditedPetProfile] = useState({ ...petProfile });
     const [profileImage, setProfileImage] = useState(petProfile.profileImage);
@@ -167,7 +166,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         justifyContent: 'center',
         alignSelf: 'center',
-        marginTop: 21,
+        marginTop: 15,
     },
     profileImage: {
         width: '100%',
