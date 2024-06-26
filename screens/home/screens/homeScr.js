@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, Touchable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-swiper';
 
@@ -8,6 +8,7 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 import NavigationBar from '../../../components/navigationBar';
 import EditPetProfileScreen from './editPetProfileScr';
+import AddPetScreen from '../../profile/screens/addPetScr';
 
 export default function HomeScreen({ directToProfile, directToNotebook, directToLibrary, directToForum }) {
     const [currentScreen, setCurrentScreen] = useState('Home');
@@ -83,6 +84,14 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
         }
     };
 
+    const handleAddingPets = () => {
+        setCurrentScreen('AddPet');
+    };
+
+    const closeAddPet = () => {
+        setCurrentScreen('Home');
+    };
+
     return (
         <>
             {currentScreen === 'Home' && (
@@ -153,13 +162,18 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                     </View >
 
                     {/* Navigation Bar */}
-                    < NavigationBar
+                    <NavigationBar
                         activeScreen={currentScreen}
                         directToProfile={directToProfile}
                         directToNotebook={directToNotebook}
                         directToLibrary={directToLibrary}
                         directToForum={directToForum}
                     />
+
+                    {/* Add Pet Button */}
+                    <TouchableOpacity style={styles.addPetButton} onPress={handleAddingPets}>
+                        <Ionicons name="add-circle" size={70} color='rgba(242, 100, 25, 0.7)' />
+                    </TouchableOpacity>
                 </View >
             )}
             {currentScreen === 'EditPetProfile' && (
@@ -168,6 +182,11 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                     updatePetProfile={updatePetProfile}
                     setPetProfile={setPetProfilesData}
                     closeEditPetProfile={closeEditPetProfile}
+                />
+            )}
+            {currentScreen === 'AddPet' && (
+                <AddPetScreen
+                    closeAddPet={closeAddPet}
                 />
             )}
         </>
@@ -269,5 +288,12 @@ const styles = StyleSheet.create({
     },
     input: {
         fontSize: 16,
+    },
+    addPetButton: {
+        position: 'absolute',
+        bottom: 68,
+        right: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });
