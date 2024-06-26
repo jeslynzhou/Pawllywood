@@ -4,11 +4,13 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
 import BirthDateModal from '../components/birthDateModal';
+import GenderOptionsModal from '../../profile/components/genderOptionsModal';
 
 export default function EditPetProfileScreen({ petProfile, updatePetProfile, closeEditPetProfile }) {
     const [editedPetProfile, setEditedPetProfile] = useState({ ...petProfile });
     const [profileImage, setProfileImage] = useState(petProfile.profileImage);
     const [showBirthDateModal, setShowBirthDateModal] = useState(false);
+    const [showGenderOptionsModal, setShowGenderOptionsModal] = useState(false);
 
     useEffect(() => {
         setProfileImage(petProfile.picture);
@@ -83,6 +85,21 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
 
     };
 
+    const openGenderOptionsModal = () => {
+        setShowGenderOptionsModal(true);
+    };
+
+    const closeGenderOptionsModal = () => {
+        setShowGenderOptionsModal(false);
+    };
+
+    const handleGenderSelect = (selectedGender) => {
+        setEditedPetProfile({
+            ...editedPetProfile,
+            gender: selectedGender,
+        });
+    };
+
     return (
         <View style={styles.editProfileContainer}>
             {/* Header */}
@@ -124,7 +141,7 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
                 {/* Birth Date */}
                 <Text style={styles.labels}>Birth Date</Text>
                 <TouchableOpacity onPress={openBirthDateModal} style={styles.input}>
-                    <View style={styles.dateTextContainer}>
+                    <View style={styles.inputTextContainer}>
                         <Text style={[{ color: editedPetProfile.birthDate ? '#000000' : '#6E6E6E' }]}>
                             {editedPetProfile.birthDate || "Select your pet's birthdate"}
                         </Text>
@@ -142,12 +159,13 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
 
                 {/* Gender */}
                 <Text style={styles.labels}>Gender</Text>
-                <TextInput
-                    style={styles.input}
-                    value={editedPetProfile.gender}
-                    onChangeText={(text) => setEditedPetProfile({ ...editedPetProfile, gender: text })}
-                    placeholder="Type your pet's gender here"
-                />
+                <TouchableOpacity onPress={openGenderOptionsModal} style={styles.input}>
+                    <View style={styles.inputTextContainer}>
+                        <Text style={[{ color: editedPetProfile.gender ? '#000000' : '#6E6E6E' }]}>
+                            {editedPetProfile.gender || "Select your pet's gender"}
+                        </Text>
+                    </View>
+                </TouchableOpacity>
             </View>
 
             {/* Save button */}
@@ -160,6 +178,12 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
                 visible={showBirthDateModal}
                 onDateSelect={handleDateSelect}
                 onClose={closeBirthDateModal}
+            />
+            {/* Gender Modal */}
+            <GenderOptionsModal
+                visible={showGenderOptionsModal}
+                onSelectedGender={handleGenderSelect}
+                onClose={closeGenderOptionsModal}
             />
         </View>
     );
@@ -236,7 +260,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#FFFFFF',
     },
-    dateTextContainer: {
+    inputTextContainer: {
         flex: 1,
         justifyContent: 'center',
     },

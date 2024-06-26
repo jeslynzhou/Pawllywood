@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions, Touchable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { collection, addDoc } from 'firebase/firestore';
 import { db, auth } from '../../../initializeFB';
 
 import BirthDateModal from '../../home/components/birthDateModal';
+import GenderOptionsModal from '../components/genderOptionsModal';
 
 export default function AddPetScreen({ closeAddPet }) {
     const [showBirthDateModal, setShowBirthDateModal] = useState(false);
     const [showAdoptedDateModal, setShowAdoptedDateModal] = useState(false);
+    const [showGenderOptionsModal, setShowGenderOptionsModal] = useState(false);
     const { height } = Dimensions.get('window');
     const imageSize = height * 0.2;
 
@@ -90,6 +92,21 @@ export default function AddPetScreen({ closeAddPet }) {
         }
     };
 
+    const openGenderOptionsModal = () => {
+        setShowGenderOptionsModal(true);
+    };
+
+    const closeGenderOptionsModal = () => {
+        setShowGenderOptionsModal(false);
+    };
+
+    const handleGenderSelect = (selectedGender) => {
+        setPetData({
+            ...petData,
+            gender: selectedGender,
+        });
+    };
+
 
     return (
         <View style={styles.addPetContainer}>
@@ -132,7 +149,7 @@ export default function AddPetScreen({ closeAddPet }) {
                 {/* Birth Date */}
                 <Text style={styles.labels}>Birth Date</Text>
                 <TouchableOpacity onPress={openBirthDateModal} style={styles.input}>
-                    <View style={styles.dateTextContainer}>
+                    <View style={styles.inputTextContainer}>
                         <Text style={[{ color: petData.birthDate ? '#000000' : '#6E6E6E' }]}>
                             {petData.birthDate || "Select your pet's birthday"}
                         </Text>
@@ -150,17 +167,18 @@ export default function AddPetScreen({ closeAddPet }) {
 
                 {/* Gender */}
                 <Text style={styles.labels}>Gender</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Gender"
-                    value={petData.gender}
-                    onChangeText={(text) => setPetData({ ...petData, gender: text })}
-                />
+                <TouchableOpacity onPress={openGenderOptionsModal} style={styles.input}>
+                    <View style={styles.inputTextContainer}>
+                        <Text style={[{ color: petData.gender ? '#000000' : '#6E6E6E' }]}>
+                            {petData.gender || "Select your pet's gender"}
+                        </Text>
+                    </View>
+                </TouchableOpacity>
 
                 {/* Adopted Date */}
                 <Text style={styles.labels}>Adopted Date</Text>
                 <TouchableOpacity onPress={openAdoptedDateModal} style={styles.input}>
-                    <View style={styles.dateTextContainer}>
+                    <View style={styles.inputTextContainer}>
                         <Text style={[{ color: petData.adoptedDate ? '#000000' : '#6E6E6E' }]}>
                             {petData.adoptedDate || "Select your pet's adopted date"}
                         </Text>
@@ -189,6 +207,13 @@ export default function AddPetScreen({ closeAddPet }) {
                 onDateSelect={(date) => handleDateSelect(date, 'adoptedDate')}
                 onClose={closeAdoptedDateModal}
                 dateType="adoptedDate"
+            />
+
+            {/* Gender Modal */}
+            <GenderOptionsModal
+                visible={showGenderOptionsModal}
+                onSelectedGender={handleGenderSelect}
+                onClose={closeGenderOptionsModal}
             />
         </View>
     );
@@ -265,7 +290,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#FFFFFF',
     },
-    dateTextContainer: {
+    inputTextContainer: {
         flex: 1,
         justifyContent: 'center',
     },
