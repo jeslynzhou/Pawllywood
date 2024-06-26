@@ -7,6 +7,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import NavigationBar from '../../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
+import AddPetScreen from './addPetScr';
 import LogoutModal from '../components/logoutModal';
 
 export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
@@ -68,7 +69,11 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
   };
 
   const handleAddingPets = () => {
-    console.log('Adding pet!');
+    setCurrentScreen('AddPet');
+  };
+
+  const closeAddPet = () => {
+    setCurrentScreen('Profile');
   };
 
   const openLogoutModal = () => {
@@ -193,6 +198,11 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
           userProfile={userProfile}
           setUserProfile={handleUpdateProfile}
           closeEditUserProfile={closeEditUserProfile}
+        />
+      )}
+      {currentScreen === 'AddPet' && (
+        <AddPetScreen
+          closeAddPet={closeAddPet}
         />
       )}
       <LogoutModal

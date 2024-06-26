@@ -8,7 +8,6 @@ import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
 import LogInScreen from './logIn';
 import SignUpScreen from './signUp';
 
-
 const AuthScreen = ({
   username, setUsername,
   email, setEmail,
