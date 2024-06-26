@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions, Touchable } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { collection, addDoc } from 'firebase/firestore';
@@ -107,7 +107,6 @@ export default function AddPetScreen({ closeAddPet }) {
         });
     };
 
-
     return (
         <View style={styles.addPetContainer}>
             {/* Header */}
@@ -129,21 +128,21 @@ export default function AddPetScreen({ closeAddPet }) {
                 </TouchableOpacity>
 
                 {/* Pet name */}
-                <Text style={styles.labels}>Name</Text>
+                <Text style={styles.labels}>Pet Name</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Name"
                     value={petData.name}
                     onChangeText={(text) => setPetData({ ...petData, name: text })}
+                    placeholder="Type your pet's name here"
                 />
 
                 {/* Breed */}
                 <Text style={styles.labels}>Breed</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Breed"
                     value={petData.breed}
                     onChangeText={(text) => setPetData({ ...petData, breed: text })}
+                    placeholder="Type your pet's breed here"
                 />
 
                 {/* Birth Date */}
@@ -160,9 +159,9 @@ export default function AddPetScreen({ closeAddPet }) {
                 <Text style={styles.labels}>Age</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Age"
                     value={petData.age}
                     onChangeText={(text) => setPetData({ ...petData, age: text })}
+                    placeholder="Type your pet's age here"
                 />
 
                 {/* Gender */}
