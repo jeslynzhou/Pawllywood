@@ -54,7 +54,33 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
     };
 
     const handleDateSelect = (date) => {
-        setEditedPetProfile({ ...editedPetProfile, birthDate: date });
+        try {
+            const dateParts = date.split('/');
+            const selectedDay = parseInt(dateParts[0], 10);
+            const selectedMonth = parseInt(dateParts[1], 10);
+            const selectedYear = parseInt(dateParts[2], 10);
+
+            const selectedDate = new Date(selectedYear, selectedMonth - 1, selectedDay);
+            const today = new Date();
+
+            // Calculate age
+            let age = today.getFullYear() - selectedDate.getFullYear();
+            const monthDiff = today.getMonth() - selectedDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < selectedDate.getDate())) {
+                age--;
+            }
+
+            setEditedPetProfile({
+                ...editedPetProfile,
+                birthDate: date,
+                age: age.toString(),
+            });
+
+            closeBirthDateModal();
+        } catch (error) {
+            console.error('Error formatting date:', error);
+        }
+
     };
 
     return (

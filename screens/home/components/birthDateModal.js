@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import DatePicker from 'react-native-modern-datepicker';
 
-export default function BirthDateModal({ initialDate, visible, onDateSelect, onClose }) {
+export default function BirthDateModal({ initialDate, visible, onDateSelect, dateType, onClose }) {
     const [selectedDate, setSelectedDate] = useState(initialDate);
     const [currentDate, setCurrentDate] = useState(initialDate);
 
@@ -21,7 +21,7 @@ export default function BirthDateModal({ initialDate, visible, onDateSelect, onC
 
             const formattedDate = `${parsedDate.getDate().toString().padStart(2, '0')}/${(parsedDate.getMonth() + 1).toString().padStart(2, '0')}/${parsedDate.getFullYear()}`;
 
-            onDateSelect(formattedDate);
+            onDateSelect(formattedDate, dateType);
             onClose();
 
         } catch (error) {
