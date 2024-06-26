@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import BirthDateModal from '../components/birthDateModal';
 
-export default function EditPetProfileScreen({ petProfile, setPetProfile, closeEditPetProfile }) {
+export default function EditPetProfileScreen({ petProfile, updatePetProfile, closeEditPetProfile }) {
     const [editedPetProfile, setEditedPetProfile] = useState({ ...petProfile });
     const [profileImage, setProfileImage] = useState(petProfile.profileImage);
     const [showBirthDateModal, setShowBirthDateModal] = useState(false);
@@ -15,10 +15,14 @@ export default function EditPetProfileScreen({ petProfile, setPetProfile, closeE
         setEditedPetProfile({ ...petProfile });
     }, [petProfile]);
 
-    const handleSaveChanges = () => {
-        setPetProfile(editedPetProfile);
-        closeEditPetProfile();
-        console.log('You have saved changes successfully!');
+    const handleSaveChanges = async () => {
+        try {
+            await updatePetProfile(editedPetProfile);
+            closeEditPetProfile();
+            console.log('Pet Profile updated successfully!');
+        } catch (error) {
+            console.error('Error saving pet changes:', error.message);
+        }
     };
 
     const handleImagePicker = async () => {
