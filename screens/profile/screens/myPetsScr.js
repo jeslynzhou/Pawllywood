@@ -1,35 +1,86 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { Text, View, TouchableOpacity, Image, StyleSheet, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 export default function MyPetsScreen({ closeMyPetsScreen }) {
     const [petProfilesData, setPetProfilesData] = useState([]);
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [selectedPetsForDelete, setSelectedPetsForDelete] = useState([]);
+
+    async function fetchPetData() {
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
+                const querySnapShot = await getDocs(petsCollectionRef);
+                const fetchedPetProfiles = querySnapShot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setPetProfilesData(fetchedPetProfiles);
+            } else {
+                console.log('User not authenticated.');
+            }
+        } catch (error) {
+            console.error('Error fetching pets profile:', error.message);
+        }
+    }
 
     useEffect(() => {
-        const fetchPetData = async () => {
-            try {
-                const user = auth.currentUser;
-                if (user) {
-                    const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
-                    const querySnapShot = await getDocs(petsCollectionRef);
-                    const fetchedPetProfiles = querySnapShot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    setPetProfilesData(fetchedPetProfiles);
-                } else {
-                    console.log('User not authenticated.');
-                }
-            } catch (error) {
-                console.error('Error fetching pets profile:', error.message);
-            }
-        };
-
         fetchPetData();
     }, []);
+
+    const openEditMyPetsList = () => {
+        setShowConfirmationModal(true);
+    };
+
+    const closeEditMyPetsList = () => {
+        setShowConfirmationModal(false);
+        setSelectedPetsForDelete([]);
+        setIsEditMode(false);
+    };
+
+    const confirmEditPetsList = () => {
+        setIsEditMode(true);
+        setShowConfirmationModal(false);
+    };
+
+    const toggleSelectPet = (petId) => {
+        const index = selectedPetsForDelete.indexOf(petId);
+        if (index === -1) {
+            setSelectedPetsForDelete([...selectedPetsForDelete, petId]);
+        } else {
+            const updatedSelectedPetsForDelete = [...selectedPetsForDelete];
+            updatedSelectedPetsForDelete.splice(index, 1);
+            setSelectedPetsForDelete(updatedSelectedPetsForDelete);
+        }
+    };
+
+    const deleteSelectedPets = async () => {
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const deletionPromises = selectedPetsForDelete.map(async (petId) => {
+                    const petDocRef = doc(db, 'users', user.uid, 'pets', petId);
+                    await deleteDoc(petDocRef);
+                });
+
+                await Promise.all(deletionPromises);
+
+                // Refresh after deletion
+                fetchPetData();
+                setSelectedPetsForDelete([]);
+                setIsEditMode(false); // Exit edit mode after deletion
+            }
+        } catch (error) {
+            console.error('Error deleting pets:', error.message);
+        }
+    };
+
 
     const viewPetProfile = (petId) => {
         console.log(`Viewing pet profile with ID: ${petId}`);
@@ -43,6 +94,9 @@ export default function MyPetsScreen({ closeMyPetsScreen }) {
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>My Pets</Text>
+                <TouchableOpacity onPress={openEditMyPetsList} style={styles.settingButton}>
+                    <Ionicons name="ellipsis-horizontal" size={24} color='#000000' />
+                </TouchableOpacity>
             </View>
             <View style={styles.contentContainer}>
                 {/* Ny Pets List */}
@@ -60,15 +114,61 @@ export default function MyPetsScreen({ closeMyPetsScreen }) {
                                 <Text style={[styles.text, { fontWeight: 'bold' }]}>{petProfile.name}</Text>
                                 <Text style={styles.text}>Adopted Date: {petProfile.adoptedDate}</Text>
                             </View>
-                            <View style={styles.navigateButtonContainer}>
-                                <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
-                            </View>
+                            {isEditMode && (
+                                <TouchableOpacity style={styles.checkboxContainer} onPress={() => toggleSelectPet(petProfile.id)}>
+                                    <Ionicons name={selectedPetsForDelete.includes(petProfile.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
+                                </TouchableOpacity>
+                            )}
+                            {!isEditMode && (
+                                <View style={styles.navigateButtonContainer}>
+                                    <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
+                                </View>
+                            )}
                         </TouchableOpacity>
                         {index !== petProfilesData.length - 1 && <View style={styles.separatorLine} />}
                     </View>
                 ))}
             </View>
-        </View>
+
+            {/* Confirmation Modal */}
+            <Modal
+                visible={showConfirmationModal}
+                transparent={true}
+                animationType='fade'
+                onRequestClose={() => setShowConfirmationModal(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Do you want to edit your pets list?</Text>
+                        <View style={styles.modalButtonContainer}>
+                            <View style={styles.separatorLine} />
+
+                            <TouchableOpacity onPress={confirmEditPetsList} style={styles.modalButton}>
+                                <Text style={[styles.modalButtonText, { fontWeight: 'bold', color: '#F26419' }]}>Yes</Text>
+                            </TouchableOpacity>
+
+                            <View style={styles.separatorLine} />
+
+                            <TouchableOpacity onPress={() => setShowConfirmationModal(false)} style={styles.modalButton}>
+                                <Text style={styles.modalButtonText}>No</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal >
+
+            {/* Buttons for Edit Mode */}
+            {isEditMode && (
+                <View style={styles.editModeButtonsContainer}>
+                    <TouchableOpacity onPress={closeEditMyPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                        <Text style={styles.editModeButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={deleteSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
+                        <Text style={styles.editModeButtonText}>Confirm Delete</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+        </View >
     );
 };
 
@@ -91,6 +191,9 @@ const styles = StyleSheet.create({
     headerText: {
         fontSize: 20,
         fontWeight: 'bold',
+    },
+    settingButton: {
+        marginLeft: 230,
     },
     contentContainer: {
         borderRadius: 17,
@@ -130,5 +233,60 @@ const styles = StyleSheet.create({
     },
     navigateButtonContainer: {
         alignSelf: 'center',
+    },
+    checkboxContainer: {
+        alignSelf: 'center',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 17,
+        width: '80%',
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginVertical: 20,
+    },
+    modalButtonContainer: {
+        flexDirection: 'column',
+        justifyContent: 'center',
+        width: '100%',
+    },
+    modalButton: {
+        padding: 10,
+        alignItems: 'center',
+    },
+    modalButtonText: {
+        fontSize: 16,
+    },
+    separatorLine: {
+        height: 1,
+        backgroundColor: '#CCCCCC',
+    },
+    editModeButtonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginTop: 16,
+    },
+    editModeButton: {
+        flex: 1,
+        height: 45,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 17,
+        paddingVertical: 12,
+        marginHorizontal: 3,
+    },
+    editModeButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
     },
 });
