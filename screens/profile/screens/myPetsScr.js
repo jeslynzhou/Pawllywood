@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Image, StyleSheet, FlatList } from 'react-native';
+import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
@@ -44,29 +44,30 @@ export default function MyPetsScreen({ closeMyPetsScreen }) {
                 </TouchableOpacity>
                 <Text style={styles.headerText}>My Pets</Text>
             </View>
-
-            {/* Ny Pets List */}
-            {petProfilesData.map(petProfile => (
-                <>
-                    <TouchableOpacity key={petProfile.id} style={styles.petInfoContainer} onPress={() => viewPetProfile(petProfile.id)}>
-                        <View style={styles.profileImageContainer}>
-                            <Image
-                                source={{ uri: petProfile.picture ? petProfile.picture.toString() : '../../../assets/home_images/default_pet_image_circle.png' }}
-                                style={styles.profileImage}
-                                resizeMode='cover'
-                            />
-                        </View>
-                        <View style={styles.nameAndAdoptedDateContainer}>
-                            <Text style={[styles.text, { fontWeight: 'bold' }]}>{petProfile.name}</Text>
-                            <Text style={styles.text}>Adopted Date: {petProfile.adoptedDate}</Text>
-                        </View>
-                        <View style={styles.navigateButtonContainer}>
-                            <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
-                        </View>
-                    </TouchableOpacity>
-                    <View style={styles.separatorLine} />
-                </>
-            ))}
+            <View style={styles.contentContainer}>
+                {/* Ny Pets List */}
+                {petProfilesData.map((petProfile, index) => (
+                    <View key={petProfile.id}>
+                        <TouchableOpacity key={petProfile.id} style={[styles.petInfoContainer]} onPress={() => viewPetProfile(petProfile.id)}>
+                            <View style={styles.profileImageContainer}>
+                                <Image
+                                    source={{ uri: petProfile.picture ? petProfile.picture.toString() : '../../../assets/home_images/default_pet_image_circle.png' }}
+                                    style={styles.profileImage}
+                                    resizeMode='cover'
+                                />
+                            </View>
+                            <View style={styles.nameAndAdoptedDateContainer}>
+                                <Text style={[styles.text, { fontWeight: 'bold' }]}>{petProfile.name}</Text>
+                                <Text style={styles.text}>Adopted Date: {petProfile.adoptedDate}</Text>
+                            </View>
+                            <View style={styles.navigateButtonContainer}>
+                                <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
+                            </View>
+                        </TouchableOpacity>
+                        {index !== petProfilesData.length - 1 && <View style={styles.separatorLine} />}
+                    </View>
+                ))}
+            </View>
         </View>
     );
 };
@@ -92,11 +93,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     contentContainer: {
-        justifyContent: 'flex-start',
         borderRadius: 17,
         borderWidth: 1,
         borderColor: '#000000',
-        marginBottom: 15,
         backgroundColor: '#FFFFFF',
     },
     petInfoContainer: {
