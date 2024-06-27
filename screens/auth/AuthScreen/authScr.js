@@ -8,7 +8,6 @@ import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
 import LogInScreen from './logIn';
 import SignUpScreen from './signUp';
 
-
 const AuthScreen = ({
   username, setUsername,
   email, setEmail,
@@ -44,13 +43,14 @@ const AuthScreen = ({
 
         const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
         await addDoc(petsCollectionRef, {
-          name: '',
+          name: 'Your default pet',
           picture: require('../../../assets/home_images/default_pet_image_square.png'),
           breed: '',
           birthDate: '',
           age: '',
           gender: '',
           notes: '',
+          adoptedDate: (new Date()).toString(),
         });
 
         setCurrentScreen('Authenticated');

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, Touchable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-swiper';
 
 import { db, auth } from '../../../initializeFB';
-import { doc, collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 import NavigationBar from '../../../components/navigationBar';
 import EditPetProfileScreen from './editPetProfileScr';
+import AddPetScreen from '../../profile/screens/addPetScr';
 
 export default function HomeScreen({ directToProfile, directToNotebook, directToLibrary, directToForum }) {
     const [currentScreen, setCurrentScreen] = useState('Home');
@@ -25,6 +26,18 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                         id: doc.id,
                         ...doc.data()
                     }));
+                    fetchedPetProfiles.sort((a, b) => {
+                        if (a.name && b.name) {
+                            return a.name.localeCompare(b.name);
+                        } else if (!a.name && !b.name) {
+                            return 0;
+                        } else if (!a.name) {
+                            return 1; // Place items with 'name' field before those without 'name'
+                        } else {
+                            return -1;
+                        }
+                    });
+
                     setPetProfilesData(fetchedPetProfiles);
                 } else {
                     console.lof('User not authenticated.');
@@ -46,6 +59,36 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
     };
 
     const closeEditPetProfile = () => {
+        setCurrentScreen('Home');
+    };
+
+    const updatePetProfile = async (updatedPetProfile) => {
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const petRef = doc(db, 'users', user.uid, 'pets', updatedPetProfile.id);
+                await updateDoc(petRef, updatedPetProfile);
+                const updatedPetProfiles = petProfilesData.map(petProfile => {
+                    if (petProfile.id === updatedPetProfile.id) {
+                        return updatedPetProfile;
+                    } else {
+                        return petProfile;
+                    }
+                });
+                setPetProfilesData(updatedPetProfiles);
+            } else {
+                console.log('User not authenticated.');
+            }
+        } catch (error) {
+            console.error('Error updating pet profile:', error.message);
+        }
+    };
+
+    const handleAddingPets = () => {
+        setCurrentScreen('AddPet');
+    };
+
+    const closeAddPet = () => {
         setCurrentScreen('Home');
     };
 
@@ -119,20 +162,31 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                     </View >
 
                     {/* Navigation Bar */}
-                    < NavigationBar
+                    <NavigationBar
                         activeScreen={currentScreen}
                         directToProfile={directToProfile}
                         directToNotebook={directToNotebook}
                         directToLibrary={directToLibrary}
                         directToForum={directToForum}
                     />
+
+                    {/* Add Pet Button */}
+                    <TouchableOpacity style={styles.addPetButton} onPress={handleAddingPets}>
+                        <Ionicons name="add-circle" size={70} color='rgba(242, 100, 25, 0.7)' />
+                    </TouchableOpacity>
                 </View >
             )}
             {currentScreen === 'EditPetProfile' && (
                 <EditPetProfileScreen
                     petProfile={petProfilesData[activePetIndex]}
+                    updatePetProfile={updatePetProfile}
                     setPetProfile={setPetProfilesData}
                     closeEditPetProfile={closeEditPetProfile}
+                />
+            )}
+            {currentScreen === 'AddPet' && (
+                <AddPetScreen
+                    closeAddPet={closeAddPet}
                 />
             )}
         </>
@@ -234,5 +288,12 @@ const styles = StyleSheet.create({
     },
     input: {
         fontSize: 16,
+    },
+    addPetButton: {
+        position: 'absolute',
+        bottom: 68,
+        right: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });
