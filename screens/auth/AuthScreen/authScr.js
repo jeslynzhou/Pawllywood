@@ -37,20 +37,20 @@ const AuthScreen = ({
         await setDoc(doc(db, 'users', user.uid), {
           username: username,
           email: email,
-          picture: '../../../assets/profile_images/default_profile_picture.png',
+          picture: require('../../../assets/profile_images/default_profile_picture.png'),
           description: ''
         });
 
         const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
         await addDoc(petsCollectionRef, {
-          name: '',
-          picture: '../../../assets/home_images/default_pet_image_square.png',
+          name: 'Your default pet',
+          picture: require('../../../assets/home_images/default_pet_image_square.png'),
           breed: '',
           birthDate: '',
           age: '',
           gender: '',
           notes: '',
-          adoptedDate: '',
+          adoptedDate: (new Date()).toString(),
         });
 
         setCurrentScreen('Authenticated');
