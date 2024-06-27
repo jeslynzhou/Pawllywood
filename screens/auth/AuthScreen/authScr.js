@@ -37,14 +37,14 @@ const AuthScreen = ({
         await setDoc(doc(db, 'users', user.uid), {
           username: username,
           email: email,
-          picture: require('../../../assets/profile_images/default_profile_picture.png'),
+          picture: '../../../assets/profile_images/default_profile_picture.png',
           description: ''
         });
 
         const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
         await addDoc(petsCollectionRef, {
           name: '',
-          picture: require('../../../assets/home_images/default_pet_image_square.png'),
+          picture: '../../../assets/home_images/default_pet_image_square.png',
           breed: '',
           birthDate: '',
           age: '',

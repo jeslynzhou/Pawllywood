@@ -8,13 +8,14 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import NavigationBar from '../../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
 import AddPetScreen from './addPetScr';
+import MyPetsScreen from './myPetsScr';
 import LogoutModal from '../components/logoutModal';
 
 export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
   const [userProfile, setUserProfile] = useState({
     username: '',
-    picture: null,
+    picture: '',
     description: '',
   });
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -43,8 +44,13 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
     fetchUserData();
   }, []);
 
+  {/* Edit Profile Screen */ }
   const handleEditProfile = () => {
     setCurrentScreen('EditProfile');
+  };
+
+  const closeEditUserProfile = () => {
+    setCurrentScreen('Profile');
   };
 
   const handleUpdateProfile = async (updatedProfile) => {
@@ -64,11 +70,8 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
     }
   };
 
-  const closeEditUserProfile = () => {
-    setCurrentScreen('Profile');
-  };
-
-  const handleAddingPets = () => {
+  {/* Add Pet Screen */ }
+  const handleAddingPet = () => {
     setCurrentScreen('AddPet');
   };
 
@@ -76,6 +79,16 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
     setCurrentScreen('Profile');
   };
 
+  {/* My Pets Screen */ }
+  const openMyPetsScreen = () => {
+    setCurrentScreen('MyPets');
+  };
+
+  const closeMyPetsScreen = () => {
+    setCurrentScreen('Profile');
+  };
+
+  {/*Log Out Modal */ }
   const openLogoutModal = () => {
     setShowLogoutModal(true);
   };
@@ -103,15 +116,15 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
               {/* Username and Description */}
               <View style={styles.profileTextContainer}>
                 <View style={styles.usernameRow}>
-                  <Text style={styles.usernameInput}>{userProfile.username}</Text>
+                  <Text style={styles.usernameText}>{userProfile.username}</Text>
                   <Text style={styles.descriptionInput}>{userProfile.description}</Text>
                 </View>
                 <View style={styles.functionButtonBox}>
                   <TouchableOpacity onPress={handleEditProfile} style={styles.functionButton}>
                     <Text style={styles.functionButtonText}>Edit Profile</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={handleAddingPets} style={styles.functionButton}>
-                    <Text style={styles.functionButtonText}>Add Pets</Text>
+                  <TouchableOpacity onPress={handleAddingPet} style={styles.functionButton}>
+                    <Text style={styles.functionButtonText}>Add Pet</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -122,7 +135,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
           <View style={styles.featurePanelGroup}>
             {/* Group 1: My Pets and My Posts */}
             <View style={styles.featureBox}>
-              <TouchableOpacity onPress={() => console.log('Navigate to My Pets')}>
+              <TouchableOpacity onPress={openMyPetsScreen}>
                 <View style={styles.featurePanel}>
                   <Ionicons name="paw-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>My Pets</Text>
@@ -205,6 +218,11 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
           closeAddPet={closeAddPet}
         />
       )}
+      {currentScreen === 'MyPets' && (
+        <MyPetsScreen
+          closeMyPetsScreen={closeMyPetsScreen}
+        />
+      )}
       <LogoutModal
         visible={showLogoutModal}
         onClose={closeLogoutModal}
@@ -256,8 +274,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 20,
   },
-  usernameInput: {
-    fontSize: 18,
+  usernameText: {
+    fontSize: 19,
     fontWeight: 'bold',
   },
   descriptionInput: {
@@ -302,7 +320,7 @@ const styles = StyleSheet.create({
   },
   featurePanelText: {
     marginLeft: 10,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   separatorLine: {
