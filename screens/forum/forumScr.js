@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
 import NavigationBar from '../../components/navigationBar';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../initializeFB';
+import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
+import { auth, db } from '../../initializeFB';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary, user }) {
@@ -10,85 +10,194 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [posts, setPosts] = useState([]);
     const [postText, setPostText] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-    const [askShareText, setAskShareText] = useState('');
     const [userData, setUserData] = useState(null);
-    const [filterType, setFilterType] = useState('all');
+    const [isLoadingUserData, setLoadingUserData] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const docRef = doc(db, 'users', user.uid);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    setUserData(docSnap.data());
+                const user = auth.currentUser;
+                if (user) {
+                    const docRef = doc(db, 'users', user.uid);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        setUserData(docSnap.data());
+                    } else {
+                        console.log('No such document!');
+                    }
                 } else {
-                    console.log('No such document!');
+                    console.log('No user is currently signed in.');
                 }
             } catch (error) {
-                console.error('Error fetching user data:', error.message);
+                console.error('Error fetching user profile:', error.message);
+            } finally {
+                setLoadingUserData(false);  // Update loading state when done
             }
         };
 
-        if (user && user.uid) {
-            fetchUserData();
+        setLoadingUserData(true);  // Set loading state when fetching starts
+        fetchUserData();
+    }, []);
+
+    // Fetching posts data
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const postsSnapshot = await getDocs(collection(db, 'posts'));
+                const postsData = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setPosts(postsData);
+            } catch (error) {
+                console.error('Error fetching posts:', error.message);
+            }
+        };
+    
+        fetchPosts();
+    }, []);
+
+    const handlePost = async () => {
+        if (!postText.trim() || !userData) {
+            console.log('Post text is empty or user data is not available.');
+            return;
         }
-    }, [user]);
 
-    const handlePost = (type) => {
-        console.log('handlePost called with type:', type);
-        console.log('Current userData:', userData);
+        const newPost = {
+            text: postText,
+            user: userData.username || 'Unknown User',
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString(),
+            comments: [],
+            upvotes: [],
+            downvotes: []
+        };
 
-        const text = type === 'post' ? postText : askShareText;
-        console.log('Post text:', text);
-        
-        if (text.trim()) {
-            const newPost = {
-                id: Date.now().toString(),
-                type,
-                text,
-                user: userData ? userData.name : 'Unknown User',
-                date: new Date().toLocaleDateString(),
-                time: new Date().toLocaleTimeString(),
-                comments: [],
-                upvotes: 0,
-                downvotes: 0
-            };
-            console.log('New post:', newPost);
+        try {
+            // Add new post to Firestore
+            const docRef = await addDoc(collection(db, 'posts'), newPost);
+            newPost.id = docRef.id; // Assign the Firestore document ID to newPost
+
+            // Update local state with new post
             setPosts(prevPosts => [newPost, ...prevPosts]);
             setPostText('');
-            setAskShareText('');
-        } else {
-            console.log('Post text is empty.');
+
+        } catch (error) {
+            console.error('Error adding post to Firestore:', error.message);
+        }
+    };
+    
+    const handleComment = async (postId, commentText) => {
+        if (!commentText.trim()) return;
+
+        const newComment = {
+            user: userData.username || 'Unknown User',
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString(),
+            text: commentText
+        };
+
+        try {
+            const postRef = doc(db, 'posts', postId);
+            await updateDoc(postRef, {
+                comments: arrayUnion(newComment)
+            });
+
+            // Update local state with new comment
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId ? { ...post, comments: [...post.comments, newComment] } : post
+                )
+            );
+
+        } catch (error) {
+            console.error('Error adding comment to Firestore:', error.message);
         }
     };
 
-    const handleComment = (postId, commentText) => {
-        setPosts(prevPosts => prevPosts.map(post => 
-            post.id === postId ? {...post, comments: [...post.comments, commentText]} : post
-        ));
+    const handleUpvote = async (postId) => {
+        if (!userData || !userData.email) {
+            console.log('User data not available or missing UID.');
+            return;
+        }
+
+        try {
+            const postRef = doc(db, 'posts', postId);
+            const postDoc = await getDoc(postRef);
+            const postData = postDoc.data();
+
+            if (!postData) {
+                console.log('Post not found.');
+                return;
+            }
+
+            if (postData.upvotes.includes(userData.email)) {
+                // User already upvoted, remove upvote
+                await updateDoc(postRef, {
+                    upvotes: arrayRemove(userData.email)
+                });
+            } else {
+                // User hasn't upvoted, add upvote and remove downvote if exists
+                await updateDoc(postRef, {
+                    upvotes: arrayUnion(userData.email),
+                    downvotes: arrayRemove(userData.email)
+                });
+            }
+
+            // Update local state with updated upvotes
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId ? { ...post, upvotes: postData.upvotes.includes(userData.email) ? postData.upvotes.filter(id => id !== userData.email) : [...postData.upvotes, userData.email] } : post
+                )
+            );
+
+        } catch (error) {
+            console.error('Error updating upvotes:', error.message);
+        }
     };
 
-    const handleUpvote = (postId) => {
-        setPosts(prevPosts => prevPosts.map(post => 
-            post.id === postId ? {...post, upvotes: post.upvotes + 1} : post
-        ));
-    };
+    const handleDownvote = async (postId) => {
+        if (!userData || !userData.email) {
+            console.log('User data not available or missing UID.');
+            return;
+        }
 
-    const handleDownvote = (postId) => {
-        setPosts(prevPosts => prevPosts.map(post => 
-            post.id === postId ? {...post, downvotes: post.downvotes + 1} : post
-        ));
-    };
+        try {
+            const postRef = doc(db, 'posts', postId);
+            const postDoc = await getDoc(postRef);
+            const postData = postDoc.data();
 
-    const handleShare = (postId) => {
-        // Implement share functionality here (e.g., using a Share API)
-        console.log('Share post with id:', postId);
+            if (!postData) {
+                console.log('Post not found.');
+                return;
+            }
+
+            if (postData.downvotes.includes(userData.email)) {
+                // User already downvoted, remove downvote
+                await updateDoc(postRef, {
+                    downvotes: arrayRemove(userData.email)
+                });
+            } else {
+                // User hasn't downvoted, add downvote and remove upvote if exists
+                await updateDoc(postRef, {
+                    downvotes: arrayUnion(userData.email),
+                    upvotes: arrayRemove(userData.email)
+                });
+            }
+
+            // Update local state with updated downvotes
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId ? { ...post, downvotes: postData.downvotes.includes(userData.email) ? postData.downvotes.filter(id => id !== userData.email) : [...postData.downvotes, userData.email] } : post
+                )
+            );
+
+        } catch (error) {
+            console.error('Error updating downvotes:', error.message);
+        }
     };
 
     const filteredPosts = posts.filter(post => {
         const matchesQuery = post.text.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesType = filterType === 'all' || post.type === filterType;
-        return matchesQuery && matchesType;
+        return matchesQuery;
     });
 
     return (
@@ -101,68 +210,53 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
-                <View style={styles.filterContainer}>
-                    <Text style={styles.filterLabel}>Filter by type:</Text>
-                    <TouchableOpacity onPress={() => setFilterType('all')}>
-                        <Text style={filterType === 'all' ? styles.filterActive : styles.filterText}>All</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setFilterType('post')}>
-                        <Text style={filterType === 'post' ? styles.filterActive : styles.filterText}>Posts</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setFilterType('question')}>
-                        <Text style={filterType === 'question' ? styles.filterActive : styles.filterText}>Questions</Text>
-                    </TouchableOpacity>
-                </View>
             </View>
 
             {/* Profile Section */}
-            <View style={styles.profileSection}>
-                <Image
-                    style={styles.profilePicture}
-                    source={require('../../assets/icon.png')}
-                />
-                <TextInput
-                    style={styles.askShareInput}
-                    placeholder="Want to ask/share?"
-                    value={askShareText}
-                    onChangeText={setAskShareText}
-                />
-                <View style={styles.askPostButtons}>
-                    <TouchableOpacity 
-                        style={styles.button} 
-                        onPress={() => handlePost('question')}
-                    >
-                        <Text style={styles.buttonText}>Ask</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                        style={styles.button} 
-                        onPress={() => handlePost('post')}
-                    >
-                        <Text style={styles.buttonText}>Post</Text>
-                    </TouchableOpacity>
+            {isLoadingUserData ? (
+                <Text>Loading user data...</Text>
+            ) : userData ? (
+                <View style={styles.profileSection}>
+                    <Image
+                        style={styles.profilePicture}
+                        source={require('../../assets/icon.png')}
+                    />
+                    <TextInput
+                        style={styles.postInput}
+                        placeholder="What's on your mind?"
+                        value={postText}
+                        onChangeText={setPostText}
+                    />
+                    <View style={styles.postButtons}>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={handlePost}
+                        >
+                            <Text style={styles.buttonText}>Post</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
+            ) : (
+                <Text>User not logged in.</Text>
+            )}
 
             {/* Posts List */}
-            <FlatList
-                data={filteredPosts}
-                keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                    <View style={styles.postContainer}>
-                        <Text style={styles.postType}>{item.type === 'post' ? 'Post' : 'Question'}</Text>
-                        <Text style={styles.postUser}>{item.user}</Text>
-                        <Text style={styles.postDate}>{item.date} {item.time}</Text>
-                        <Text style={styles.postText}>{item.text}</Text>
+            <ScrollView style={styles.postsContainer}>
+                {filteredPosts.map(post => (
+                    <View key={post.id} style={styles.postContainer}>
+                        <Text style={styles.postUser}>{post.user}</Text>
+                        <Text style={styles.postDate}>{post.date} {post.time}</Text>
+                        <Text style={styles.postText}>{post.text}</Text>
                         <View style={styles.postActions}>
-                            <TouchableOpacity onPress={() => handleUpvote(item.id)}>
-                                <Ionicons name="thumbs-up" size={20} color="black" />
-                                <Text>{item.upvotes}</Text>
+                            <TouchableOpacity onPress={() => handleUpvote(post.id)}>
+                                <Ionicons name="thumbs-up" size={20} color={post.upvotes.includes(userData.email) ? 'blue' : 'black'} />
+                                <Text>{post.upvotes.length}</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleDownvote(item.id)}>
-                                <Ionicons name="thumbs-down" size={20} color="black" />
-                                <Text>{item.downvotes}</Text>
+                            <TouchableOpacity onPress={() => handleDownvote(post.id)}>
+                                <Ionicons name="thumbs-down" size={20} color={post.downvotes.includes(userData.email) ? 'red' : 'black'} />
+                                <Text>{post.downvotes.length}</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleShare(item.id)}>
+                            <TouchableOpacity onPress={() => console.log('Share post with id:', post.id)}>
                                 <Ionicons name="share-social" size={20} color="black" />
                             </TouchableOpacity>
                         </View>
@@ -170,15 +264,19 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                             <TextInput
                                 style={styles.commentInput}
                                 placeholder="Add a comment..."
-                                onSubmitEditing={(event) => handleComment(item.id, event.nativeEvent.text)}
+                                onSubmitEditing={(event) => handleComment(post.id, event.nativeEvent.text)}
                             />
-                            {item.comments.map((comment, index) => (
-                                <Text key={index} style={styles.commentText}>{comment}</Text>
+                            {post.comments.map((comment, index) => (
+                                <View key={index} style={styles.comment}>
+                                    <Text style={styles.commentUser}>{comment.user}</Text>
+                                    <Text style={styles.commentDateTime}>{comment.date} {comment.time}</Text>
+                                    <Text style={styles.commentText}>{comment.text}</Text>
+                                </View>
                             ))}
                         </View>
                     </View>
-                )}
-            />
+                ))}
+            </ScrollView>
 
             {/* Navigation Bar */}
             <NavigationBar
@@ -208,23 +306,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 5,
     },
-    filterContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 8,
-    },
-    filterLabel: {
-        marginRight: 8,
-    },
-    filterText: {
-        marginRight: 8,
-        color: 'gray',
-    },
-    filterActive: {
-        marginRight: 8,
-        color: 'black',
-        fontWeight: 'bold',
-    },
     profileSection: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -236,7 +317,7 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         marginRight: 10,
     },
-    askShareInput: {
+    postInput: {
         flex: 1,
         padding: 10,
         borderColor: '#ccc',
@@ -244,7 +325,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         marginRight: 10,
     },
-    askPostButtons: {
+    postButtons: {
         flexDirection: 'row',
         alignItems: 'center',
     },
@@ -261,14 +342,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         textAlign: 'center',
     },
+    postsContainer: {
+        flex: 1,
+    },
     postContainer: {
         padding: 16,
         borderBottomColor: '#ccc',
         borderBottomWidth: 1,
-    },
-    postType: {
-        fontSize: 14,
-        fontWeight: 'bold',
     },
     postUser: {
         fontSize: 14,
@@ -296,7 +376,22 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         padding: 8,
     },
+    comment: {
+        marginTop: 8,
+        padding: 8,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 5,
+    },
+    commentUser: {
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    commentDateTime: {
+        fontSize: 12,
+        color: 'gray',
+        marginBottom: 4,
+    },
     commentText: {
-        marginTop: 4,
+        fontSize: 14,
     }
 });
