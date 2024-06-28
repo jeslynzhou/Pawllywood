@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions } from 'react-native';
 import NavigationBar from '../../components/navigationBar';
 import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
 import { auth, db } from '../../initializeFB';
@@ -13,6 +13,8 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [userData, setUserData] = useState(null);
     const [isLoadingUserData, setLoadingUserData] = useState(false);
     const [commentTexts, setCommentTexts] = useState({});
+    const [searchHeight, setSearchHeight] = useState(0);
+    const [profileHeight, setProfileHeight] = useState(0);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -202,11 +204,19 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         const matchesQuery = post.text.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesQuery;
     });
+    const { height } = Dimensions.get('window');
+    const marginTop = searchHeight + profileHeight + height * 12%  + 30;
 
     return (
         <View style={styles.forumContainer}>
             {/* Search Box */}
-            <View style={styles.searchSection}>
+            <View 
+                style={styles.searchSection}
+                onLayout={(event) => {
+                    const { height } = event.nativeEvent.layout;
+                    setSearchHeight(height);
+                }}
+            >
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Search posts..."
@@ -219,7 +229,13 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             {isLoadingUserData ? (
                 <Text>Loading user data...</Text>
             ) : userData ? (
-                <View style={styles.profileSection}>
+                <View 
+                    style={styles.profileSection}
+                    onLayout={(event) => {
+                        const { height } = event.nativeEvent.layout;
+                        setProfileHeight(height);
+                    }}
+                >
                     <Image
                         style={styles.profilePicture}
                         source={require('../../assets/icon.png')}
@@ -244,7 +260,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             )}
 
             {/* Posts List */}
-            <ScrollView style={styles.postsContainer}>
+            <ScrollView style={[styles.postsContainer, { marginTop }]}>
                 {filteredPosts.map(post => (
                     <View key={post.id} style={styles.postContainer}>
                         <Text style={styles.postUser}>{post.user}</Text>
@@ -319,29 +335,35 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
 const styles = StyleSheet.create({
     forumContainer: {
-        flex: 1,
-        marginTop: '10%',
+        marginTop: '12%',
         backgroundColor: '#FCF9D9',
+        width: '100%',
+        flex: 1,
     },
     searchSection: {
-        marginBottom: 5,
+        alignItems: 'center',
         marginHorizontal: 16,
+        flexDirection: 'row',
+        marginVertical: 4,
+        height: '6%',
     },
     searchInput: {
+        flex: 1,
         padding: 10,
         borderColor: '#CCCCCC',
         borderWidth: 1,
         borderRadius: 17,
     },
     profileSection: {
-        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
         marginHorizontal: 16,
+        flexDirection: 'row',
+        marginVertical: 4,
+        height: '6%',
     },
     profilePicture: {
-        width: 50,
-        height: 50,
+        width: 40,
+        height: 40,
         borderRadius: 25,
         marginRight: 10,
     },
@@ -360,7 +382,6 @@ const styles = StyleSheet.create({
     button: {
         paddingVertical: 12,
         paddingHorizontal: 20,
-        marginVertical: 10,
         borderRadius: 17,
         backgroundColor: '#F26419',
     },
@@ -371,15 +392,16 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     postsContainer: {
+        padding: 20,
         flex: 1,
         backgroundColor: '#FFFFFF',
         borderWidth: 1,
         borderColor: '#CCCCCC',
-    },
-    postContainer: {
-        padding: 16,
-        borderBottomColor: '#CCCCCC',
-        borderBottomWidth: 1,
+        width: '95%',
+        borderRadius: 17,
+        alignSelf: 'center',
+        height: '74%',
+        position: 'absolute',
     },
     postUser: {
         fontSize: 14,
