@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { Text, View, TouchableOpacity, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
@@ -13,12 +13,8 @@ import LogoutModal from '../components/logoutModal';
 
 export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
-  const [userProfile, setUserProfile] = useState({
-    username: '',
-    picture: '',
-    description: '',
-  });
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -29,7 +25,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
           const docSnap = await getDoc(docRef);
 
           if (docSnap.exists()) {
-            setUserProfile(docSnap.data());
+            setUserData(docSnap.data());
           } else {
             console.log('No such document!');
           }
@@ -59,7 +55,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       if (user) {
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, updatedProfile, { merge: true });
-        setUserProfile(updatedProfile);
+        setUserData(updatedProfile);
         setCurrentScreen('Profile');
         console.log('Profile updated successfully!');
       } else {
@@ -102,6 +98,14 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
     setShowLogoutModal(false);
   };
 
+  if (!userData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size='large' color='#0000FF' />
+      </View>
+    );
+  }
+
   return (
     <>
       {currentScreen === 'Profile' && (
@@ -110,14 +114,14 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
             <View style={styles.profileInfoContent}>
               {/* Profile Picture */}
               <View style={styles.profileImageContainer}>
-                <Image source={userProfile.picture} style={styles.profileImage} />
+                <Image source={userData.picture} style={styles.profileImage} />
               </View>
 
               {/* Username and Description */}
               <View style={styles.profileTextContainer}>
                 <View style={styles.usernameRow}>
-                  <Text style={styles.usernameText}>{userProfile.username}</Text>
-                  <Text style={styles.descriptionInput}>{userProfile.description}</Text>
+                  <Text style={styles.usernameText}>{userData.username}</Text>
+                  <Text style={styles.descriptionInput}>{userData.description}</Text>
                 </View>
                 <View style={styles.functionButtonBox}>
                   <TouchableOpacity onPress={handleEditProfile} style={styles.functionButton}>
@@ -208,7 +212,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       )}
       {currentScreen === 'EditProfile' && (
         <EditProfileScreen
-          userProfile={userProfile}
+          userProfile={userData}
           setUserProfile={handleUpdateProfile}
           closeEditUserProfile={closeEditUserProfile}
         />
@@ -342,5 +346,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

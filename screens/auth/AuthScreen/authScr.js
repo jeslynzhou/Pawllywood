@@ -50,7 +50,7 @@ const AuthScreen = ({
           age: '',
           gender: '',
           notes: '',
-          adoptedDate: (new Date()).toString(),
+          adoptedDate: new Date().toLo(),
         });
 
         setCurrentScreen('Authenticated');
