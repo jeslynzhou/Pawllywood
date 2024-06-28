@@ -12,6 +12,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [searchQuery, setSearchQuery] = useState('');
     const [userData, setUserData] = useState(null);
     const [isLoadingUserData, setLoadingUserData] = useState(false);
+    const [commentTexts, setCommentTexts] = useState({});
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -32,15 +33,14 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             } catch (error) {
                 console.error('Error fetching user profile:', error.message);
             } finally {
-                setLoadingUserData(false);  // Update loading state when done
+                setLoadingUserData(false);
             }
         };
 
-        setLoadingUserData(true);  // Set loading state when fetching starts
+        setLoadingUserData(true);
         fetchUserData();
     }, []);
 
-    // Fetching posts data
     useEffect(() => {
         const fetchPosts = async () => {
             try {
@@ -64,19 +64,18 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         const newPost = {
             text: postText,
             user: userData.username || 'Unknown User',
+            userId: auth.currentUser.uid,
             date: new Date().toLocaleDateString(),
             time: new Date().toLocaleTimeString(),
             comments: [],
             upvotes: [],
             downvotes: []
         };
-
+        
         try {
-            // Add new post to Firestore
             const docRef = await addDoc(collection(db, 'posts'), newPost);
-            newPost.id = docRef.id; // Assign the Firestore document ID to newPost
+            newPost.id = docRef.id;
 
-            // Update local state with new post
             setPosts(prevPosts => [newPost, ...prevPosts]);
             setPostText('');
 
@@ -86,49 +85,53 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     };
     
     const handleComment = async (postId, commentText) => {
-        if (!commentText.trim()) return;
-
+        if (!commentText.trim() || !userData) return;
+    
         const newComment = {
             user: userData.username || 'Unknown User',
+            userId: auth.currentUser.uid,
             date: new Date().toLocaleDateString(),
             time: new Date().toLocaleTimeString(),
             text: commentText
         };
-
+    
         try {
             const postRef = doc(db, 'posts', postId);
             await updateDoc(postRef, {
                 comments: arrayUnion(newComment)
             });
-
-            // Update local state with new comment
+    
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, comments: [...post.comments, newComment] } : post
                 )
             );
+            setCommentTexts(prevState => ({
+                ...prevState,
+                [postId]: ''
+            }));
 
         } catch (error) {
             console.error('Error adding comment to Firestore:', error.message);
         }
     };
-
+    
     const handleUpvote = async (postId) => {
         if (!userData || !userData.email) {
             console.log('User data not available or missing UID.');
             return;
         }
-
+ 
         try {
             const postRef = doc(db, 'posts', postId);
             const postDoc = await getDoc(postRef);
             const postData = postDoc.data();
-
+ 
             if (!postData) {
                 console.log('Post not found.');
                 return;
             }
-
+ 
             if (postData.upvotes.includes(userData.email)) {
                 // User already upvoted, remove upvote
                 await updateDoc(postRef, {
@@ -141,35 +144,35 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                     downvotes: arrayRemove(userData.email)
                 });
             }
-
+ 
             // Update local state with updated upvotes
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, upvotes: postData.upvotes.includes(userData.email) ? postData.upvotes.filter(id => id !== userData.email) : [...postData.upvotes, userData.email] } : post
                 )
             );
-
+ 
         } catch (error) {
             console.error('Error updating upvotes:', error.message);
         }
     };
-
+ 
     const handleDownvote = async (postId) => {
         if (!userData || !userData.email) {
             console.log('User data not available or missing UID.');
             return;
         }
-
+ 
         try {
             const postRef = doc(db, 'posts', postId);
             const postDoc = await getDoc(postRef);
             const postData = postDoc.data();
-
+ 
             if (!postData) {
                 console.log('Post not found.');
                 return;
             }
-
+ 
             if (postData.downvotes.includes(userData.email)) {
                 // User already downvoted, remove downvote
                 await updateDoc(postRef, {
@@ -182,14 +185,14 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                     upvotes: arrayRemove(userData.email)
                 });
             }
-
+ 
             // Update local state with updated downvotes
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, downvotes: postData.downvotes.includes(userData.email) ? postData.downvotes.filter(id => id !== userData.email) : [...postData.downvotes, userData.email] } : post
                 )
             );
-
+ 
         } catch (error) {
             console.error('Error updating downvotes:', error.message);
         }
@@ -249,23 +252,47 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                         <Text style={styles.postText}>{post.text}</Text>
                         <View style={styles.postActions}>
                             <TouchableOpacity onPress={() => handleUpvote(post.id)}>
-                                <Ionicons name="thumbs-up" size={20} color={post.upvotes.includes(userData.email) ? 'blue' : 'black'} />
-                                <Text>{post.upvotes.length}</Text>
+                                <Ionicons name="caret-up" size={20} color={post.upvotes.includes(userData.email) ? '#33658A' : '#000000'} />
+                                <Text style={{ alignSelf: 'center' }}>{post.upvotes.length}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => handleDownvote(post.id)}>
-                                <Ionicons name="thumbs-down" size={20} color={post.downvotes.includes(userData.email) ? 'red' : 'black'} />
-                                <Text>{post.downvotes.length}</Text>
+                                <Ionicons name="caret-down" size={20} color={post.downvotes.includes(userData.email) ? '#F26419' : '#000000'} />
+                                <Text style={{ alignSelf: 'center' }}>{post.downvotes.length}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => console.log('Share post with id:', post.id)}>
-                                <Ionicons name="share-social" size={20} color="black" />
+                                <Ionicons name="share-social" size={20} color='#000000' />
                             </TouchableOpacity>
                         </View>
                         <View style={styles.commentSection}>
-                            <TextInput
-                                style={styles.commentInput}
-                                placeholder="Add a comment..."
-                                onSubmitEditing={(event) => handleComment(post.id, event.nativeEvent.text)}
-                            />
+                            <View style={styles.commentInputContainer}>
+                                <TextInput
+                                    style={styles.commentInput}
+                                    placeholder="Add a comment..."
+                                    value={commentTexts[post.id] || ''}
+                                    onChangeText={text => {
+                                        setCommentTexts(prevState => ({
+                                            ...prevState,
+                                            [post.id]: text
+                                        }));
+                                    }}
+                                />
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        if (commentTexts[post.id]?.trim()) {
+                                            handleComment(post.id, commentTexts[post.id]);
+                                        }
+                                    }}
+                                    disabled={!commentTexts[post.id]?.trim()}  // Disable button if comment text is empty
+                                >
+                                    <Ionicons
+                                        name={"send-outline"}
+                                        size={20}
+                                        style={{
+                                            color: commentTexts[post.id]?.trim() ? '#33658A' : '#CCCCCC', // Change color based on comment text presence
+                                        }}
+                                    />
+                                </TouchableOpacity>
+                            </View>
                             {post.comments.map((comment, index) => (
                                 <View key={index} style={styles.comment}>
                                     <Text style={styles.commentUser}>{comment.user}</Text>
@@ -293,23 +320,24 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 const styles = StyleSheet.create({
     forumContainer: {
         flex: 1,
-        padding: 16,
-        marginTop: 50,
+        marginTop: '10%',
         backgroundColor: '#FCF9D9',
     },
     searchSection: {
-        marginBottom: 16,
+        marginBottom: 5,
+        marginHorizontal: 16,
     },
     searchInput: {
         padding: 10,
-        borderColor: '#ccc',
+        borderColor: '#CCCCCC',
         borderWidth: 1,
-        borderRadius: 5,
+        borderRadius: 17,
     },
     profileSection: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 16,
+        marginHorizontal: 16,
     },
     profilePicture: {
         width: 50,
@@ -322,7 +350,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderColor: '#ccc',
         borderWidth: 1,
-        borderRadius: 5,
+        borderRadius: 17,
         marginRight: 10,
     },
     postButtons: {
@@ -330,24 +358,27 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     button: {
-        paddingVertical: 10,
+        paddingVertical: 12,
         paddingHorizontal: 20,
         marginVertical: 10,
-        marginRight: 10,
         borderRadius: 17,
         backgroundColor: '#F26419',
     },
     buttonText: {
-        color: 'black',
+        color: '#FFFFFF',
         fontSize: 16,
         textAlign: 'center',
+        fontWeight: 'bold',
     },
     postsContainer: {
         flex: 1,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#CCCCCC',
     },
     postContainer: {
         padding: 16,
-        borderBottomColor: '#ccc',
+        borderBottomColor: '#CCCCCC',
         borderBottomWidth: 1,
     },
     postUser: {
@@ -357,7 +388,7 @@ const styles = StyleSheet.create({
     },
     postDate: {
         fontSize: 12,
-        color: 'gray',
+        color: '#CCCCCC',
     },
     postText: {
         fontSize: 16,
@@ -370,17 +401,25 @@ const styles = StyleSheet.create({
     commentSection: {
         marginTop: 8,
     },
+    commentInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+    },
     commentInput: {
-        borderColor: '#ccc',
+        flex: 1,
+        padding: 10,
+        borderColor: '#CCCCCC',
         borderWidth: 1,
-        borderRadius: 5,
-        padding: 8,
+        borderRadius: 17,
+        marginRight: 10,
     },
     comment: {
         marginTop: 8,
         padding: 8,
-        backgroundColor: '#f0f0f0',
-        borderRadius: 5,
+        backgroundColor: '#F0F0F0',
+        borderRadius: 17,
     },
     commentUser: {
         fontWeight: 'bold',
@@ -393,5 +432,5 @@ const styles = StyleSheet.create({
     },
     commentText: {
         fontSize: 14,
-    }
+    },
 });
