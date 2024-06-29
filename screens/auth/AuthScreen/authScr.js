@@ -2,8 +2,9 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 
-import { auth, db } from '../../../initializeFB';
+import { auth, db, storage } from '../../../initializeFB';
 import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
+import { getDownloadURL, ref } from 'firebase/storage';
 
 import LogInScreen from './logIn';
 import SignUpScreen from './signUp';
@@ -34,23 +35,29 @@ const AuthScreen = ({
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        const defaultUserPictureRef = ref(storage, 'user_profile_picture/', 'default_profile_picture.png');
+        const defaultUserPictureURL = await getDownloadURL(defaultUserPictureRef);
+
         await setDoc(doc(db, 'users', user.uid), {
           username: username,
           email: email,
-          picture: require('../../../assets/profile_images/default_profile_picture.png'),
-          description: ''
+          picture: defaultUserPictureURL,
+          description: 'Write something about yourself!',
         });
+
+        const defaultPetPictureRef = ref(storage, 'user_profile_picture/', 'default_pet_image_square.png');
+        const defaultPetPictureURL = await getDownloadURL(defaultPetPictureRef);
 
         const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
         await addDoc(petsCollectionRef, {
           name: 'Your default pet',
-          picture: require('../../../assets/home_images/default_pet_image_square.png'),
-          breed: '',
+          picture: defaultPetPictureURL,
+          breed: 'Click on the edit button to start editing now!',
           birthDate: '',
           age: '',
           gender: '',
           notes: '',
-          adoptedDate: new Date().toLo(),
+          adoptedDate: new Date().toLocaleDateString(),
         });
 
         setCurrentScreen('Authenticated');

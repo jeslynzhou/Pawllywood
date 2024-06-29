@@ -140,10 +140,22 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
 
                                             {/* Pet Profile Info */}
                                             <View style={styles.infoContainer}>
-                                                <Text style={styles.input}>• Breed: {petProfile.breed}</Text>
-                                                <Text style={styles.input}>• D.O.B: {petProfile.birthDate}</Text>
-                                                <Text style={styles.input}>• Age: {petProfile.age}</Text>
-                                                <Text style={styles.input}>• Gender: {petProfile.gender}</Text>
+                                                <View style={styles.inputContainer}>
+                                                    <Text style={styles.input}>•</Text>
+                                                    <Text style={[styles.input, { marginLeft: 5, }]}>Breed: {petProfile.breed}</Text>
+                                                </View>
+                                                <View style={styles.inputContainer}>
+                                                    <Text style={styles.input}>•</Text>
+                                                    <Text style={[styles.input, { marginLeft: 5, }]}>D.O.B: {petProfile.birthDate}</Text>
+                                                </View>
+                                                <View style={styles.inputContainer}>
+                                                    <Text style={styles.input}>•</Text>
+                                                    <Text style={[styles.input, { marginLeft: 5, }]}>Age: {petProfile.age}</Text>
+                                                </View>
+                                                <View style={styles.inputContainer}>
+                                                    <Text style={styles.input}>•</Text>
+                                                    <Text style={[styles.input, { marginLeft: 5, }]}>Gender: {petProfile.gender}</Text>
+                                                </View>
                                             </View>
                                         </View>
                                         {/* Notes Box */}
@@ -269,7 +281,7 @@ const styles = StyleSheet.create({
     infoContainer: {
         flex: 1,
         justifyContent: 'center',
-        paddingHorizontal: 10,
+        marginLeft: 10,
         paddingBottom: 23,
     },
     notesContainer: {
@@ -286,8 +298,11 @@ const styles = StyleSheet.create({
     notesInfoContainer: {
         flex: 1,
     },
+    inputContainer: {
+        flexDirection: 'row',
+    },
     input: {
-        fontSize: 16,
+        fontSize: 15,
     },
     addPetButton: {
         position: 'absolute',

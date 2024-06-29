@@ -27,9 +27,6 @@ const App = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      if (user) {
-        setCurrentScreen('Authenticated');
-      }
       setIsLoading(false);
     });
 
