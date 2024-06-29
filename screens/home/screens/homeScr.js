@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, Touchable } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-swiper';
 
@@ -14,45 +14,44 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
     const [currentScreen, setCurrentScreen] = useState('Home');
     const [petProfilesData, setPetProfilesData] = useState([]);
     const [activePetIndex, setActivePetIndex] = useState(0);
-
-    useEffect(() => {
-        const fetchPetData = async () => {
-            try {
-                const user = auth.currentUser;
-                if (user) {
-                    const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
-                    const querySnapShot = await getDocs(petsCollectionRef);
-                    const fetchedPetProfiles = querySnapShot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    fetchedPetProfiles.sort((a, b) => {
-                        if (a.name && b.name) {
-                            return a.name.localeCompare(b.name);
-                        } else if (!a.name && !b.name) {
-                            return 0;
-                        } else if (!a.name) {
-                            return 1; // Place items with 'name' field before those without 'name'
-                        } else {
-                            return -1;
-                        }
-                    });
-
-                    setPetProfilesData(fetchedPetProfiles);
-                } else {
-                    console.lof('User not authenticated.');
-                }
-            } catch (error) {
-                console.error('Error fetching pets profile:', error.message);
-            }
-        };
-
-        fetchPetData();
-    }, []);
-
     const { width, height } = Dimensions.get('window');
     const logoHeightSize = height * 0.1;
     const logoWidthSize = width * 0.5;
+
+    useEffect(() => {
+        fetchPetData();
+    }, []);
+
+    const fetchPetData = async () => {
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
+                const querySnapShot = await getDocs(petsCollectionRef);
+                const fetchedPetProfiles = querySnapShot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                fetchedPetProfiles.sort((a, b) => {
+                    if (a.name && b.name) {
+                        return a.name.localeCompare(b.name);
+                    } else if (!a.name && !b.name) {
+                        return 0;
+                    } else if (!a.name) {
+                        return 1; // Place items with 'name' field before those without 'name'
+                    } else {
+                        return -1;
+                    }
+                });
+
+                setPetProfilesData(fetchedPetProfiles);
+            } else {
+                console.lof('User not authenticated.');
+            }
+        } catch (error) {
+            console.error('Error fetching pets profile:', error.message);
+        }
+    };
 
     const handleEditPetProfile = () => {
         setCurrentScreen('EditPetProfile');
@@ -198,6 +197,7 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
             )}
             {currentScreen === 'AddPet' && (
                 <AddPetScreen
+                    fetchPetData={fetchPetData}
                     closeAddPet={closeAddPet}
                 />
             )}
@@ -310,5 +310,9 @@ const styles = StyleSheet.create({
         right: 16,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    loadingContainer: {
+        justifyContent: 'center',
+        flex: 1,
     },
 });

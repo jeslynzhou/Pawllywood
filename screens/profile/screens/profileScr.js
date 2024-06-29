@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { Text, View, TouchableOpacity, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
@@ -98,11 +98,11 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
   };
 
   if (loading) {
-    return <Text>Loading...</Text>; // Show a loading state
-  }
-
-  if (!userProfile) {
-    return <Text>Loading...</Text>;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size='large' color='#F26419' />
+      </View>
+    );
   }
 
   return (
@@ -345,5 +345,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    flex: 1,
   },
 });
