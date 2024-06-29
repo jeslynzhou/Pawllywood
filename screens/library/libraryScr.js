@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions, PanResponder, Modal,
-} from 'react-native';
-import { getDocs, collection } from 'firebase/firestore';
+} from 'react-native'; import { getDocs, collection } from 'firebase/firestore';
 import { db } from '../../initializeFB';
 import NavigationBar from '../../components/navigationBar';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +16,9 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
   const [selectedBreed, setSelectedBreed] = useState(null);
   const [selectedAspect, setSelectedAspect] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [buttonContainerHeight, setButtonContainerHeight] = useState(0);
+  const [searchContainerHeight, setSearchContainerHeight] = useState(0);
+  const [marginTopContentContainer, setMarginTopContentContainer] = useState(0);
 
   useEffect(() => {
     const fetchBreeds = async () => {
@@ -50,9 +52,23 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
     fetchBreeds();
   }, []);
 
+  useEffect(() => {
+    const calculateMarginTop = () => {
+      const marginTop = buttonContainerHeight + searchContainerHeight + (height + width) * 0.06;
+      setMarginTopContentContainer(marginTop);
+    };
+
+    calculateMarginTop();
+  }, [buttonContainerHeight, searchContainerHeight]);
+
+
+  const calculateMarginTop = (buttonContainerHeight, searchContainerHeight) => {
+    const marginTop = buttonContainerHeight + searchContainerHeight + height * 0.1;
+    setMarginTopContentContainer(marginTop);
+  };
+
   const { height, width } = Dimensions.get('window');
   const imageL = width * 0.25;
-  const marginTopContentContainer = height * 0.18;
 
   const filteredBreeds = breeds.filter(
     breed =>
@@ -190,7 +206,7 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
 
   return (
     <View style={styles.libContainer}>
-      <View style={styles.buttonContainer}>
+      <View style={styles.buttonContainer} onLayout={(event) => setButtonContainerHeight(event.nativeEvent.layout.height)}>
         <TouchableOpacity
           style={[styles.typeButton, selectedType === 'dog' && styles.selectedTypeButtonDog]}
           onPress={() => handleTypeSelect('dog')}
@@ -205,7 +221,10 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
           <Text style={styles.buttonText}>Cat</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.searchContainer}>
+      <View
+        style={styles.searchContainer}
+        onLayout={(event) => setSearchContainerHeight(event.nativeEvent.layout.height)}
+      >
         <TextInput
           style={styles.searchInput}
           placeholder="Choose a breed"
@@ -335,12 +354,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginVertical: 5,
     marginHorizontal: 8,
+    maxHeight: 135,
   },
   aspectButton: {
     width: '44%',
     marginHorizontal: 10,
     marginVertical: 10,
-    paddingVertical: 5,
+    padding: 4,
     borderWidth: 1,
     borderRadius: 17,
     alignItems: 'center',
@@ -361,7 +381,7 @@ const styles = StyleSheet.create({
     padding: 16,
     position: 'absolute',
     width: '100%',
-    height: '75%',
+    height: '70%',
   },
   headerContainer: {
     flexDirection: 'row',

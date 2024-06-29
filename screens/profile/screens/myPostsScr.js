@@ -30,7 +30,7 @@ export default function MyPostsScreen({ closeMyPostsScreen }) {
         } catch (error) {
             console.error('Error fetching posts profile:', error.message);
         }
-    }
+    };
 
     useEffect(() => {
         fetchPostData();
@@ -97,28 +97,40 @@ export default function MyPostsScreen({ closeMyPostsScreen }) {
             </View>
             <View style={styles.contentContainer}>
                 {/* My Posts List */}
-                {postsData.map((post) => (
-                    <View key={post.id}>
-                        <View key={post.id} style={[styles.postInfoContainer]}>
-                            <View style={styles.postInfo}>
-                                <Text numberOfLines={2} ellipsizeMode='tail' style={styles.text}>
-                                    {post.text.length > 100 ? `[${post.text.substring(0, 80)}...]` : `[${post.text}]`}
-                                </Text>
-                            </View>
-                            {isEditMode && (
-                                <TouchableOpacity style={{ alignSelf: 'center' }} onPress={() => toggleSelectPost(post.id)}>
-                                    <Ionicons name={selectedPostsForDelete.includes(post.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
-                                </TouchableOpacity>
-                            )}
-                            {!isEditMode && (
-                                <View style={{ alignSelf: 'center' }}>
-                                    <Text style={[styles.text, { color: '#CCCCCC', alignSelf: 'flex-end' }]}>{post.time}</Text>
-                                </View>
-                            )}
+                {postsData.length === 0 ? (
+                    <TouchableOpacity style={styles.postInfoContainer}>
+                        <View style={styles.postInfo}>
+                            <Text style={styles.text}>You don't have any posts. Share your thoughts now in the forum!</Text>
                         </View>
-                        <View style={styles.separatorLine} />
-                    </View>
-                ))}
+                        <View style={styles.navigateButtonContainer}>
+                            <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
+                        </View>
+                    </TouchableOpacity>
+                ) : (
+                    postsData.map((post) => (
+                        <View key={post.id}>
+                            <View key={post.id} style={[styles.postInfoContainer]}>
+                                <View style={styles.postInfo}>
+                                    <Text numberOfLines={2} ellipsizeMode='tail' style={styles.text}>
+                                        {post.text.length > 100 ? `[${post.text.substring(0, 80)}...]` : `[${post.text}]`}
+                                    </Text>
+                                </View>
+                                {isEditMode && (
+                                    <TouchableOpacity style={{ alignSelf: 'center' }} onPress={() => toggleSelectPost(post.id)}>
+                                        <Ionicons name={selectedPostsForDelete.includes(post.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
+                                    </TouchableOpacity>
+                                )}
+                                {!isEditMode && (
+                                    <View style={{ alignSelf: 'center' }}>
+                                        <Text style={[styles.text, { color: '#CCCCCC', alignSelf: 'flex-end' }]}>{post.time}</Text>
+                                    </View>
+                                )}
+                            </View>
+                            <View style={styles.separatorLine} />
+                        </View>
+                    ))
+
+                )}
             </View>
 
             {/* Confirmation Modal */}
@@ -185,6 +197,9 @@ const styles = StyleSheet.create({
     },
     settingButton: {
         marginLeft: 230,
+    },
+    noPostsMessageContainer: {
+
     },
     contentContainer: {
         borderRadius: 17,
