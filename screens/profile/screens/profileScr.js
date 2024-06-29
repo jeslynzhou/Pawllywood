@@ -13,35 +13,31 @@ import LogoutModal from '../components/logoutModal';
 
 export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
-  const [userProfile, setUserProfile] = useState({
-    username: '',
-    picture: '',
-    description: '',
-  });
+  const [userProfile, setUserProfile] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          const docRef = doc(db, 'users', user.uid);
-          const docSnap = await getDoc(docRef);
-
-          if (docSnap.exists()) {
-            setUserProfile(docSnap.data());
-          } else {
-            console.log('No such document!');
-          }
-        } else {
-          console.log('No user is currently signed in.');
+    const fetchUserProfile = async () => {
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const userRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userRef);
+                if (userDoc.exists()) {
+                    setUserProfile(userDoc.data());
+                }
+            } else {
+                console.log('No user is currently signed in.');
+            }
+        } catch (error) {
+            console.error('Error fetching user profile:', error.message);
+        } finally {
+            setLoading(false); // Set loading to false once the data is fetched
         }
-      } catch (error) {
-        console.error('Error fetching user profile:', error.message);
-      }
     };
 
-    fetchUserData();
+    fetchUserProfile();
   }, []);
 
   {/* Edit Profile Screen */ }
@@ -102,6 +98,14 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
     setShowLogoutModal(false);
   };
 
+  if (loading) {
+    return <Text>Loading...</Text>; // Show a loading state
+  }
+
+  if (!userProfile) {
+    return <Text>Loading...</Text>;
+  }
+
   return (
     <>
       {currentScreen === 'Profile' && (
@@ -110,7 +114,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
             <View style={styles.profileInfoContent}>
               {/* Profile Picture */}
               <View style={styles.profileImageContainer}>
-                <Image source={userProfile.picture} style={styles.profileImage} />
+                <Image source={{ uri: userProfile.picture }} style={styles.profileImage} />
               </View>
 
               {/* Username and Description */}

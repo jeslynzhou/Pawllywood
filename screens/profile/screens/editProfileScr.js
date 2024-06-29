@@ -11,14 +11,14 @@ import UploadImageModal from '../components/uploapImageModal';
 export default function EditProfileScreen({ userProfile, setUserProfile, closeEditUserProfile }) {
     const [editedUserProfile, setEditedUserProfile] = useState({ ...userProfile });
     const [descriptionLength, setDescriptionLength] = useState(editedUserProfile.description.length);
-    const [pictureUri, setPictureUri] = useState(editedUserProfile.picture?.uri || null);
+    const [pictureUri, setPictureUri] = useState(editedUserProfile.picture || null);
     const [showUploadImageModal, setShowUploadImageModal] = useState(false);
 
     useEffect(() => {
         setEditedUserProfile({ ...userProfile });
         setDescriptionLength(userProfile.description.length);
-        setPictureUri(userProfile.picture ? userProfile.picture.uri : null);
-    }, [userProfile]);
+        setPictureUri(userProfile.picture || null);
+    }, [userProfile]);    
 
     const handleOpenUploadImageModal = () => {
         setShowUploadImageModal(true);
@@ -56,25 +56,26 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
         try {
             let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (permissionResult.granted === false) {
-                alert('Permission to accesslibrary is required!');
+                alert('Permission to access library is required!');
                 return;
             }
-
+    
             let libraryResult = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 1,
             });
-
+    
             if (!libraryResult.canceled) {
-                setPictureUri(libraryResult.uri);
+                console.log('Library result:', libraryResult);
+                setPictureUri(libraryResult.assets[0].uri);  // Updated here to use the correct URI format
                 setShowUploadImageModal(false);
             }
         } catch (error) {
             console.log('Error uploading image from library:', error);
         }
-    };
+    };    
 
     const handleDescriptionChanges = (text) => {
         if (text.length <= 80) {
@@ -87,16 +88,17 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
         try {
             const updatedProfile = { ...editedUserProfile };
             if (pictureUri) {
-                updatedProfile.picture = { uri: pictureUri };
+                updatedProfile.picture = pictureUri;
             }
-
+    
+            console.log('Updated profile:', updatedProfile);
             await handleUpdateProfile(updatedProfile);
             closeEditUserProfile();
             console.log('Your profile has been updated successfully.');
         } catch (error) {
             console.error('Error saving changes:', error.message);
         }
-    };
+    };    
 
     const handleUpdateProfile = async (updatedProfile) => {
         try {
@@ -122,7 +124,7 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
                 </TouchableOpacity>
                 <Text style={styles.headerText}>Edit profile</Text>
             </View>
-
+    
             {/* Edit Profile Form */}
             <View style={styles.contentContainer}>
                 {/* Profile Picture */}
@@ -132,7 +134,7 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
                 <TouchableOpacity onPress={handleOpenUploadImageModal} style={styles.profileImageLabelContainer}>
                     <Text style={styles.profileImageLabel}>Edit picture</Text>
                 </TouchableOpacity>
-
+    
                 {/* Username */}
                 <Text style={styles.labels}>Username</Text>
                 <TextInput
@@ -141,7 +143,7 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
                     onChangeText={(text) => setEditedUserProfile({ ...editedUserProfile, username: text })}
                     placeholder="Type your username here"
                 />
-
+    
                 {/* Description */}
                 <View style={styles.labelsAndCharacterCount}>
                     <Text style={styles.labels}>Description</Text>
@@ -155,12 +157,12 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
                     maxLength={80}
                     multiline
                 />
-
+    
                 {/* Save button */}
                 <TouchableOpacity onPress={handleSaveChanges} style={styles.button}>
                     <Text style={styles.buttonText}>Save changes</Text>
                 </TouchableOpacity>
-
+    
                 {/* Upload Image Modal */}
                 <UploadImageModal
                     visible={showUploadImageModal}
@@ -170,7 +172,7 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
                 />
             </View>
         </View>
-    );
+    );    
 };
 
 const styles = StyleSheet.create({
