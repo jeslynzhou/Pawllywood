@@ -35,7 +35,7 @@ const AuthScreen = ({
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        const defaultUserPictureRef = ref(storage, 'user_profile_picture/', 'default_profile_picture.png');
+        const defaultUserPictureRef = ref(storage, 'default_profile_picture/default_profile_picture.png');
         const defaultUserPictureURL = await getDownloadURL(defaultUserPictureRef);
 
         await setDoc(doc(db, 'users', user.uid), {
@@ -45,7 +45,7 @@ const AuthScreen = ({
           description: 'Write something about yourself!',
         });
 
-        const defaultPetPictureRef = ref(storage, 'user_profile_picture/', 'default_pet_image_square.png');
+        const defaultPetPictureRef = ref(storage, 'default_profile_picture/default_pet_image_square.png');
         const defaultPetPictureURL = await getDownloadURL(defaultPetPictureRef);
 
         const petsCollectionRef = collection(db, 'users', user.uid, 'pets');

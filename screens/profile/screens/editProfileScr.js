@@ -20,6 +20,8 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
         setPictureUri(userProfile.picture || null);
     }, [userProfile]);
 
+
+    {/* Upload Image Modal */ }
     const handleOpenUploadImageModal = () => {
         setShowUploadImageModal(true);
     };
@@ -44,7 +46,7 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
             });
 
             if (!cameraResult.canceled) {
-                setPictureUri(cameraResult.uri);
+                setPictureUri(cameraResult.assets[0].uri);
                 setShowUploadImageModal(false);
             }
         } catch (error) {
@@ -56,7 +58,7 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
         try {
             let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (permissionResult.granted === false) {
-                alert('Permission to access library is required!');
+                Alert.alert('Permission Denied', 'Permission to access library is required!');
                 return;
             }
 
@@ -68,8 +70,7 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
             });
 
             if (!libraryResult.canceled) {
-                console.log('Library result:', libraryResult);
-                setPictureUri(libraryResult.assets[0].uri);  // Updated here to use the correct URI format
+                setPictureUri(libraryResult.assets[0].uri);
                 setShowUploadImageModal(false);
             }
         } catch (error) {
@@ -91,7 +92,6 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
                 updatedProfile.picture = pictureUri;
             }
 
-            console.log('Updated profile:', updatedProfile);
             await handleUpdateProfile(updatedProfile);
             closeEditUserProfile();
             console.log('Your profile has been updated successfully.');

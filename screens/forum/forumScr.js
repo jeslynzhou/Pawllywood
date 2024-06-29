@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     postUser: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: 'gray',
+        color: '#808080',
     },
     postDate: {
         fontSize: 12,

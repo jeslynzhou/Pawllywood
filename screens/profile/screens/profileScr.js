@@ -57,7 +57,6 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
         await setDoc(userRef, updatedProfile, { merge: true });
         setUserProfile(updatedProfile);
         setCurrentScreen('Profile');
-        console.log('Profile updated successfully!');
       } else {
         console.log('No user is currently signed in.');
       }

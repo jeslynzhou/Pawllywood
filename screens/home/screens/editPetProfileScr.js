@@ -3,47 +3,75 @@ import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet, Alert } fro
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
+import UploadImageModal from '../../profile/components/uploapImageModal';
 import BirthDateModal from '../components/birthDateModal';
 import GenderOptionsModal from '../../profile/components/genderOptionsModal';
 
 export default function EditPetProfileScreen({ petProfile, updatePetProfile, closeEditPetProfile }) {
     const [editedPetProfile, setEditedPetProfile] = useState({ ...petProfile });
-    const [profileImage, setProfileImage] = useState(petProfile.profileImage);
+    const [pictureUri, setPictureUri] = useState(editedPetProfile.picture || null);
+    const [showUploadImageModal, setShowUploadImageModal] = useState(false);
     const [showBirthDateModal, setShowBirthDateModal] = useState(false);
     const [showGenderOptionsModal, setShowGenderOptionsModal] = useState(false);
 
     useEffect(() => {
-        setProfileImage(petProfile.picture);
         setEditedPetProfile({ ...petProfile });
+        setPictureUri(petProfile.picture || null);
     }, [petProfile]);
 
-    const handleSaveChanges = async () => {
+    const handleOpenUploadImageModal = () => {
+        setShowUploadImageModal(true);
+    };
+
+    const handleCloseUploadImageModal = () => {
+        setShowUploadImageModal(false);
+    };
+
+    const handleUploadFromCamera = async () => {
         try {
-            await updatePetProfile(editedPetProfile);
-            closeEditPetProfile();
-            console.log('Pet Profile updated successfully!');
+            let permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+            if (permissionResult.granted === false) {
+                Alert.alert('Permission Denied', 'Permission to access camera is required.');
+                return;
+            }
+
+            let cameraResult = await ImagePicker.launchCameraAsync({
+                cameraType: ImagePicker.CameraType.front,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+            });
+
+            if (!cameraResult.canceled) {
+                setPictureUri(cameraResult.assets[0].uri);
+                setShowUploadImageModal(false);
+            }
         } catch (error) {
-            console.error('Error saving pet changes:', error.message);
+            console.log('Error uploading image from camera:', error);
         }
     };
 
-    const handleImagePicker = async () => {
-        let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const handleUploadFromLibrary = async () => {
+        try {
+            let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (permissionResult.granted === false) {
+                Alert.alert('Permission Denied', 'Permission to access library is required!');
+                return;
+            }
 
-        if (permissionResult.granted === false) {
-            Alert.alert('Permission to access camera roll is required!');
-            return;
-        }
+            let libraryResult = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+            });
 
-        let pickerResult = await ImagePicker.launchImageLibraryAsync({
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
-
-        if (!pickerResult.canceled) {
-            setProfileImage(pickerResult.uri);
-            setEditedPetProfile({ ...editedPetProfile, picture: pickerResult.uri });
+            if (!libraryResult.canceled) {
+                setPictureUri(libraryResult.assets[0].uri);  // Updated here to use the correct URI format
+                setShowUploadImageModal(false);
+            }
+        } catch (error) {
+            console.log('Error uploading image from library:', error);
         }
     };
 
@@ -100,6 +128,21 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
         });
     };
 
+    const handleSaveChanges = async () => {
+        try {
+            const updatedPetProfile = { ...editedPetProfile };
+            if (pictureUri) {
+                updatedPetProfile.picture = pictureUri;
+            }
+
+            await updatePetProfile(updatedPetProfile);
+            closeEditPetProfile();
+            console.log('Pet Profile updated successfully!');
+        } catch (error) {
+            console.error('Error saving pet changes:', error.message);
+        }
+    };
+
     return (
         <View style={styles.editProfileContainer}>
             {/* Header */}
@@ -113,10 +156,10 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
             {/* Edit Pet Profile Form */}
             <View style={styles.contentContainer}>
                 {/* Pet Picture */}
-                <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageContainer}>
-                    <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                <TouchableOpacity onPress={handleOpenUploadImageModal} style={styles.profileImageContainer}>
+                    <Image source={{ uri: pictureUri }} style={styles.profileImage} />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={handleImagePicker} style={styles.profileImageLabelContainer}>
+                <TouchableOpacity onPress={handleOpenUploadImageModal} style={styles.profileImageLabelContainer}>
                     <Text style={styles.profileImageLabel}>Edit picture</Text>
                 </TouchableOpacity>
 
@@ -172,6 +215,14 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
             <TouchableOpacity onPress={handleSaveChanges} style={styles.button}>
                 <Text style={styles.buttonText}>Save changes</Text>
             </TouchableOpacity>
+
+            {/* Upload Image Modal */}
+            <UploadImageModal
+                visible={showUploadImageModal}
+                onClose={handleCloseUploadImageModal}
+                onUploadFromCamera={handleUploadFromCamera}
+                onUploadFromLibrary={handleUploadFromLibrary}
+            />
 
             {/* Birth Date Modal */}
             <BirthDateModal

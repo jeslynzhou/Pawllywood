@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 
+import { db, auth, storage } from '../../../initializeFB';
 import { collection, addDoc } from 'firebase/firestore';
-import { db, auth } from '../../../initializeFB';
+import { getDownloadURL, ref } from 'firebase/storage';
 
+import UploadImageModal from '../components/uploapImageModal';
 import BirthDateModal from '../../home/components/birthDateModal';
 import GenderOptionsModal from '../components/genderOptionsModal';
 
 export default function AddPetScreen({ closeAddPet }) {
+    const [showUploadImageModal, setShowUploadImageModal] = useState(false);
     const [showBirthDateModal, setShowBirthDateModal] = useState(false);
     const [showAdoptedDateModal, setShowAdoptedDateModal] = useState(false);
     const [showGenderOptionsModal, setShowGenderOptionsModal] = useState(false);
@@ -23,8 +27,22 @@ export default function AddPetScreen({ closeAddPet }) {
         gender: '',
         notes: '',
         adoptedDate: '',
-        picture: require('../../../assets/home_images/default_pet_image_square.png'),
+        picture: null,
     });
+
+    useEffect(() => {
+        const getDefaultPetPicture = async () => {
+            try {
+                const defaultPetPictureRef = ref(storage, 'default_profile_picture/default_pet_image_square.png');
+                const defaultPetPictureURL = await getDownloadURL(defaultPetPictureRef);
+                setPetData({ ...petData, picture: defaultPetPictureURL });
+            } catch (error) {
+                console.error('Error fetching default pet picture:', error.message);
+            }
+        };
+
+        getDefaultPetPicture();
+    }, []);
 
     const handleAddPet = async () => {
         try {
@@ -38,6 +56,64 @@ export default function AddPetScreen({ closeAddPet }) {
         }
     };
 
+    {/* Upload Image Modal */ }
+    const handleOpenUploadImageModal = () => {
+        setShowUploadImageModal(true);
+    };
+
+    const handleCloseUploadImageModal = () => {
+        setShowUploadImageModal(false);
+    };
+
+    const handleUploadFromCamera = async () => {
+        try {
+            let permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+            if (permissionResult.granted === false) {
+                Alert.alert('Permission Denied', 'Permission to access camera is required.');
+                return;
+            }
+
+            let cameraResult = await ImagePicker.launchCameraAsync({
+                cameraType: ImagePicker.CameraType.front,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+            });
+
+            if (!cameraResult.canceled) {
+                setPetData({ ...petData, picture: cameraResult.assets[0].uri });
+                setShowUploadImageModal(false);
+            }
+        } catch (error) {
+            console.log('Error uploading image from camera:', error);
+        }
+    };
+
+    const handleUploadFromLibrary = async () => {
+        try {
+            let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (permissionResult.granted === false) {
+                Alert.alert('Permission Denied', 'Permission to access library is required.');
+                return;
+            }
+
+            let libraryResult = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+            });
+
+            if (!libraryResult.canceled) {
+                setPetData({ ...petData, picture: libraryResult.assets[0].uri });
+                setShowUploadImageModal(false);
+            }
+        } catch (error) {
+            console.log('Error uploading image from library:', error);
+        }
+    };
+
+    {/* BirthDate & Age & AdoptedDate Modals */ }
     const openBirthDateModal = () => {
         setShowBirthDateModal(true);
     };
@@ -92,6 +168,7 @@ export default function AddPetScreen({ closeAddPet }) {
         }
     };
 
+    {/* Gender Options Modal */ }
     const openGenderOptionsModal = () => {
         setShowGenderOptionsModal(true);
     };
@@ -120,10 +197,10 @@ export default function AddPetScreen({ closeAddPet }) {
             {/* Add Pet Profile Form */}
             <View style={styles.contentContainer}>
                 {/* Pet Image */}
-                <TouchableOpacity style={styles.profileImageContainer}>
-                    <Image source={petData.picture} style={[styles.profileImage, { width: imageSize, height: imageSize }]} />
+                <TouchableOpacity onPress={handleOpenUploadImageModal} style={styles.profileImageContainer}>
+                    <Image source={{ uri: petData.picture }} style={[styles.profileImage, { width: imageSize, height: imageSize }]} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.profileImageLabelContainer}>
+                <TouchableOpacity onPress={handleOpenUploadImageModal} style={styles.profileImageLabelContainer}>
                     <Text style={styles.profileImageLabel}>Edit picture</Text>
                 </TouchableOpacity>
 
@@ -189,6 +266,14 @@ export default function AddPetScreen({ closeAddPet }) {
                     <Text style={styles.buttonText}>Add Pet</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Upload Image Modal */}
+            <UploadImageModal
+                visible={showUploadImageModal}
+                onClose={handleCloseUploadImageModal}
+                onUploadFromCamera={handleUploadFromCamera}
+                onUploadFromLibrary={handleUploadFromLibrary}
+            />
 
             {/* Birth Date Modal */}
             <BirthDateModal
