@@ -8,7 +8,7 @@ import { ref } from 'firebase/storage';
 
 import NavigationBar from '../../components/navigationBar';
 
-export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary, user }) {
+export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
     const [posts, setPosts] = useState([]);
     const [postText, setPostText] = useState('');

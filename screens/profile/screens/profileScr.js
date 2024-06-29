@@ -113,7 +113,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
         <ActivityIndicator size='large' color='#F26419' />
       </View>
     );
-  }
+  };
 
   return (
     <>
@@ -234,14 +234,12 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       {currentScreen === 'MyPets' && (
         <MyPetsScreen
           closeMyPetsScreen={closeMyPetsScreen}
+          handleAddingPet={handleAddingPet}
         />
       )}
       {currentScreen === 'MyPosts' && (
         <MyPostsScreen
           closeMyPostsScreen={closeMyPostsScreen}
-          directToNotebook={directToNotebook}
-          directToHome={directToHome}
-          directToLibrary={directToLibrary}
           directToForum={directToForum}
         />
       )}

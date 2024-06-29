@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Image, StyleSheet, Modal } from 'react-native';
+import { Text, View, TouchableOpacity, Image, StyleSheet, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
-export default function MyPetsScreen({ closeMyPetsScreen }) {
+export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet }) {
     const [petProfilesData, setPetProfilesData] = useState([]);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedPetsForDelete, setSelectedPetsForDelete] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     async function fetchPetData() {
         try {
@@ -27,8 +28,10 @@ export default function MyPetsScreen({ closeMyPetsScreen }) {
             }
         } catch (error) {
             console.error('Error fetching pets profile:', error.message);
-        }
-    }
+        } finally {
+            setLoading(false);
+        };
+    };
 
     useEffect(() => {
         fetchPetData();
@@ -94,41 +97,60 @@ export default function MyPetsScreen({ closeMyPetsScreen }) {
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>My Pets</Text>
-                <TouchableOpacity onPress={openEditMyPetsList} style={styles.settingButton}>
+                <TouchableOpacity onPress={petProfilesData.length > 0 ? openEditMyPetsList : closeEditMyPetsList} style={styles.settingButton}>
                     <Ionicons name="ellipsis-horizontal" size={24} color='#000000' />
                 </TouchableOpacity>
             </View>
-            <View style={styles.contentContainer}>
-                {/* My Pets List */}
-                {petProfilesData.map((petProfile) => (
-                    <View key={petProfile.id}>
-                        <TouchableOpacity key={petProfile.id} style={[styles.petInfoContainer]} onPress={() => viewPetProfile(petProfile.id)}>
-                            <View style={styles.profileImageContainer}>
-                                <Image
-                                    source={{ uri: petProfile.picture }}
-                                    style={styles.profileImage}
-                                    resizeMode='cover'
-                                />
+
+            {loading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size='large' color='#F26419' />
+                </View>
+            ) : (
+                <View style={styles.contentContainer}>
+                    {/* My Pets List */}
+                    {petProfilesData.length === 0 ? (
+                        <TouchableOpacity onPress={handleAddingPet} style={styles.petInfoContainer}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.text}>You don't have any pets. Click here to add your first pet now!</Text>
                             </View>
-                            <View style={styles.nameAndAdoptedDateContainer}>
-                                <Text style={[styles.text, { fontWeight: 'bold' }]}>{petProfile.name}</Text>
-                                <Text style={styles.text}>Adopted Date: {petProfile.adoptedDate}</Text>
+                            <View style={styles.navigateButtonContainer}>
+                                <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
                             </View>
-                            {isEditMode && (
-                                <TouchableOpacity style={styles.checkboxContainer} onPress={() => toggleSelectPet(petProfile.id)}>
-                                    <Ionicons name={selectedPetsForDelete.includes(petProfile.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
-                                </TouchableOpacity>
-                            )}
-                            {!isEditMode && (
-                                <View style={styles.navigateButtonContainer}>
-                                    <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
-                                </View>
-                            )}
                         </TouchableOpacity>
-                        <View style={styles.separatorLine} />
-                    </View>
-                ))}
-            </View>
+                    ) : (
+                        petProfilesData.map((petProfile) => (
+                            <View key={petProfile.id}>
+                                <TouchableOpacity key={petProfile.id} style={[styles.petInfoContainer]} onPress={() => viewPetProfile(petProfile.id)}>
+                                    <View style={styles.profileImageContainer}>
+                                        <Image
+                                            source={{ uri: petProfile.picture }}
+                                            style={styles.profileImage}
+                                            resizeMode='cover'
+                                        />
+                                    </View>
+                                    <View style={styles.nameAndAdoptedDateContainer}>
+                                        <Text style={[styles.text, { fontWeight: 'bold' }]}>{petProfile.name}</Text>
+                                        <Text style={styles.text}>Adopted Date: {petProfile.adoptedDate}</Text>
+                                    </View>
+                                    {isEditMode && (
+                                        <TouchableOpacity style={styles.checkboxContainer} onPress={() => toggleSelectPet(petProfile.id)}>
+                                            <Ionicons name={selectedPetsForDelete.includes(petProfile.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
+                                        </TouchableOpacity>
+                                    )}
+                                    {!isEditMode && (
+                                        <View style={styles.navigateButtonContainer}>
+                                            <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                                <View style={styles.separatorLine} />
+                            </View>
+                        ))
+
+                    )}
+                </View>
+            )}
 
             {/* Confirmation Modal */}
             <Modal
@@ -174,6 +196,7 @@ export default function MyPetsScreen({ closeMyPetsScreen }) {
 
 const styles = StyleSheet.create({
     myPetsContainer: {
+        flex: 1,
         marginTop: '10%',
         padding: 16,
     },
@@ -203,7 +226,6 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     petInfoContainer: {
-        flex: 1,
         flexDirection: 'row',
         justifyContent: 'flex-start',
         padding: 10,
@@ -289,5 +311,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: '#FFFFFF',
+    },
+    loadingContainer: {
+        justifyContent: 'center',
+        flex: 1,
     },
 });
