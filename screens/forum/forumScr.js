@@ -335,7 +335,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
 const styles = StyleSheet.create({
     forumContainer: {
-        marginTop: '12%',
+        marginTop: '10%',
         backgroundColor: '#FCF9D9',
         width: '100%',
         flex: 1,

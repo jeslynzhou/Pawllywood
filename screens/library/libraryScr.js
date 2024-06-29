@@ -9,7 +9,7 @@ import {
   Image,
   Dimensions,
   PanResponder,
-  Modal, // Import Modal component
+  Modal,
 } from 'react-native';
 import { getDocs, collection } from 'firebase/firestore';
 import { db } from '../../initializeFB';
@@ -25,7 +25,7 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
   const [isSearching, setIsSearching] = useState(false);
   const [selectedBreed, setSelectedBreed] = useState(null);
   const [selectedAspect, setSelectedAspect] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchBreeds = async () => {

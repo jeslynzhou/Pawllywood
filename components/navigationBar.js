@@ -48,17 +48,19 @@ const NavigationBar = ({ activeScreen, directToProfile, directToNotebook, direct
 const styles = StyleSheet.create({
     navigationBar: {
         position: 'absolute',
-        bottom: 0,
+        bottom: '0.7%',
         left: 0,
         right: 0,
     },
     navigationContainer: {
+        marginHorizontal: '4%',
         flexDirection: 'row',
         justifyContent: 'space-around',
         borderTopWidth: 1,
         borderColor: '#CCCCCC',
         backgroundColor: '#000000',
-        paddingVertical: 6,
+        padding: 3.5,
+        borderRadius: 48,
     },
     navBarButton: {
         alignItems: 'center',
