@@ -11,13 +11,13 @@ import UploadImageModal from '../components/uploapImageModal';
 export default function EditProfileScreen({ userProfile, setUserProfile, closeEditUserProfile }) {
     const [editedUserProfile, setEditedUserProfile] = useState({ ...userProfile });
     const [descriptionLength, setDescriptionLength] = useState(editedUserProfile.description.length);
-    const [pictureUri, setPictureUri] = useState(editedUserProfile.picture?.uri || null);
+    const [pictureUri, setPictureUri] = useState(editedUserProfile.picture || null);
     const [showUploadImageModal, setShowUploadImageModal] = useState(false);
 
     useEffect(() => {
         setEditedUserProfile({ ...userProfile });
         setDescriptionLength(userProfile.description.length);
-        setPictureUri(userProfile.picture ? userProfile.picture.uri : null);
+        setPictureUri(userProfile.picture || null);
     }, [userProfile]);
 
     const handleOpenUploadImageModal = () => {
@@ -56,7 +56,7 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
         try {
             let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (permissionResult.granted === false) {
-                alert('Permission to accesslibrary is required!');
+                alert('Permission to access library is required!');
                 return;
             }
 
@@ -68,7 +68,8 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
             });
 
             if (!libraryResult.canceled) {
-                setPictureUri(libraryResult.uri);
+                console.log('Library result:', libraryResult);
+                setPictureUri(libraryResult.assets[0].uri);  // Updated here to use the correct URI format
                 setShowUploadImageModal(false);
             }
         } catch (error) {
@@ -87,9 +88,10 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
         try {
             const updatedProfile = { ...editedUserProfile };
             if (pictureUri) {
-                updatedProfile.picture = { uri: pictureUri };
+                updatedProfile.picture = pictureUri;
             }
 
+            console.log('Updated profile:', updatedProfile);
             await handleUpdateProfile(updatedProfile);
             closeEditUserProfile();
             console.log('Your profile has been updated successfully.');

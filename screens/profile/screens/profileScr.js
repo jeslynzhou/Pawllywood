@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Image, StyleSheet, ActivityIndicator } from 'react-native';
+import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
@@ -13,31 +13,31 @@ import LogoutModal from '../components/logoutModal';
 
 export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
+  const [userProfile, setUserProfile] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchUserProfile = async () => {
       try {
         const user = auth.currentUser;
         if (user) {
-          const docRef = doc(db, 'users', user.uid);
-          const docSnap = await getDoc(docRef);
-
-          if (docSnap.exists()) {
-            setUserData(docSnap.data());
-          } else {
-            console.log('No such document!');
+          const userRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userRef);
+          if (userDoc.exists()) {
+            setUserProfile(userDoc.data());
           }
         } else {
           console.log('No user is currently signed in.');
         }
       } catch (error) {
         console.error('Error fetching user profile:', error.message);
+      } finally {
+        setLoading(false); // Set loading to false once the data is fetched
       }
     };
 
-    fetchUserData();
+    fetchUserProfile();
   }, []);
 
   {/* Edit Profile Screen */ }
@@ -55,7 +55,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       if (user) {
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, updatedProfile, { merge: true });
-        setUserData(updatedProfile);
+        setUserProfile(updatedProfile);
         setCurrentScreen('Profile');
         console.log('Profile updated successfully!');
       } else {
@@ -98,12 +98,12 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
     setShowLogoutModal(false);
   };
 
-  if (!userData) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size='large' color='#0000FF' />
-      </View>
-    );
+  if (loading) {
+    return <Text>Loading...</Text>; // Show a loading state
+  }
+
+  if (!userProfile) {
+    return <Text>Loading...</Text>;
   }
 
   return (
@@ -114,14 +114,14 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
             <View style={styles.profileInfoContent}>
               {/* Profile Picture */}
               <View style={styles.profileImageContainer}>
-                <Image source={userData.picture} style={styles.profileImage} />
+                <Image source={{ uri: userProfile.picture }} style={styles.profileImage} />
               </View>
 
               {/* Username and Description */}
               <View style={styles.profileTextContainer}>
                 <View style={styles.usernameRow}>
-                  <Text style={styles.usernameText}>{userData.username}</Text>
-                  <Text style={styles.descriptionInput}>{userData.description}</Text>
+                  <Text style={styles.usernameText}>{userProfile.username}</Text>
+                  <Text style={styles.descriptionInput}>{userProfile.description}</Text>
                 </View>
                 <View style={styles.functionButtonBox}>
                   <TouchableOpacity onPress={handleEditProfile} style={styles.functionButton}>
@@ -212,7 +212,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       )}
       {currentScreen === 'EditProfile' && (
         <EditProfileScreen
-          userProfile={userData}
+          userProfile={userProfile}
           setUserProfile={handleUpdateProfile}
           closeEditUserProfile={closeEditUserProfile}
         />
@@ -346,10 +346,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });

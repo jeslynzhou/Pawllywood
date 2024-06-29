@@ -1,22 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
-import { auth, db } from '../../initializeFB';
-import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
-
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions } from 'react-native';
 import NavigationBar from '../../components/navigationBar';
+import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
+import { auth, db } from '../../initializeFB';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary, user }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
-    const [userData, setUserData] = useState(null);
-    const [isLoadingUserData, setLoadingUserData] = useState(false);
     const [posts, setPosts] = useState([]);
     const [postText, setPostText] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-    const [commentText, setCommentText] = useState('');
-    const [isCommentBUttonEnabled, setCommentButtonEnabled] = useState(false);
-
+    const [userData, setUserData] = useState(null);
+    const [isLoadingUserData, setLoadingUserData] = useState(false);
+    const [commentTexts, setCommentTexts] = useState({});
+    const [searchHeight, setSearchHeight] = useState(0);
+    const [profileHeight, setProfileHeight] = useState(0);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -37,15 +35,14 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             } catch (error) {
                 console.error('Error fetching user profile:', error.message);
             } finally {
-                setLoadingUserData(false);  // Update loading state when done
+                setLoadingUserData(false);
             }
         };
 
-        setLoadingUserData(true);  // Set loading state when fetching starts
+        setLoadingUserData(true);
         fetchUserData();
     }, []);
 
-    // Fetching posts data
     useEffect(() => {
         const fetchPosts = async () => {
             try {
@@ -74,15 +71,13 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             time: new Date().toLocaleTimeString(),
             comments: [],
             upvotes: [],
-            downvotes: [],
+            downvotes: []
         };
 
         try {
-            // Add new post to Firestore
             const docRef = await addDoc(collection(db, 'posts'), newPost);
-            newPost.id = docRef.id; // Assign the Firestore document ID to newPost
+            newPost.id = docRef.id;
 
-            // Update local state with new post
             setPosts(prevPosts => [newPost, ...prevPosts]);
             setPostText('');
 
@@ -91,15 +86,15 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         }
     };
 
-    const handleComment = async (postId) => {
+    const handleComment = async (postId, commentText) => {
         if (!commentText.trim() || !userData) return;
 
         const newComment = {
-            text: commentText,
             user: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
             date: new Date().toLocaleDateString(),
             time: new Date().toLocaleTimeString(),
+            text: commentText
         };
 
         try {
@@ -108,12 +103,16 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 comments: arrayUnion(newComment)
             });
 
-            // Update local state with new comment
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, comments: [...post.comments, newComment] } : post
                 )
             );
+            setCommentTexts(prevState => ({
+                ...prevState,
+                [postId]: ''
+            }));
+
         } catch (error) {
             console.error('Error adding comment to Firestore:', error.message);
         }
@@ -205,11 +204,19 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         const matchesQuery = post.text.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesQuery;
     });
+    const { height } = Dimensions.get('window');
+    const marginTop = searchHeight + profileHeight + height * 12 % + 30;
 
     return (
         <View style={styles.forumContainer}>
             {/* Search Box */}
-            <View style={styles.searchSection}>
+            <View
+                style={styles.searchSection}
+                onLayout={(event) => {
+                    const { height } = event.nativeEvent.layout;
+                    setSearchHeight(height);
+                }}
+            >
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Search posts..."
@@ -217,11 +224,18 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                     onChangeText={setSearchQuery}
                 />
             </View>
+
             {/* Profile Section */}
             {isLoadingUserData ? (
-                <ActivityIndicator size='large' color='#0000FF' />
+                <Text>Loading user data...</Text>
             ) : userData ? (
-                <View style={styles.profileSection}>
+                <View
+                    style={styles.profileSection}
+                    onLayout={(event) => {
+                        const { height } = event.nativeEvent.layout;
+                        setProfileHeight(height);
+                    }}
+                >
                     <Image
                         style={styles.profilePicture}
                         source={require('../../assets/icon.png')}
@@ -246,7 +260,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             )}
 
             {/* Posts List */}
-            <ScrollView style={styles.postsContainer}>
+            <ScrollView style={[styles.postsContainer, { marginTop }]}>
                 {filteredPosts.map(post => (
                     <View key={post.id} style={styles.postContainer}>
                         <Text style={styles.postUser}>{post.user}</Text>
@@ -266,21 +280,33 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                             </TouchableOpacity>
                         </View>
                         <View style={styles.commentSection}>
-                            <View style={styles.commentTextContainer}>
+                            <View style={styles.commentInputContainer}>
                                 <TextInput
+                                    style={styles.commentInput}
                                     placeholder="Add a comment..."
-                                    value={commentText}
-                                    onChangeText={(text) => {
-                                        setCommentText(text);
-                                        setCommentButtonEnabled(text.trim().length > 0);
+                                    value={commentTexts[post.id] || ''}
+                                    onChangeText={text => {
+                                        setCommentTexts(prevState => ({
+                                            ...prevState,
+                                            [post.id]: text
+                                        }));
                                     }}
                                 />
                                 <TouchableOpacity
-                                    onPress={() => handleComment(post.id)}
-                                    disabled={!isCommentBUttonEnabled}
-                                    style={styles.commentButton}
+                                    onPress={() => {
+                                        if (commentTexts[post.id]?.trim()) {
+                                            handleComment(post.id, commentTexts[post.id]);
+                                        }
+                                    }}
+                                    disabled={!commentTexts[post.id]?.trim()}  // Disable button if comment text is empty
                                 >
-                                    <Ionicons name={isCommentBUttonEnabled ? "send" : "send-outline"} size={20} style={{ color: isCommentBUttonEnabled ? '#33658A' : '#CCCCCC' }} />
+                                    <Ionicons
+                                        name={"send-outline"}
+                                        size={20}
+                                        style={{
+                                            color: commentTexts[post.id]?.trim() ? '#33658A' : '#CCCCCC', // Change color based on comment text presence
+                                        }}
+                                    />
                                 </TouchableOpacity>
                             </View>
                             {post.comments.map((comment, index) => (
@@ -305,40 +331,46 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             />
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     forumContainer: {
-        flex: 1,
         marginTop: '10%',
         backgroundColor: '#FCF9D9',
+        width: '100%',
+        flex: 1,
     },
     searchSection: {
-        marginBottom: 5,
+        alignItems: 'center',
         marginHorizontal: 16,
+        flexDirection: 'row',
+        marginVertical: 4,
+        height: '6%',
     },
     searchInput: {
+        flex: 1,
         padding: 10,
         borderColor: '#CCCCCC',
         borderWidth: 1,
         borderRadius: 17,
     },
     profileSection: {
-        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
         marginHorizontal: 16,
+        flexDirection: 'row',
+        marginVertical: 4,
+        height: '6%',
     },
     profilePicture: {
-        width: 50,
-        height: 50,
+        width: 40,
+        height: 40,
         borderRadius: 25,
         marginRight: 10,
     },
     postInput: {
         flex: 1,
         padding: 10,
-        borderColor: '#CCCCCC',
+        borderColor: '#ccc',
         borderWidth: 1,
         borderRadius: 17,
         marginRight: 10,
@@ -348,9 +380,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     button: {
-        paddingVertical: 12,
+        paddingVertical: 8,
         paddingHorizontal: 20,
-        marginVertical: 10,
         borderRadius: 17,
         backgroundColor: '#F26419',
     },
@@ -365,6 +396,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         borderWidth: 1,
         borderColor: '#CCCCCC',
+        width: '100%',
+        alignSelf: 'center',
+        height: '74%',
+        position: 'absolute',
     },
     postContainer: {
         padding: 16,
@@ -374,11 +409,11 @@ const styles = StyleSheet.create({
     postUser: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#000000',
+        color: 'gray',
     },
     postDate: {
         fontSize: 12,
-        color: '#808080',
+        color: '#CCCCCC',
     },
     postText: {
         fontSize: 16,
@@ -391,17 +426,19 @@ const styles = StyleSheet.create({
     commentSection: {
         marginTop: 8,
     },
-    commentTextContainer: {
+    commentInputContainer: {
         flexDirection: 'row',
+        alignItems: 'center',
         justifyContent: 'space-between',
+        marginBottom: 8,
+    },
+    commentInput: {
+        flex: 1,
+        padding: 10,
         borderColor: '#CCCCCC',
         borderWidth: 1,
         borderRadius: 17,
-        padding: 8,
-    },
-    commentButton: {
-        justifyContent: 'center',
-        marginRight: 5,
+        marginRight: 10,
     },
     comment: {
         marginTop: 8,
