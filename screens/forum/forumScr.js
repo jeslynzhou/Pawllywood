@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions } from 'react-native';
-import NavigationBar from '../../components/navigationBar';
-import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
-import { auth, db } from '../../initializeFB';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+import { auth, db, storage } from '../../initializeFB';
+import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
+import { ref } from 'firebase/storage';
+
+import NavigationBar from '../../components/navigationBar';
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary, user }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
@@ -67,6 +70,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             text: postText,
             user: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
+            userProfilePicture: userData.picture,
             date: new Date().toLocaleDateString(),
             time: new Date().toLocaleTimeString(),
             comments: [],
@@ -92,6 +96,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         const newComment = {
             user: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
+            userProfilePicture: userData.picture,
             date: new Date().toLocaleDateString(),
             time: new Date().toLocaleTimeString(),
             text: commentText
@@ -205,7 +210,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         return matchesQuery;
     });
     const { height } = Dimensions.get('window');
-    const marginTop = searchHeight + profileHeight + height * 12 % + 30;
+    const marginTop = searchHeight + profileHeight + height * 29 % + 30;
 
     return (
         <View style={styles.forumContainer}>
@@ -227,7 +232,9 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
             {/* Profile Section */}
             {isLoadingUserData ? (
-                <Text>Loading user data...</Text>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size='large' color='#F26419' />
+                </View>
             ) : userData ? (
                 <View
                     style={styles.profileSection}
@@ -236,10 +243,12 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                         setProfileHeight(height);
                     }}
                 >
-                    <Image
-                        style={styles.profilePicture}
-                        source={require('../../assets/icon.png')}
-                    />
+                    <View style={styles.profilePictureContainer}>
+                        <Image
+                            source={userData.picture ? { uri: userData.picture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                            style={styles.profilePicture}
+                        />
+                    </View>
                     <TextInput
                         style={styles.postInput}
                         placeholder="What's on your mind?"
@@ -263,8 +272,18 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             <ScrollView style={[styles.postsContainer, { marginTop }]}>
                 {filteredPosts.map(post => (
                     <View key={post.id} style={styles.postContainer}>
-                        <Text style={styles.postUser}>{post.user}</Text>
-                        <Text style={styles.postDate}>{post.date} {post.time}</Text>
+                        <View style={styles.postUserContainer}>
+                            <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
+                                <Image
+                                    source={post.userProfilePicture ? { uri: post.userProfilePicture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                                    style={styles.profilePicture}
+                                />
+                            </View>
+                            <View>
+                                <Text style={styles.postUser}>{post.user}</Text>
+                                <Text style={styles.postDate}>{post.date} {post.time}</Text>
+                            </View>
+                        </View>
                         <Text style={styles.postText}>{post.text}</Text>
                         <View style={styles.postActions}>
                             <TouchableOpacity onPress={() => handleUpvote(post.id)}>
@@ -281,6 +300,12 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                         </View>
                         <View style={styles.commentSection}>
                             <View style={styles.commentInputContainer}>
+                                <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
+                                    <Image
+                                        source={userData.picture ? { uri: userData.picture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                                        style={styles.profilePicture}
+                                    />
+                                </View>
                                 <TextInput
                                     style={styles.commentInput}
                                     placeholder="Add a comment..."
@@ -311,9 +336,19 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                             </View>
                             {post.comments.map((comment, index) => (
                                 <View key={index} style={styles.comment}>
-                                    <Text style={styles.commentUser}>{comment.user}</Text>
-                                    <Text style={styles.commentDateTime}>{comment.date} {comment.time}</Text>
-                                    <Text style={styles.commentText}>{comment.text}</Text>
+                                    <View style={styles.postUserContainer}>
+                                        <View style={[styles.profilePictureContainer, { width: 40, height: 40, alignSelf: 'flex-start' }]}>
+                                            <Image
+                                                source={comment.userProfilePicture ? { uri: comment.userProfilePicture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                                                style={styles.profilePicture}
+                                            />
+                                        </View>
+                                        <View>
+                                            <Text style={styles.commentUser}>{comment.user}</Text>
+                                            <Text style={styles.commentDateTime}>{comment.date} {comment.time}</Text>
+                                            <Text style={styles.commentText}>{comment.text}</Text>
+                                        </View>
+                                    </View>
                                 </View>
                             ))}
                         </View>
@@ -344,7 +379,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginHorizontal: 16,
         flexDirection: 'row',
-        marginVertical: 4,
+        marginTop: 12,
+        marginBottom: 5,
         height: '6%',
     },
     searchInput: {
@@ -359,13 +395,20 @@ const styles = StyleSheet.create({
         marginHorizontal: 16,
         flexDirection: 'row',
         marginVertical: 4,
-        height: '6%',
+        justifyContent: 'space-between',
+    },
+    profilePictureContainer: {
+        width: 53,
+        height: 53,
+        borderWidth: 1,
+        borderRadius: 30,
+        borderColor: '#CCCCCC',
+        overflow: 'hidden',
+        marginRight: 10,
     },
     profilePicture: {
-        width: 40,
-        height: 40,
-        borderRadius: 25,
-        marginRight: 10,
+        width: '100%',
+        height: '100%',
     },
     postInput: {
         flex: 1,
@@ -380,7 +423,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     button: {
-        paddingVertical: 8,
+        paddingVertical: 12,
         paddingHorizontal: 20,
         borderRadius: 17,
         backgroundColor: '#F26419',
@@ -398,7 +441,8 @@ const styles = StyleSheet.create({
         borderColor: '#CCCCCC',
         width: '100%',
         alignSelf: 'center',
-        height: '74%',
+        height: '100%',
+        marginTop: 16,
         position: 'absolute',
     },
     postContainer: {
@@ -406,10 +450,14 @@ const styles = StyleSheet.create({
         borderBottomColor: '#CCCCCC',
         borderBottomWidth: 1,
     },
+    postUserContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     postUser: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#808080',
+        color: '#000000',
     },
     postDate: {
         fontSize: 12,
@@ -434,7 +482,8 @@ const styles = StyleSheet.create({
     },
     commentInput: {
         flex: 1,
-        padding: 10,
+        paddingHorizontal: 8,
+        paddingVertical: 5,
         borderColor: '#CCCCCC',
         borderWidth: 1,
         borderRadius: 17,
@@ -448,14 +497,17 @@ const styles = StyleSheet.create({
     },
     commentUser: {
         fontWeight: 'bold',
-        marginBottom: 4,
+
     },
     commentDateTime: {
         fontSize: 12,
         color: '#808080',
-        marginBottom: 4,
     },
     commentText: {
         fontSize: 14,
+    },
+    loadingContainer: {
+        flex: 1,
+        alignSelf: 'center',
     },
 });
