@@ -210,7 +210,6 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
-        borderWidth: 1,
     },
     header: {
         position: 'absolute',

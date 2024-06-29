@@ -9,6 +9,7 @@ import NavigationBar from '../../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
 import AddPetScreen from './addPetScr';
 import MyPetsScreen from './myPetsScr';
+import MyPostsScreen from './myPostsScr';
 import LogoutModal from '../components/logoutModal';
 
 export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
@@ -83,6 +84,15 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
     setCurrentScreen('Profile');
   };
 
+  {/* My Posts Screen */ }
+  const openMyPostsScreen = () => {
+    setCurrentScreen('MyPosts');
+  };
+
+  const closeMyPostsScreen = () => {
+    setCurrentScreen('Profile');
+  };
+
   {/*Log Out Modal */ }
   const openLogoutModal = () => {
     setShowLogoutModal(true);
@@ -148,7 +158,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
 
               <View style={styles.separatorLine} />
 
-              <TouchableOpacity onPress={() => console.log('Navigate to My Posts')}>
+              <TouchableOpacity onPress={openMyPostsScreen}>
                 <View style={styles.featurePanel}>
                   <Ionicons name="document-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>My Posts</Text>
@@ -224,6 +234,11 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       {currentScreen === 'MyPets' && (
         <MyPetsScreen
           closeMyPetsScreen={closeMyPetsScreen}
+        />
+      )}
+      {currentScreen === 'MyPosts' && (
+        <MyPostsScreen
+          closeMyPostsScreen={closeMyPostsScreen}
         />
       )}
       <LogoutModal
