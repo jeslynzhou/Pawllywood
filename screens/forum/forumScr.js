@@ -72,7 +72,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             userId: auth.currentUser.uid,
             userProfilePicture: userData.picture,
             date: new Date().toLocaleDateString(),
-            time: new Date().toLocaleTimeString(),
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
             comments: [],
             upvotes: [],
             downvotes: []
@@ -98,7 +98,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             userId: auth.currentUser.uid,
             userProfilePicture: userData.picture,
             date: new Date().toLocaleDateString(),
-            time: new Date().toLocaleTimeString(),
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
             text: commentText
         };
 
@@ -281,7 +281,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                             </View>
                             <View>
                                 <Text style={styles.postUser}>{post.user}</Text>
-                                <Text style={styles.postDate}>{post.date} {post.time}</Text>
+                                <Text style={styles.postDate}>{post.date} • {post.time}</Text>
                             </View>
                         </View>
                         <Text style={styles.postText}>{post.text}</Text>
