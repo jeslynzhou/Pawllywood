@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions, PanResponder, Modal,
-} from 'react-native'; import { getDocs, collection } from 'firebase/firestore';
-import { db } from '../../initializeFB';
-import NavigationBar from '../../components/navigationBar';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions, PanResponder, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+import { db } from '../../initializeFB';
+import { getDocs, collection } from 'firebase/firestore';
+
+import NavigationBar from '../../components/navigationBar';
 
 export default function LibraryScreen({ directToProfile, directToNotebook, directToLibrary, directToForum, directToHome }) {
   const [currentScreen, setCurrentScreen] = useState('Library');

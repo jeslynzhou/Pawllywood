@@ -5,7 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { db, auth } from '../../../initializeFB';
 import { collection, getDocs, deleteDoc, doc, query, where } from 'firebase/firestore';
 
-export default function MyPostsScreen({ closeMyPostsScreen }) {
+import NavigationBar from '../../../components/navigationBar';
+
+export default function MyPostsScreen({ closeMyPostsScreen, directToNotebook, directToHome, directToLibrary, directToForum }) {
     const [postsData, setPostsData] = useState([]);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -98,7 +100,7 @@ export default function MyPostsScreen({ closeMyPostsScreen }) {
             <View style={styles.contentContainer}>
                 {/* My Posts List */}
                 {postsData.length === 0 ? (
-                    <TouchableOpacity style={styles.postInfoContainer}>
+                    <TouchableOpacity onPress={directToForum} style={styles.postInfoContainer}>
                         <View style={styles.postInfo}>
                             <Text style={styles.text}>You don't have any posts. Share your thoughts now in the forum!</Text>
                         </View>
@@ -132,6 +134,15 @@ export default function MyPostsScreen({ closeMyPostsScreen }) {
 
                 )}
             </View>
+
+            {/* Navigation Bar */}
+            <NavigationBar
+                directToProfile={closeMyPostsScreen}
+                directToNotebook={directToNotebook}
+                directToHome={directToHome}
+                directToLibrary={directToLibrary}
+                directToForum={directToForum}
+            />
 
             {/* Confirmation Modal */}
             <Modal
@@ -177,6 +188,7 @@ export default function MyPostsScreen({ closeMyPostsScreen }) {
 
 const styles = StyleSheet.create({
     myPostsContainer: {
+        flex: 1,
         marginTop: '10%',
         padding: 16,
     },
@@ -197,9 +209,6 @@ const styles = StyleSheet.create({
     },
     settingButton: {
         marginLeft: 230,
-    },
-    noPostsMessageContainer: {
-
     },
     contentContainer: {
         borderRadius: 17,

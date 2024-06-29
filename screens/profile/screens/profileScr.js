@@ -239,6 +239,10 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       {currentScreen === 'MyPosts' && (
         <MyPostsScreen
           closeMyPostsScreen={closeMyPostsScreen}
+          directToNotebook={directToNotebook}
+          directToHome={directToHome}
+          directToLibrary={directToLibrary}
+          directToForum={directToForum}
         />
       )}
       <LogoutModal

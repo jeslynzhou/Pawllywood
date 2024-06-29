@@ -11,7 +11,7 @@ import UploadImageModal from '../components/uploapImageModal';
 import BirthDateModal from '../../home/components/birthDateModal';
 import GenderOptionsModal from '../components/genderOptionsModal';
 
-export default function AddPetScreen({ fetchPetData, closeAddPet }) {
+export default function AddPetScreen({ closeAddPet }) {
     const [showUploadImageModal, setShowUploadImageModal] = useState(false);
     const [showBirthDateModal, setShowBirthDateModal] = useState(false);
     const [showAdoptedDateModal, setShowAdoptedDateModal] = useState(false);
@@ -49,7 +49,6 @@ export default function AddPetScreen({ fetchPetData, closeAddPet }) {
             const user = auth.currentUser;
             const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
             await addDoc(petsCollectionRef, petData);
-            fetchPetData();
             console.log('Pet added successfully!');
             closeAddPet(); // Close the add pet screen after successful addition
         } catch (error) {
