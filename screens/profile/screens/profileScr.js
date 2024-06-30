@@ -58,6 +58,8 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, updatedProfile, { merge: true });
 
+        setUserProfile(updatedProfile);
+
         // Update username and profile picture in posts
         const postsRef = collection(db, 'posts');
         const postsQuery = query(postsRef, where('userId', '==', user.uid));
@@ -70,11 +72,22 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
             username: updatedProfile.username,
             userProfilePicture: updatedProfile.picture,
           });
+          const updatedComments = doc.data().comments.map(comment => {
+            if (comment.userId === user.uid) {
+              return {
+                ...comment,
+                username: updatedProfile.username,
+                userProfilePicture: updatedProfile.picture,
+              };
+            }
+            return comment;
+          });
+
+          batch.update(doc.ref, { comments: updatedComments });
         });
 
         await batch.commit();
 
-        setUserProfile(updatedProfile);
         setCurrentScreen('Profile');
       } else {
         console.log('No user is currently signed in.');
@@ -253,6 +266,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
         <MyPetsScreen
           closeMyPetsScreen={closeMyPetsScreen}
           handleAddingPet={handleAddingPet}
+          directToHome={directToHome}
         />
       )}
       {currentScreen === 'MyPosts' && (

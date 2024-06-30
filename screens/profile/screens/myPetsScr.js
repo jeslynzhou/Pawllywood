@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { db, auth } from '../../../initializeFB';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
-export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet }) {
+export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, directToHome }) {
     const [petProfilesData, setPetProfilesData] = useState([]);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -84,11 +84,6 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet }) {
         }
     };
 
-
-    const viewPetProfile = (petId) => {
-        console.log(`Viewing pet profile with ID: ${petId}`);
-    };
-
     return (
         <View style={styles.myPetsContainer}>
             {/* Header */}
@@ -121,7 +116,7 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet }) {
                     ) : (
                         petProfilesData.map((petProfile) => (
                             <View key={petProfile.id}>
-                                <TouchableOpacity key={petProfile.id} style={[styles.petInfoContainer]} onPress={() => viewPetProfile(petProfile.id)}>
+                                <TouchableOpacity onPress={directToHome} key={petProfile.id} style={[styles.petInfoContainer]}>
                                     <View style={styles.profileImageContainer}>
                                         <Image
                                             source={{ uri: petProfile.picture }}
