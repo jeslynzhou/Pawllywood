@@ -132,7 +132,7 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
                                         </View>
                                     )}
                                     {!isEditMode && (
-                                        <View>
+                                        <View style={{ right: 18 }}>
                                             <Text style={[styles.text, { color: '#CCCCCC' }]}>{post.time}</Text>
                                         </View>
                                     )}
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
     },
     postInfo: {
-        marginRight: '3.5%',
+        marginRight: 25,
     },
     text: {
         fontSize: 16,
