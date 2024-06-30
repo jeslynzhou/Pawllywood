@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Image, StyleSheet, Modal } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
 import { collection, getDocs, deleteDoc, doc, query, where } from 'firebase/firestore';
 
-export default function MyPostsScreen({ closeMyPostsScreen }) {
+export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
     const [postsData, setPostsData] = useState([]);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedPostsForDelete, setSelectedPostsForDelete] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     async function fetchPostData() {
         try {
@@ -29,8 +30,10 @@ export default function MyPostsScreen({ closeMyPostsScreen }) {
             }
         } catch (error) {
             console.error('Error fetching posts profile:', error.message);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         fetchPostData();
@@ -91,35 +94,56 @@ export default function MyPostsScreen({ closeMyPostsScreen }) {
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>My Posts</Text>
-                <TouchableOpacity onPress={openEditMyPostsList} style={styles.settingButton}>
+                <TouchableOpacity onPress={postsData.length > 0 ? openEditMyPostsList : closeEditMyPostsList} style={styles.settingButton}>
                     <Ionicons name="ellipsis-horizontal" size={24} color='#000000' />
                 </TouchableOpacity>
             </View>
-            <View style={styles.contentContainer}>
-                {/* My Posts List */}
-                {postsData.map((post) => (
-                    <View key={post.id}>
-                        <View key={post.id} style={[styles.postInfoContainer]}>
-                            <View style={styles.postInfo}>
-                                <Text numberOfLines={2} ellipsizeMode='tail' style={styles.text}>
-                                    {post.text.length > 100 ? `[${post.text.substring(0, 80)}...]` : `[${post.text}]`}
-                                </Text>
+
+            {loading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size='large' color='#F26419' />
+                </View>
+            ) : (
+                <View style={styles.contentContainer}>
+                    {/* My Posts List */}
+                    {postsData.length === 0 ? (
+                        <TouchableOpacity onPress={directToForum} style={styles.postInfoContainer}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.text}>You don't have any posts. Click here to share your thoughts in the forum!</Text>
                             </View>
-                            {isEditMode && (
-                                <TouchableOpacity style={{ alignSelf: 'center' }} onPress={() => toggleSelectPost(post.id)}>
-                                    <Ionicons name={selectedPostsForDelete.includes(post.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
-                                </TouchableOpacity>
-                            )}
-                            {!isEditMode && (
-                                <View style={{ alignSelf: 'center' }}>
-                                    <Text style={[styles.text, { color: '#CCCCCC', alignSelf: 'flex-end' }]}>{post.time}</Text>
+                            <View style={styles.navigateButtonContainer}>
+                                <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
+                            </View>
+                        </TouchableOpacity>
+                    ) : (
+                        postsData.map((post) => (
+                            <View key={post.id}>
+                                <View key={post.id} style={[styles.postInfoContainer]}>
+                                    <View style={styles.postInfo}>
+                                        <Text numberOfLines={2} ellipsizeMode='tail' style={styles.text}>
+                                            {post.text.length > 80 ? `[${post.text.substring(0, 50)}...]` : `[${post.text}]`}
+                                        </Text>
+                                    </View>
+                                    {isEditMode && (
+                                        <View style={{ position: 'absolute', right: 10 }}>
+                                            <TouchableOpacity style={{ alignSelf: 'center' }} onPress={() => toggleSelectPost(post.id)}>
+                                                <Ionicons name={selectedPostsForDelete.includes(post.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+                                    {!isEditMode && (
+                                        <View style={{ position: 'absolute', right: 10 }}>
+                                            <Text style={[styles.text, { color: '#CCCCCC' }]}>{post.time}</Text>
+                                        </View>
+                                    )}
                                 </View>
-                            )}
-                        </View>
-                        <View style={styles.separatorLine} />
-                    </View>
-                ))}
-            </View>
+                                <View style={styles.separatorLine} />
+                            </View>
+                        ))
+
+                    )}
+                </View>
+            )}
 
             {/* Confirmation Modal */}
             <Modal
@@ -165,6 +189,7 @@ export default function MyPostsScreen({ closeMyPostsScreen }) {
 
 const styles = StyleSheet.create({
     myPostsContainer: {
+        flex: 1,
         marginTop: '10%',
         padding: 16,
     },
@@ -199,7 +224,6 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     postInfo: {
-        flex: 1,
         marginRight: '2%',
     },
     text: {
@@ -260,5 +284,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: '#FFFFFF',
+    },
+    loadingContainer: {
+        justifyContent: 'center',
+        flex: 1,
     },
 });

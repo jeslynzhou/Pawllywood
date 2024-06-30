@@ -10,6 +10,7 @@ const NavigationBar = ({ activeScreen, directToProfile, directToNotebook, direct
                     <View style={[styles.iconWrapper, activeScreen === 'Profile' ? styles.activeIcon : null]}>
                         <Ionicons name="person-outline" size={24} color={'#FFFFFF'} />
                     </View>
+                    <Text style={[styles.navBarText, activeScreen === 'Profile' ? styles.activeNavText : null]}>Profile</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={directToNotebook} style={[styles.navBarButton, activeScreen === 'Notebook' ? styles.activeNavButton : null]}>

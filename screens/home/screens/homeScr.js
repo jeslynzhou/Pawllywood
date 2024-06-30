@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     },
     addPetButton: {
         position: 'absolute',
-        bottom: 68,
+        bottom: '10%',
         right: 16,
         alignItems: 'center',
         justifyContent: 'center',

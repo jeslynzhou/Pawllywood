@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
- 
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { auth, db, storage } from '../../initializeFB';
 import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
 import { ref } from 'firebase/storage';
  
 import NavigationBar from '../../components/navigationBar';
- 
+
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
     const [posts, setPosts] = useState([]);
@@ -208,9 +207,22 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
  
     const onShare = async (post) => {
         try {
+            // Format additional details into the shared message
+            const message = `
+Post: ${post.text}
+ 
+Upvotes: ${post.upvotes.length}
+ 
+Downvotes: ${post.downvotes.length}
+ 
+Comments:
+${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\n')}
+        `;
+            
             const result = await Share.share({
-                message: post.text, // Share the content of the post
+                message: message.trim(), // Share the formatted message
             });
+            
             if (result.action === Share.sharedAction) {
                 if (result.activityType) {
                     console.log('Shared with activity type:', result.activityType);
@@ -229,14 +241,14 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         const matchesQuery = post.text.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesQuery;
     });
- 
+
     const toggleExpandedComments = (postId) => {
         setExpandedComments(prevState => ({
             ...prevState,
             [postId]: !prevState[postId]
         }));
     };
- 
+
     const { height } = Dimensions.get('window');
     const marginTop = searchHeight + profileHeight + height * 29 % + 30;
  
@@ -314,17 +326,36 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                         </View>
                         <Text style={styles.postText}>{post.text}</Text>
                         <View style={styles.postActions}>
-                            <TouchableOpacity onPress={() => handleUpvote(post.id)}>
-                                <Ionicons name="caret-up" size={20} color={post.upvotes.includes(userData.email) ? '#33658A' : '#000000'} />
-                                <Text style={{ alignSelf: 'center' }}>{post.upvotes.length}</Text>
+                            <View style={styles.votesContainer}>
+                                <TouchableOpacity style={styles.votesSmallerContainer} onPress={() => handleUpvote(post.id)}>
+                                    <MaterialCommunityIcons
+                                        name={post.upvotes.includes(userData.email) ? 'arrow-up-bold' : 'arrow-up-bold-outline'}
+                                        size={20}
+                                        color={post.upvotes.includes(userData.email) ? '#33658A' : '#000000'}
+                                    />
+                                    <View style={styles.voteTextContainer}>
+                                        <Text>{post.upvotes.length}</Text>
+                                    </View>
+                                </TouchableOpacity>
+
+                                <View style={styles.verticalLine} />
+
+                                <TouchableOpacity style={styles.votesSmallerContainer} onPress={() => handleDownvote(post.id)}>
+                                    <MaterialCommunityIcons
+                                        name={post.downvotes.includes(userData.email) ? 'arrow-down-bold' : 'arrow-down-bold-outline'}
+                                        size={20}
+                                        color={post.downvotes.includes(userData.email) ? '#F26419' : '#000000'}
+                                    />
+                                    <View style={styles.voteTextContainer}>
+                                        <Text>{post.downvotes.length}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+
+                            <TouchableOpacity style={styles.shareContainer} onPress={() => onShare(post)}>
+                                <Ionicons name="arrow-redo-outline" size={20} color='#000000' />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleDownvote(post.id)}>
-                                <Ionicons name="caret-down" size={20} color={post.downvotes.includes(userData.email) ? '#F26419' : '#000000'} />
-                                <Text style={{ alignSelf: 'center' }}>{post.downvotes.length}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => onShare(post)}>
-                                <Ionicons name="share-social" size={20} color='#000000' />
-                            </TouchableOpacity>
+
                         </View>
                         <View style={styles.commentInputContainer}>
                             <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
@@ -371,7 +402,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                                     <Text style={{ fontWeight: 'bold', color: '#808080' }}>{expandedComments[post.id] ? 'View less comments' : 'View more comments'}</Text>
                                 </TouchableOpacity>
                             )}
- 
+
                             {/* Display one comment initially */}
                             {post.comments.length > 0 && (
                                 <View style={styles.commentContainer}>
@@ -383,7 +414,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                                             />
                                         </View>
                                     </View>
- 
+
                                     <View style={styles.commentInfoContainer}>
                                         <View style={styles.comment}>
                                             <Text style={styles.commentUser}>{post.comments[0].username}</Text>
@@ -395,7 +426,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                                     </View>
                                 </View>
                             )}
- 
+
                             {/* Additional comments if expanded */}
                             {expandedComments[post.id] && post.comments.slice(1).map((comment, index) => (
                                 <View key={index} style={styles.commentContainer}>
@@ -407,7 +438,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                                             />
                                         </View>
                                     </View>
- 
+
                                     <View style={styles.commentInfoContainer}>
                                         <View style={styles.comment}>
                                             <Text style={styles.commentUser}>{comment.username}</Text>
@@ -418,7 +449,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                                         </View>
                                     </View>
                                 </View>
- 
+
                             ))}
                         </View>
                     </View>
@@ -538,8 +569,27 @@ const styles = StyleSheet.create({
     },
     postActions: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        margin: 8,
+        marginVertical: 8,
+    },
+    votesContainer: {
+        flexDirection: 'row',
+        borderWidth: 1,
+        borderRadius: 15,
+        paddingVertical: 3,
+        borderColor: '#CCCCCC',
+        justifyContent: 'flex-start',
+    },
+    votesSmallerContainer: {
+        flexDirection: 'row',
+        paddingHorizontal: 3,
+    },
+    voteTextContainer: {
+        paddingRight: 7,
+        paddingLeft: 20,
+    },
+    shareContainer: {
+        justifyContent: 'center',
+        marginHorizontal: 8,
     },
     commentSection: {
         marginTop: 8,
@@ -591,5 +641,10 @@ const styles = StyleSheet.create({
     loadingContainer: {
         flex: 1,
         alignSelf: 'center',
+    },
+    verticalLine: {
+        width: 1,
+        height: '100%',
+        backgroundColor: '#CCCCCC',
     },
 });

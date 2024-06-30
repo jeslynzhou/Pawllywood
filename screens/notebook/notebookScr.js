@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import NavigationBar from '../../components/navigationBar'; // Adjusted import path
+
+import NavigationBar from '../../components/navigationBar';
 
 export default function NotebookScreen({ directToProfile, directToHome, directToLibrary, directToForum }) {
     const [currentScreen, setCurrentScreen] = useState('Notebook');

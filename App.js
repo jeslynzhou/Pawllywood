@@ -13,6 +13,7 @@ import ForumScreen from './screens/forum/forumScr.js';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './initializeFB.js'; // Use the configured auth
 import { styles } from './components/styles.js';
+import MyPostsScreen from './screens/profile/screens/myPostsScr.js';
 
 const App = () => {
   const [username, setUsername] = useState('');
@@ -147,6 +148,16 @@ const App = () => {
           directToNotebook={directToNotebook}
           directToHome={directToHome}
           directToLibrary={directToLibrary}
+        />
+      )}
+      {currentScreen === 'MyPosts' && (
+        <MyPostsScreen
+          closeMyPostsScreen={() => { setCurrentScreen('Profile'), console.log('Back to Profile') }}
+          directToProfile={directToProfile}
+          directToNotebook={directToNotebook}
+          directToHome={directToHome}
+          directToLibrary={directToLibrary}
+          directToForum={directToForum}
         />
       )}
     </ScrollView>
