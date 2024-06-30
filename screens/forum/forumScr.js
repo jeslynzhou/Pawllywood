@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+
 
 import { auth, db, storage } from '../../initializeFB';
 import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
@@ -314,17 +315,36 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                         </View>
                         <Text style={styles.postText}>{post.text}</Text>
                         <View style={styles.postActions}>
-                            <TouchableOpacity onPress={() => handleUpvote(post.id)}>
-                                <Ionicons name="caret-up" size={20} color={post.upvotes.includes(userData.email) ? '#33658A' : '#000000'} />
-                                <Text style={{ alignSelf: 'center' }}>{post.upvotes.length}</Text>
+                            <View style={styles.votesContainer}>
+                                <TouchableOpacity style={styles.votesSmallerContainer} onPress={() => handleUpvote(post.id)}>
+                                    <MaterialCommunityIcons
+                                        name={post.upvotes.includes(userData.email) ? 'arrow-up-bold' : 'arrow-up-bold-outline'}
+                                        size={20}
+                                        color={post.upvotes.includes(userData.email) ? '#33658A' : '#000000'}
+                                    />
+                                    <View style={styles.voteTextContainer}>
+                                        <Text>{post.upvotes.length}</Text>
+                                    </View>
+                                </TouchableOpacity>
+
+                                <View style={styles.verticalLine} />
+
+                                <TouchableOpacity style={styles.votesSmallerContainer} onPress={() => handleDownvote(post.id)}>
+                                    <MaterialCommunityIcons
+                                        name={post.downvotes.includes(userData.email) ? 'arrow-down-bold' : 'arrow-down-bold-outline'}
+                                        size={20}
+                                        color={post.downvotes.includes(userData.email) ? '#F26419' : '#000000'}
+                                    />
+                                    <View style={styles.voteTextContainer}>
+                                        <Text>{post.downvotes.length}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+
+                            <TouchableOpacity style={styles.shareContainer} onPress={() => onShare(post)}>
+                                <Ionicons name="arrow-redo-outline" size={20} color='#000000' />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleDownvote(post.id)}>
-                                <Ionicons name="caret-down" size={20} color={post.downvotes.includes(userData.email) ? '#F26419' : '#000000'} />
-                                <Text style={{ alignSelf: 'center' }}>{post.downvotes.length}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => onShare(post)}>
-                                <Ionicons name="share-social" size={20} color='#000000' />
-                            </TouchableOpacity>
+
                         </View>
                         <View style={styles.commentInputContainer}>
                             <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
@@ -538,8 +558,27 @@ const styles = StyleSheet.create({
     },
     postActions: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        margin: 8,
+        marginVertical: 8,
+    },
+    votesContainer: {
+        flexDirection: 'row',
+        borderWidth: 1,
+        borderRadius: 15,
+        paddingVertical: 3,
+        borderColor: '#CCCCCC',
+        justifyContent: 'flex-start',
+    },
+    votesSmallerContainer: {
+        flexDirection: 'row',
+        paddingHorizontal: 3,
+    },
+    voteTextContainer: {
+        paddingRight: 7,
+        paddingLeft: 20,
+    },
+    shareContainer: {
+        justifyContent: 'center',
+        marginHorizontal: 8,
     },
     commentSection: {
         marginTop: 8,
@@ -591,5 +630,10 @@ const styles = StyleSheet.create({
     loadingContainer: {
         flex: 1,
         alignSelf: 'center',
+    },
+    verticalLine: {
+        width: 1,
+        height: '100%',
+        backgroundColor: '#CCCCCC',
     },
 });
