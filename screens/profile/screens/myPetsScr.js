@@ -3,7 +3,7 @@ import { Text, View, TouchableOpacity, Image, StyleSheet, Modal, ActivityIndicat
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
-import { collection, getDocs, deleteDoc, doc, query, where } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, directToHome }) {
     const [petProfilesData, setPetProfilesData] = useState([]);
@@ -12,19 +12,17 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
     const [selectedPetsForDelete, setSelectedPetsForDelete] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    async function fetchPostData() {
+    async function fetchPetData() {
         try {
             const user = auth.currentUser;
             if (user) {
-                const userId = user.uid;
-                const postsCollectionRef = collection(db, 'posts');
-                const q = query(postsCollectionRef, where('userId', '==', userId));
-                const querySnapShot = await getDocs(q);
-                const fetchedPostsInfo = querySnapShot.docs.map(doc => ({
+                const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
+                const querySnapShot = await getDocs(petsCollectionRef);
+                const fetchedPetProfiles = querySnapShot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
-                setPostsData(fetchedPostsInfo);
+                setPetProfilesData(fetchedPetProfiles);
             } else {
                 console.log('User not authenticated.');
             }
@@ -36,61 +34,61 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
     };
 
     useEffect(() => {
-        fetchPostData();
+        fetchPetData();
     }, []);
 
-    const openEditMyPostsList = () => {
+    const openEditMyPetsList = () => {
         setShowConfirmationModal(true);
     };
 
-    const closeEditMyPostsList = () => {
+    const closeEditMyPetsList = () => {
         setShowConfirmationModal(false);
-        setSelectedPostsForDelete([]);
+        setSelectedPetsForDelete([]);
         setIsEditMode(false);
     };
 
-    const confirmEditPostsList = () => {
+    const confirmEditPetsList = () => {
         setIsEditMode(true);
         setShowConfirmationModal(false);
     };
 
-    const toggleSelectPost = (postId) => {
-        const index = selectedPostsForDelete.indexOf(postId);
+    const toggleSelectPet = (petId) => {
+        const index = selectedPetsForDelete.indexOf(petId);
         if (index === -1) {
-            setSelectedPostsForDelete([...selectedPostsForDelete, postId]);
+            setSelectedPetsForDelete([...selectedPetsForDelete, petId]);
         } else {
-            const updatedSelectedPostsForDelete = [...selectedPostsForDelete];
-            updatedSelectedPostsForDelete.splice(index, 1);
-            setSelectedPostsForDelete(updatedSelectedPostsForDelete);
+            const updatedSelectedPetsForDelete = [...selectedPetsForDelete];
+            updatedSelectedPetsForDelete.splice(index, 1);
+            setSelectedPetsForDelete(updatedSelectedPetsForDelete);
         }
     };
 
-    const deleteSelectedPosts = async () => {
+    const deleteSelectedPets = async () => {
         try {
             const user = auth.currentUser;
             if (user) {
-                const deletionPromises = selectedPostsForDelete.map(async (postId) => {
-                    const postDocRef = doc(db, 'posts', postId);
-                    await deleteDoc(postDocRef);
+                const deletionPromises = selectedPetsForDelete.map(async (petId) => {
+                    const petDocRef = doc(db, 'users', user.uid, 'pets', petId);
+                    await deleteDoc(petDocRef);
                 });
 
                 await Promise.all(deletionPromises);
 
                 // Refresh after deletion
-                fetchPostData();
-                setSelectedPostsForDelete([]);
+                fetchPetData();
+                setSelectedPetsForDelete([]);
                 setIsEditMode(false); // Exit edit mode after deletion
             }
         } catch (error) {
-            console.error('Error deleting posts:', error.message);
+            console.error('Error deleting pets:', error.message);
         }
     };
 
     return (
-        <View style={styles.myPostsContainer}>
+        <View style={styles.myPetsContainer}>
             {/* Header */}
             <View style={styles.headerContainer}>
-                <TouchableOpacity onPress={closeMyPostsScreen} style={styles.backButton}>
+                <TouchableOpacity onPress={closeMyPetsScreen} style={styles.backButton}>
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>My Pets</Text>
@@ -158,17 +156,17 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
             >
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Do you want to edit your posts list?</Text>
+                        <Text style={styles.modalTitle}>Do you want to edit your pets list?</Text>
                         <View style={styles.modalButtonContainer}>
                             <View style={styles.separatorLine} />
 
-                            <TouchableOpacity onPress={confirmEditPostsList} style={styles.modalButton}>
+                            <TouchableOpacity onPress={confirmEditPetsList} style={styles.modalButton}>
                                 <Text style={[styles.modalButtonText, { fontWeight: 'bold', color: '#F26419' }]}>Yes</Text>
                             </TouchableOpacity>
 
                             <View style={styles.separatorLine} />
 
-                            <TouchableOpacity onPress={() => { setShowConfirmationModal(false), setIsEditMode(false) }} style={styles.modalButton}>
+                            <TouchableOpacity onPress={() => setShowConfirmationModal(false)} style={styles.modalButton}>
                                 <Text style={styles.modalButtonText}>No</Text>
                             </TouchableOpacity>
                         </View>
@@ -179,10 +177,10 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
             {/* Buttons for Edit Mode */}
             {isEditMode && (
                 <View style={styles.editModeButtonsContainer}>
-                    <TouchableOpacity onPress={closeEditMyPostsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                    <TouchableOpacity onPress={closeEditMyPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
                         <Text style={styles.editModeButtonText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={deleteSelectedPosts} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
+                    <TouchableOpacity onPress={deleteSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
                         <Text style={styles.editModeButtonText}>Confirm Delete</Text>
                     </TouchableOpacity>
                 </View>
@@ -224,12 +222,25 @@ const styles = StyleSheet.create({
     },
     petInfoContainer: {
         flexDirection: 'row',
-        alignItems: 'center',
+        justifyContent: 'flex-start',
         padding: 10,
     },
-    postInfo: {
+    profileImageContainer: {
+        width: 60,
+        height: 60,
+        borderRadius: 40,
+        borderWidth: 1,
+        overflow: 'hidden',
+        justifyContent: 'center',
+    },
+    profileImage: {
+        width: '100%',
+        height: '100%',
+    },
+    nameAndAdoptedDateContainer: {
         flex: 1,
-        marginRight: '2%',
+        marginLeft: 10,
+        alignSelf: 'center',
     },
     text: {
         fontSize: 16,
@@ -237,6 +248,12 @@ const styles = StyleSheet.create({
     separatorLine: {
         height: 1,
         backgroundColor: '#CCCCCC',
+    },
+    navigateButtonContainer: {
+        alignSelf: 'center',
+    },
+    checkboxContainer: {
+        alignSelf: 'center',
     },
     modalContainer: {
         flex: 1,

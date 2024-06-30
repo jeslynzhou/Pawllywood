@@ -250,7 +250,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
     };
 
     const { height } = Dimensions.get('window');
-    const marginTop = searchHeight + profileHeight + height * 29 % + 30;
+    const marginTop = searchHeight + profileHeight + height * 12%  + 30;
  
     return (
         <View style={styles.forumContainer}>
