@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, TouchableOpacity, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
+ 
 import { db, auth } from '../../../initializeFB';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-
+import { doc, getDoc, setDoc, getDocs, writeBatch, collection, query, where } from 'firebase/firestore';
+ 
 import NavigationBar from '../../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
 import AddPetScreen from './addPetScr';
 import MyPetsScreen from './myPetsScr';
 import MyPostsScreen from './myPostsScr';
 import LogoutModal from '../components/logoutModal';
-
+ 
+ 
 export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
   const [userProfile, setUserProfile] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loading, setLoading] = useState(true);
-
+ 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -37,26 +38,56 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
         setLoading(false); // Set loading to false once the data is fetched
       }
     };
-
+ 
     fetchUserProfile();
   }, []);
-
+ 
   {/* Edit Profile Screen */ }
   const handleEditProfile = () => {
     setCurrentScreen('EditProfile');
   };
-
+ 
   const closeEditUserProfile = () => {
     setCurrentScreen('Profile');
   };
-
+ 
   const handleUpdateProfile = async (updatedProfile) => {
     try {
       const user = auth.currentUser;
       if (user) {
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, updatedProfile, { merge: true });
+ 
         setUserProfile(updatedProfile);
+ 
+        // Update username and profile picture in posts
+        const postsRef = collection(db, 'posts');
+        const postsQuery = query(postsRef, where('userId', '==', user.uid));
+        const postsSnapshot = await getDocs(postsQuery);
+ 
+        const batch = writeBatch(db);
+ 
+        postsSnapshot.forEach((doc) => {
+          batch.update(doc.ref, {
+            username: updatedProfile.username,
+            userProfilePicture: updatedProfile.picture,
+          });
+          const updatedComments = doc.data().comments.map(comment => {
+            if (comment.userId === user.uid) {
+              return {
+                ...comment,
+                username: updatedProfile.username,
+                userProfilePicture: updatedProfile.picture,
+              };
+            }
+            return comment;
+          });
+ 
+          batch.update(doc.ref, { comments: updatedComments });
+        });
+ 
+        await batch.commit();
+ 
         setCurrentScreen('Profile');
       } else {
         console.log('No user is currently signed in.');
@@ -65,56 +96,56 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       console.error('Error updating profile:', error.message);
     }
   };
-
+ 
   {/* Add Pet Screen */ }
   const handleAddingPet = () => {
     setCurrentScreen('AddPet');
   };
-
+ 
   const closeAddPet = () => {
     setCurrentScreen('Profile');
   };
-
+ 
   {/* My Pets Screen */ }
   const openMyPetsScreen = () => {
     setCurrentScreen('MyPets');
   };
-
+ 
   const closeMyPetsScreen = () => {
     setCurrentScreen('Profile');
   };
-
+ 
   {/* My Posts Screen */ }
   const openMyPostsScreen = () => {
     setCurrentScreen('MyPosts');
   };
-
+ 
   const closeMyPostsScreen = () => {
     setCurrentScreen('Profile');
   };
-
+ 
   {/*Log Out Modal */ }
   const openLogoutModal = () => {
     setShowLogoutModal(true);
   };
-
+ 
   const closeLogoutModal = () => {
     setShowLogoutModal(false);
   };
-
+ 
   const handleLogout = () => {
     handleSignOut();
     setShowLogoutModal(false);
   };
-
+ 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size='large' color='#F26419' />
       </View>
     );
-  }
-
+  };
+ 
   return (
     <>
       {currentScreen === 'Profile' && (
@@ -125,7 +156,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
               <View style={styles.profileImageContainer}>
                 <Image source={{ uri: userProfile.picture }} style={styles.profileImage} />
               </View>
-
+ 
               {/* Username and Description */}
               <View style={styles.profileTextContainer}>
                 <View style={styles.usernameRow}>
@@ -143,7 +174,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
               </View>
             </View>
           </View>
-
+ 
           {/* Function Button Groups */}
           <View style={styles.featurePanelGroup}>
             {/* Group 1: My Pets and My Posts */}
@@ -155,9 +186,9 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
               </TouchableOpacity>
-
+ 
               <View style={styles.separatorLine} />
-
+ 
               <TouchableOpacity onPress={openMyPostsScreen}>
                 <View style={styles.featurePanel}>
                   <Ionicons name="document-outline" size={24} color='#000000' />
@@ -166,7 +197,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
                 </View>
               </TouchableOpacity>
             </View>
-
+ 
             {/* Group 2: Friends, Message, Notification */}
             <View style={styles.featureBox}>
               <TouchableOpacity onPress={() => console.log('Navigate to Friends')}>
@@ -176,9 +207,9 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
               </TouchableOpacity>
-
+ 
               <View style={styles.separatorLine} />
-
+ 
               <TouchableOpacity onPress={() => console.log('Navigate to Message')}>
                 <View style={styles.featurePanel}>
                   <Ionicons name="chatbubble-ellipses-outline" size={24} color='#000000' />
@@ -186,9 +217,9 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
               </TouchableOpacity>
-
+ 
               <View style={styles.separatorLine} />
-
+ 
               <TouchableOpacity onPress={() => console.log('Navigate to Notification')}>
                 <View style={styles.featurePanel}>
                   <Ionicons name="notifications-outline" size={24} color='#000000' />
@@ -196,9 +227,9 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
                   <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
                 </View>
               </TouchableOpacity>
-
+ 
               <View style={styles.separatorLine} />
-
+ 
               <TouchableOpacity onPress={openLogoutModal}>
                 <View style={styles.featurePanel}>
                   <Ionicons name="log-out-outline" size={24} color='#000000' />
@@ -208,7 +239,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
               </TouchableOpacity>
             </View>
           </View >
-
+ 
           {/* Navigation Bar */}
           <NavigationBar
             activeScreen={currentScreen}
@@ -234,11 +265,13 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       {currentScreen === 'MyPets' && (
         <MyPetsScreen
           closeMyPetsScreen={closeMyPetsScreen}
+          handleAddingPet={handleAddingPet}
         />
       )}
       {currentScreen === 'MyPosts' && (
         <MyPostsScreen
           closeMyPostsScreen={closeMyPostsScreen}
+          directToForum={directToForum}
         />
       )}
       <LogoutModal
@@ -249,7 +282,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
     </>
   );
 };
-
+ 
 const styles = StyleSheet.create({
   profileContainer: {
     justifyContent: 'flex-start',

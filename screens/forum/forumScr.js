@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
  
 import { auth, db, storage } from '../../initializeFB';
@@ -8,7 +8,7 @@ import { ref } from 'firebase/storage';
  
 import NavigationBar from '../../components/navigationBar';
  
-export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary, user }) {
+export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
     const [posts, setPosts] = useState([]);
     const [postText, setPostText] = useState('');
@@ -16,6 +16,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [userData, setUserData] = useState(null);
     const [isLoadingUserData, setLoadingUserData] = useState(false);
     const [commentTexts, setCommentTexts] = useState({});
+    const [expandedComments, setExpandedComments] = useState({});
     const [searchHeight, setSearchHeight] = useState(0);
     const [profileHeight, setProfileHeight] = useState(0);
  
@@ -68,7 +69,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
  
         const newPost = {
             text: postText,
-            user: userData.username || 'Unknown User',
+            username: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
             userProfilePicture: userData.picture,
             date: new Date().toLocaleDateString(),
@@ -94,7 +95,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         if (!commentText.trim() || !userData) return;
  
         const newComment = {
-            user: userData.username || 'Unknown User',
+            username: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
             userProfilePicture: userData.picture,
             date: new Date().toLocaleDateString(),
@@ -205,10 +206,37 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         }
     };
  
+    const onShare = async (post) => {
+        try {
+            const result = await Share.share({
+                message: post.text, // Share the content of the post
+            });
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    console.log('Shared with activity type:', result.activityType);
+                } else {
+                    console.log('Post shared successfully');
+                }
+            } else if (result.action === Share.dismissedAction) {
+                console.log('Share dismissed');
+            }
+        } catch (error) {
+            console.log('Error sharing post:', error.message);
+        }
+    };
+    
     const filteredPosts = posts.filter(post => {
         const matchesQuery = post.text.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesQuery;
     });
+ 
+    const toggleExpandedComments = (postId) => {
+        setExpandedComments(prevState => ({
+            ...prevState,
+            [postId]: !prevState[postId]
+        }));
+    };
+ 
     const { height } = Dimensions.get('window');
     const marginTop = searchHeight + profileHeight + height * 29 % + 30;
  
@@ -280,7 +308,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                                 />
                             </View>
                             <View>
-                                <Text style={styles.postUser}>{post.user}</Text>
+                                <Text style={styles.postUser}>{post.username}</Text>
                                 <Text style={styles.postDate}>{post.date} • {post.time}</Text>
                             </View>
                         </View>
@@ -294,62 +322,103 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                                 <Ionicons name="caret-down" size={20} color={post.downvotes.includes(userData.email) ? '#F26419' : '#000000'} />
                                 <Text style={{ alignSelf: 'center' }}>{post.downvotes.length}</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => console.log('Share post with id:', post.id)}>
+                            <TouchableOpacity onPress={() => onShare(post)}>
                                 <Ionicons name="share-social" size={20} color='#000000' />
                             </TouchableOpacity>
                         </View>
-                        <View style={styles.commentSection}>
-                            <View style={styles.commentInputContainer}>
-                                <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
-                                    <Image
-                                        source={userData.picture ? { uri: userData.picture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
-                                        style={styles.profilePicture}
-                                    />
-                                </View>
-                                <TextInput
-                                    style={styles.commentInput}
-                                    placeholder="Add a comment..."
-                                    value={commentTexts[post.id] || ''}
-                                    onChangeText={text => {
-                                        setCommentTexts(prevState => ({
-                                            ...prevState,
-                                            [post.id]: text
-                                        }));
+                        <View style={styles.commentInputContainer}>
+                            <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
+                                <Image
+                                    source={userData.picture ? { uri: userData.picture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                                    style={styles.profilePicture}
+                                />
+                            </View>
+                            <TextInput
+                                style={styles.commentInput}
+                                placeholder="Add a comment..."
+                                value={commentTexts[post.id] || ''}
+                                onChangeText={text => {
+                                    setCommentTexts(prevState => ({
+                                        ...prevState,
+                                        [post.id]: text
+                                    }));
+                                }}
+                            />
+                            <TouchableOpacity
+                                onPress={() => {
+                                    if (commentTexts[post.id]?.trim()) {
+                                        handleComment(post.id, commentTexts[post.id]);
+                                    }
+                                }}
+                                disabled={!commentTexts[post.id]?.trim()}  // Disable button if comment text is empty
+                            >
+                                <Ionicons
+                                    name={"send-outline"}
+                                    size={20}
+                                    style={{
+                                        color: commentTexts[post.id]?.trim() ? '#33658A' : '#CCCCCC', // Change color based on comment text presence
                                     }}
                                 />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.commentSection}>
+                            {/* View more comments */}
+                            {post.comments.length > 1 && (
                                 <TouchableOpacity
-                                    onPress={() => {
-                                        if (commentTexts[post.id]?.trim()) {
-                                            handleComment(post.id, commentTexts[post.id]);
-                                        }
-                                    }}
-                                    disabled={!commentTexts[post.id]?.trim()}  // Disable button if comment text is empty
+                                    onPress={() => toggleExpandedComments(post.id)}
+                                    style={styles.expandedCommentsButtonContainer}
                                 >
-                                    <Ionicons
-                                        name={"send-outline"}
-                                        size={20}
-                                        style={{
-                                            color: commentTexts[post.id]?.trim() ? '#33658A' : '#CCCCCC', // Change color based on comment text presence
-                                        }}
-                                    />
+                                    <Text style={{ fontWeight: 'bold', color: '#808080' }}>{expandedComments[post.id] ? 'View less comments' : 'View more comments'}</Text>
                                 </TouchableOpacity>
-                            </View>
-                            {post.comments.map((comment, index) => (
-                                <View key={index} style={styles.comment}>
-                                    <View style={styles.postUserContainer}>
+                            )}
+ 
+                            {/* Display one comment initially */}
+                            {post.comments.length > 0 && (
+                                <View style={styles.commentContainer}>
+                                    <View>
+                                        <View style={[styles.profilePictureContainer, { width: 40, height: 40, alignSelf: 'flex-start' }]}>
+                                            <Image
+                                                source={post.comments[0].userProfilePicture ? { uri: post.comments[0].userProfilePicture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                                                style={styles.profilePicture}
+                                            />
+                                        </View>
+                                    </View>
+ 
+                                    <View style={styles.commentInfoContainer}>
+                                        <View style={styles.comment}>
+                                            <Text style={styles.commentUser}>{post.comments[0].username}</Text>
+                                            <Text style={styles.commentText}>{post.comments[0].text}</Text>
+                                        </View>
+                                        <View style={styles.commentDateTimeContainer}>
+                                            <Text style={styles.commentDateTime}>{post.comments[0].date} • {post.comments[0].time}</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            )}
+ 
+                            {/* Additional comments if expanded */}
+                            {expandedComments[post.id] && post.comments.slice(1).map((comment, index) => (
+                                <View key={index} style={styles.commentContainer}>
+                                    <View>
                                         <View style={[styles.profilePictureContainer, { width: 40, height: 40, alignSelf: 'flex-start' }]}>
                                             <Image
                                                 source={comment.userProfilePicture ? { uri: comment.userProfilePicture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
                                                 style={styles.profilePicture}
                                             />
                                         </View>
-                                        <View>
-                                            <Text style={styles.commentUser}>{comment.user}</Text>
-                                            <Text style={styles.commentDateTime}>{comment.date} {comment.time}</Text>
+                                    </View>
+ 
+                                    <View style={styles.commentInfoContainer}>
+                                        <View style={styles.comment}>
+                                            <Text style={styles.commentUser}>{comment.username}</Text>
                                             <Text style={styles.commentText}>{comment.text}</Text>
+                                        </View>
+                                        <View style={styles.commentDateTimeContainer}>
+                                            <Text style={styles.commentDateTime}>{comment.date} • {comment.time}</Text>
                                         </View>
                                     </View>
                                 </View>
+ 
                             ))}
                         </View>
                     </View>
@@ -446,7 +515,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
     },
     postContainer: {
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
         borderBottomColor: '#CCCCCC',
         borderBottomWidth: 1,
     },
@@ -469,7 +539,7 @@ const styles = StyleSheet.create({
     postActions: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 8,
+        margin: 8,
     },
     commentSection: {
         marginTop: 8,
@@ -478,7 +548,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 8,
+        borderTopWidth: 1,
+        borderTopColor: '#CCCCCC',
+        paddingTop: '3%',
     },
     commentInput: {
         flex: 1,
@@ -489,22 +561,32 @@ const styles = StyleSheet.create({
         borderRadius: 17,
         marginRight: 10,
     },
-    comment: {
+    commentContainer: {
+        flexDirection: 'row',
         marginTop: 8,
+    },
+    commentInfoContainer: {
+        flex: 1,
+    },
+    comment: {
+        flex: 1,
         padding: 8,
         backgroundColor: '#F0F0F0',
         borderRadius: 17,
     },
     commentUser: {
         fontWeight: 'bold',
- 
+    },
+    commentText: {
+        fontSize: 14,
+    },
+    commentDateTimeContainer: {
+        paddingHorizontal: 8,
+        paddingVertical: 2,
     },
     commentDateTime: {
         fontSize: 12,
         color: '#808080',
-    },
-    commentText: {
-        fontSize: 14,
     },
     loadingContainer: {
         flex: 1,
