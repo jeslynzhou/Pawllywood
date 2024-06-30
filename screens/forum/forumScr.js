@@ -615,8 +615,7 @@ const styles = StyleSheet.create({
     },
     commentContainer: {
         flexDirection: 'row',
-        marginTop: 8,
-        marginBottom: 8,
+        marginVertical: 8,
     },
     commentInfoContainer: {
         flex: 1,
