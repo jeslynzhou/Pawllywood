@@ -564,9 +564,10 @@ const styles = StyleSheet.create({
     },
     postDate: {
         fontSize: 12,
-        color: '#CCCCCC',
+        color: '#808080',
     },
     postText: {
+        marginTop: 10,
         fontSize: 16,
     },
     postActions: {
@@ -588,6 +589,7 @@ const styles = StyleSheet.create({
     voteTextContainer: {
         paddingRight: 7,
         paddingLeft: 20,
+        justifyContent: 'center',
     },
     shareContainer: {
         justifyContent: 'center',
@@ -607,7 +609,7 @@ const styles = StyleSheet.create({
     commentInput: {
         flex: 1,
         paddingHorizontal: 8,
-        paddingVertical: 5,
+        paddingVertical: 8,
         borderColor: '#CCCCCC',
         borderWidth: 1,
         borderRadius: 17,

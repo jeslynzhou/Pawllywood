@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet, Alert } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, auth } from '../../../initializeFB';
 import { doc, setDoc } from 'firebase/firestore';
-
 import UploadImageModal from '../components/uploapImageModal';
 
 export default function EditProfileScreen({ userProfile, setUserProfile, closeEditUserProfile }) {
@@ -20,8 +19,6 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
         setPictureUri(userProfile.picture || null);
     }, [userProfile]);
 
-
-    {/* Upload Image Modal */ }
     const handleOpenUploadImageModal = () => {
         setShowUploadImageModal(true);
     };
@@ -46,8 +43,7 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
             });
 
             if (!cameraResult.canceled) {
-                setPictureUri(cameraResult.assets[0].uri);
-                setShowUploadImageModal(false);
+                await handleImageUpload(cameraResult.assets[0].uri);
             }
         } catch (error) {
             console.log('Error uploading image from camera:', error);
@@ -70,12 +66,30 @@ export default function EditProfileScreen({ userProfile, setUserProfile, closeEd
             });
 
             if (!libraryResult.canceled) {
-                setPictureUri(libraryResult.assets[0].uri);
-                setShowUploadImageModal(false);
+                await handleImageUpload(libraryResult.assets[0].uri);
             }
         } catch (error) {
             console.log('Error uploading image from library:', error);
         }
+    };
+
+    const handleImageUpload = async (uri) => {
+        try {
+            setShowUploadImageModal(false);
+            const uploadedUrl = await uploadImageAsync(uri);
+            setPictureUri(uploadedUrl);
+        } catch (error) {
+            console.log('Error uploading image:', error);
+        }
+    };
+
+    const uploadImageAsync = async (uri) => {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const storage = getStorage();
+        const fileRef = ref(storage, `profilePictures/${auth.currentUser.uid}.jpg`);
+        await uploadBytes(fileRef, blob);
+        return await getDownloadURL(fileRef);
     };
 
     const handleDescriptionChanges = (text) => {
