@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+
+
 import { auth, db, storage } from '../../initializeFB';
 import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
 import { ref } from 'firebase/storage';
- 
+
 import NavigationBar from '../../components/navigationBar';
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
@@ -18,7 +20,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [expandedComments, setExpandedComments] = useState({});
     const [searchHeight, setSearchHeight] = useState(0);
     const [profileHeight, setProfileHeight] = useState(0);
- 
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -26,7 +28,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 if (user) {
                     const docRef = doc(db, 'users', user.uid);
                     const docSnap = await getDoc(docRef);
- 
+
                     if (docSnap.exists()) {
                         setUserData(docSnap.data());
                     } else {
@@ -41,11 +43,11 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 setLoadingUserData(false);
             }
         };
- 
+
         setLoadingUserData(true);
         fetchUserData();
     }, []);
- 
+
     useEffect(() => {
         const fetchPosts = async () => {
             try {
@@ -56,16 +58,16 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 console.error('Error fetching posts:', error.message);
             }
         };
- 
+
         fetchPosts();
     }, []);
- 
+
     const handlePost = async () => {
         if (!postText.trim() || !userData) {
             console.log('Post text is empty or user data is not available.');
             return;
         }
- 
+
         const newPost = {
             text: postText,
             username: userData.username || 'Unknown User',
@@ -77,22 +79,22 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             upvotes: [],
             downvotes: []
         };
- 
+
         try {
             const docRef = await addDoc(collection(db, 'posts'), newPost);
             newPost.id = docRef.id;
- 
+
             setPosts(prevPosts => [newPost, ...prevPosts]);
             setPostText('');
- 
+
         } catch (error) {
             console.error('Error adding post to Firestore:', error.message);
         }
     };
- 
+
     const handleComment = async (postId, commentText) => {
         if (!commentText.trim() || !userData) return;
- 
+
         const newComment = {
             username: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
@@ -101,13 +103,13 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
             text: commentText
         };
- 
+
         try {
             const postRef = doc(db, 'posts', postId);
             await updateDoc(postRef, {
                 comments: arrayUnion(newComment)
             });
- 
+
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, comments: [...post.comments, newComment] } : post
@@ -117,28 +119,28 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 ...prevState,
                 [postId]: ''
             }));
- 
+
         } catch (error) {
             console.error('Error adding comment to Firestore:', error.message);
         }
     };
- 
+
     const handleUpvote = async (postId) => {
         if (!userData || !userData.email) {
             console.log('User data not available or missing UID.');
             return;
         }
- 
+
         try {
             const postRef = doc(db, 'posts', postId);
             const postDoc = await getDoc(postRef);
             const postData = postDoc.data();
- 
+
             if (!postData) {
                 console.log('Post not found.');
                 return;
             }
- 
+
             if (postData.upvotes.includes(userData.email)) {
                 // User already upvoted, remove upvote
                 await updateDoc(postRef, {
@@ -151,35 +153,35 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                     downvotes: arrayRemove(userData.email)
                 });
             }
- 
+
             // Update local state with updated upvotes
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, upvotes: postData.upvotes.includes(userData.email) ? postData.upvotes.filter(id => id !== userData.email) : [...postData.upvotes, userData.email] } : post
                 )
             );
- 
+
         } catch (error) {
             console.error('Error updating upvotes:', error.message);
         }
     };
- 
+
     const handleDownvote = async (postId) => {
         if (!userData || !userData.email) {
             console.log('User data not available or missing UID.');
             return;
         }
- 
+
         try {
             const postRef = doc(db, 'posts', postId);
             const postDoc = await getDoc(postRef);
             const postData = postDoc.data();
- 
+
             if (!postData) {
                 console.log('Post not found.');
                 return;
             }
- 
+
             if (postData.downvotes.includes(userData.email)) {
                 // User already downvoted, remove downvote
                 await updateDoc(postRef, {
@@ -192,19 +194,19 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                     upvotes: arrayRemove(userData.email)
                 });
             }
- 
+
             // Update local state with updated downvotes
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, downvotes: postData.downvotes.includes(userData.email) ? postData.downvotes.filter(id => id !== userData.email) : [...postData.downvotes, userData.email] } : post
                 )
             );
- 
+
         } catch (error) {
             console.error('Error updating downvotes:', error.message);
         }
     };
- 
+
     const onShare = async (post) => {
         try {
             // Format additional details into the shared message
@@ -235,8 +237,8 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
         } catch (error) {
             console.log('Error sharing post:', error.message);
         }
-    };
-    
+};
+
     const filteredPosts = posts.filter(post => {
         const matchesQuery = post.text.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesQuery;
@@ -250,8 +252,8 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
     };
 
     const { height } = Dimensions.get('window');
-    const marginTop = searchHeight + profileHeight + height * 12%  + 30;
- 
+    const marginTop = searchHeight + profileHeight + height * 0.04;
+
     return (
         <View style={styles.forumContainer}>
             {/* Search Box */}
@@ -269,7 +271,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                     onChangeText={setSearchQuery}
                 />
             </View>
- 
+
             {/* Profile Section */}
             {isLoadingUserData ? (
                 <View style={styles.loadingContainer}>
@@ -307,7 +309,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
             ) : (
                 <Text>User not logged in.</Text>
             )}
- 
+
             {/* Posts List */}
             <ScrollView style={[styles.postsContainer, { marginTop }]}>
                 {filteredPosts.map(post => (
@@ -455,7 +457,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                     </View>
                 ))}
             </ScrollView>
- 
+
             {/* Navigation Bar */}
             <NavigationBar
                 activeScreen={currentScreen}
@@ -467,7 +469,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
         </View>
     );
 }
- 
+
 const styles = StyleSheet.create({
     forumContainer: {
         marginTop: '10%',
@@ -541,7 +543,7 @@ const styles = StyleSheet.create({
         borderColor: '#CCCCCC',
         width: '100%',
         alignSelf: 'center',
-        height: '76%',
+        height: '75.2%',
         marginTop: 16,
         position: 'absolute',
     },
@@ -614,6 +616,7 @@ const styles = StyleSheet.create({
     commentContainer: {
         flexDirection: 'row',
         marginTop: 8,
+        marginBottom: 8,
     },
     commentInfoContainer: {
         flex: 1,
