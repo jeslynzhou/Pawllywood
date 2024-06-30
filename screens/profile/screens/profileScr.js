@@ -4,15 +4,15 @@ import { Ionicons } from '@expo/vector-icons';
  
 import { db, auth } from '../../../initializeFB';
 import { doc, getDoc, setDoc, getDocs, writeBatch, collection, query, where } from 'firebase/firestore';
-
+ 
 import NavigationBar from '../../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
 import AddPetScreen from './addPetScr';
 import MyPetsScreen from './myPetsScr';
 import MyPostsScreen from './myPostsScr';
 import LogoutModal from '../components/logoutModal';
-
-
+ 
+ 
 export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
   const [userProfile, setUserProfile] = useState(null);
@@ -57,22 +57,25 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       if (user) {
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, updatedProfile, { merge: true });
-
+ 
         setUserProfile(updatedProfile);
-
+ 
         // Update username and profile picture in posts
         const postsRef = collection(db, 'posts');
-        const postsQuery = query(postsRef, where('userId', '==', user.uid));
-        const postsSnapshot = await getDocs(postsQuery);
-
+        const postsSnapshot = await getDocs(postsRef);
+ 
         const batch = writeBatch(db);
-
-        postsSnapshot.forEach((doc) => {
-          batch.update(doc.ref, {
-            username: updatedProfile.username,
-            userProfilePicture: updatedProfile.picture,
-          });
-          const updatedComments = doc.data().comments.map(comment => {
+ 
+        postsSnapshot.forEach((postDoc) => {
+          const post = postDoc.data();
+          if (post.userId === user.uid) {
+            batch.update(postDoc.ref, {
+              username: updatedProfile.username,
+              userProfilePicture: updatedProfile.picture,
+            });
+          }
+ 
+          const updatedComments = post.comments.map((comment) => {
             if (comment.userId === user.uid) {
               return {
                 ...comment,
@@ -82,12 +85,12 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
             }
             return comment;
           });
-
-          batch.update(doc.ref, { comments: updatedComments });
+ 
+          batch.update(postDoc.ref, { comments: updatedComments });
         });
-
+ 
         await batch.commit();
-
+ 
         setCurrentScreen('Profile');
       } else {
         console.log('No user is currently signed in.');
@@ -114,16 +117,16 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
   const closeMyPetsScreen = () => {
     setCurrentScreen('Profile');
   };
-
+ 
   {/* My Posts Screen */ }
   const openMyPostsScreen = () => {
     setCurrentScreen('MyPosts');
   };
-
+ 
   const closeMyPostsScreen = () => {
     setCurrentScreen('Profile');
   };
-
+ 
   {/*Log Out Modal */ }
   const openLogoutModal = () => {
     setShowLogoutModal(true);
@@ -145,7 +148,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       </View>
     );
   };
-
+ 
   return (
     <>
       {currentScreen === 'Profile' && (
@@ -188,7 +191,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
               </TouchableOpacity>
  
               <View style={styles.separatorLine} />
-
+ 
               <TouchableOpacity onPress={openMyPostsScreen}>
                 <View style={styles.featurePanel}>
                   <Ionicons name="document-outline" size={24} color='#000000' />
