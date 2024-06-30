@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions, PanResponder, Modal,
-} from 'react-native';import { getDocs, collection } from 'firebase/firestore';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions, PanResponder, Modal, ActivityIndicator } from 'react-native'; import { getDocs, collection } from 'firebase/firestore';
 import { db } from '../../initializeFB';
 import NavigationBar from '../../components/navigationBar';
 import { Ionicons } from '@expo/vector-icons';
@@ -51,17 +49,17 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
  
     fetchBreeds();
   }, []);
-
+ 
   useEffect(() => {
     const calculateMarginTop = () => {
       const marginTop = buttonContainerHeight + searchContainerHeight + (height + width) * 0.06;
       setMarginTopContentContainer(marginTop);
     };
-
+ 
     calculateMarginTop();
   }, [buttonContainerHeight, searchContainerHeight]);
-
-
+ 
+ 
   const calculateMarginTop = (buttonContainerHeight, searchContainerHeight) => {
     const marginTop = buttonContainerHeight + searchContainerHeight + height * 0.1;
     setMarginTopContentContainer(marginTop);
@@ -69,7 +67,7 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
  
   const { height, width } = Dimensions.get('window');
   const imageL = width * 0.25;
-
+ 
   const filteredBreeds = breeds.filter(
     breed =>
       breed.breed.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -198,11 +196,11 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
  
   if (loading) {
     return (
-      <View style={styles.centeredContainer}>
-        <Text>Loading...</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size='large' color='#F26419' />
       </View>
     );
-  }
+  };
  
   return (
     <View style={styles.libContainer}>
@@ -454,5 +452,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FFFFFF',
     textAlign: 'center',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    flex: 1,
   },
 });
