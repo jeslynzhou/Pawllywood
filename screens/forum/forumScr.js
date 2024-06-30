@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { auth, db, storage } from '../../initializeFB';
@@ -69,7 +69,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
         const newPost = {
             text: postText,
-            user: userData.username || 'Unknown User',
+            username: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
             userProfilePicture: userData.picture,
             date: new Date().toLocaleDateString(),
@@ -95,7 +95,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         if (!commentText.trim() || !userData) return;
 
         const newComment = {
-            user: userData.username || 'Unknown User',
+            username: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
             userProfilePicture: userData.picture,
             date: new Date().toLocaleDateString(),
@@ -206,6 +206,25 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         }
     };
 
+    const onShare = async (post) => {
+        try {
+            const result = await Share.share({
+                message: post.text, // Share the content of the post
+            });
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    console.log('Shared with activity type:', result.activityType);
+                } else {
+                    console.log('Post shared successfully');
+                }
+            } else if (result.action === Share.dismissedAction) {
+                console.log('Share dismissed');
+            }
+        } catch (error) {
+            console.log('Error sharing post:', error.message);
+        }
+    };
+
     const filteredPosts = posts.filter(post => {
         const matchesQuery = post.text.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesQuery;
@@ -289,7 +308,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                                 />
                             </View>
                             <View>
-                                <Text style={styles.postUser}>{post.user}</Text>
+                                <Text style={styles.postUser}>{post.username}</Text>
                                 <Text style={styles.postDate}>{post.date} • {post.time}</Text>
                             </View>
                         </View>
@@ -303,7 +322,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                                 <Ionicons name="caret-down" size={20} color={post.downvotes.includes(userData.email) ? '#F26419' : '#000000'} />
                                 <Text style={{ alignSelf: 'center' }}>{post.downvotes.length}</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => console.log('Share post with id:', post.id)}>
+                            <TouchableOpacity onPress={() => onShare(post)}>
                                 <Ionicons name="share-social" size={20} color='#000000' />
                             </TouchableOpacity>
                         </View>
@@ -367,7 +386,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
                                     <View style={styles.commentInfoContainer}>
                                         <View style={styles.comment}>
-                                            <Text style={styles.commentUser}>{post.comments[0].user}</Text>
+                                            <Text style={styles.commentUser}>{post.comments[0].username}</Text>
                                             <Text style={styles.commentText}>{post.comments[0].text}</Text>
                                         </View>
                                         <View style={styles.commentDateTimeContainer}>
@@ -391,7 +410,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
                                     <View style={styles.commentInfoContainer}>
                                         <View style={styles.comment}>
-                                            <Text style={styles.commentUser}>{comment.user}</Text>
+                                            <Text style={styles.commentUser}>{comment.username}</Text>
                                             <Text style={styles.commentText}>{comment.text}</Text>
                                         </View>
                                         <View style={styles.commentDateTimeContainer}>

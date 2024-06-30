@@ -3,7 +3,7 @@ import { Text, View, TouchableOpacity, Image, StyleSheet, ActivityIndicator } fr
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, getDocs, writeBatch, collection, query, where } from 'firebase/firestore';
 
 import NavigationBar from '../../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
@@ -11,6 +11,7 @@ import AddPetScreen from './addPetScr';
 import MyPetsScreen from './myPetsScr';
 import MyPostsScreen from './myPostsScr';
 import LogoutModal from '../components/logoutModal';
+
 
 export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
@@ -56,6 +57,23 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       if (user) {
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, updatedProfile, { merge: true });
+
+        // Update username and profile picture in posts
+        const postsRef = collection(db, 'posts');
+        const postsQuery = query(postsRef, where('userId', '==', user.uid));
+        const postsSnapshot = await getDocs(postsQuery);
+
+        const batch = writeBatch(db);
+
+        postsSnapshot.forEach((doc) => {
+          batch.update(doc.ref, {
+            username: updatedProfile.username,
+            userProfilePicture: updatedProfile.picture,
+          });
+        });
+
+        await batch.commit();
+
         setUserProfile(updatedProfile);
         setCurrentScreen('Profile');
       } else {

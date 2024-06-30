@@ -125,15 +125,15 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
                                         </Text>
                                     </View>
                                     {isEditMode && (
-                                        <View style={{ flex: 1 }}>
+                                        <View style={{ position: 'absolute', right: 10 }}>
                                             <TouchableOpacity style={{ alignSelf: 'center' }} onPress={() => toggleSelectPost(post.id)}>
                                                 <Ionicons name={selectedPostsForDelete.includes(post.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
                                             </TouchableOpacity>
                                         </View>
                                     )}
                                     {!isEditMode && (
-                                        <View>
-                                            <Text style={[styles.text, { color: '#CCCCCC', alignSelf: 'flex-end' }]}>{post.time}</Text>
+                                        <View style={{ position: 'absolute', right: 10 }}>
+                                            <Text style={[styles.text, { color: '#CCCCCC' }]}>{post.time}</Text>
                                         </View>
                                     )}
                                 </View>
