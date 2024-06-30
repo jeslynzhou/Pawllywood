@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions, PanResponder, Modal } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions, PanResponder, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db } from '../../initializeFB';
 import { getDocs, collection } from 'firebase/firestore';
 
 import NavigationBar from '../../components/navigationBar';
+
 
 export default function LibraryScreen({ directToProfile, directToNotebook, directToLibrary, directToForum, directToHome }) {
   const [currentScreen, setCurrentScreen] = useState('Library');
@@ -199,11 +200,11 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
 
   if (loading) {
     return (
-      <View style={styles.centeredContainer}>
-        <Text>Loading...</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size='large' color='#F26419' />
       </View>
     );
-  }
+  };
 
   return (
     <View style={styles.libContainer}>
@@ -455,5 +456,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FFFFFF',
     textAlign: 'center',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    flex: 1,
   },
 });

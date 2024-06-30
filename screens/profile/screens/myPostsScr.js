@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     postInfo: {
-        marginRight: '2%',
+        marginRight: '15%',
     },
     text: {
         fontSize: 16,

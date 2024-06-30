@@ -62,28 +62,42 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
 
         // Update username and profile picture in posts
         const postsRef = collection(db, 'posts');
-        const postsQuery = query(postsRef, where('userId', '==', user.uid));
-        const postsSnapshot = await getDocs(postsQuery);
+        const postsSnapshot = await getDocs(postsRef);
 
         const batch = writeBatch(db);
 
-        postsSnapshot.forEach((doc) => {
-          batch.update(doc.ref, {
-            username: updatedProfile.username,
-            userProfilePicture: updatedProfile.picture,
-          });
-          const updatedComments = doc.data().comments.map(comment => {
+        postsSnapshot.forEach((postDoc) => {
+          const post = postDoc.data();
+          if (post.userId === user.uid) {
+            batch.update(postDoc.ref, {
+              text: post.text,
+              username: updatedProfile.username,
+              userId: post.userId,
+              userProfilePicture: updatedProfile.picture,
+              date: post.date,
+              time: post.time,
+              comments: post.comments,
+              upvotes: post.upvotes,
+              downvotes: post.downvotes,
+            });
+          }
+
+          const updatedComments = post.comments.map((comment) => {
             if (comment.userId === user.uid) {
               return {
                 ...comment,
                 username: updatedProfile.username,
+                userId: comment.userId,
                 userProfilePicture: updatedProfile.picture,
+                date: comment.date,
+                time: comment.time,
+                text: comment.text,
               };
             }
             return comment;
           });
 
-          batch.update(doc.ref, { comments: updatedComments });
+          batch.update(postDoc.ref, { comments: updatedComments });
         });
 
         await batch.commit();

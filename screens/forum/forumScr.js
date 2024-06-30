@@ -209,9 +209,22 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
     const onShare = async (post) => {
         try {
+            // Format additional details into the shared message
+            const message = `
+Post: ${post.text}
+ 
+Upvotes: ${post.upvotes.length}
+ 
+Downvotes: ${post.downvotes.length}
+ 
+Comments:
+${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\n')}
+        `;
+
             const result = await Share.share({
-                message: post.text, // Share the content of the post
+                message: message.trim(), // Share the formatted message
             });
+
             if (result.action === Share.sharedAction) {
                 if (result.activityType) {
                     console.log('Shared with activity type:', result.activityType);
@@ -239,7 +252,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     };
 
     const { height } = Dimensions.get('window');
-    const marginTop = searchHeight + profileHeight + height * 29 % + 30;
+    const marginTop = searchHeight + profileHeight + height * 0.04;
 
     return (
         <View style={styles.forumContainer}>
@@ -530,7 +543,7 @@ const styles = StyleSheet.create({
         borderColor: '#CCCCCC',
         width: '100%',
         alignSelf: 'center',
-        height: '76%',
+        height: '75.2%',
         marginTop: 16,
         position: 'absolute',
     },
@@ -602,7 +615,7 @@ const styles = StyleSheet.create({
     },
     commentContainer: {
         flexDirection: 'row',
-        marginTop: 8,
+        marginVertical: 8,
     },
     commentInfoContainer: {
         flex: 1,
