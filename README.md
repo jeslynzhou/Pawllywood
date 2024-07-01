@@ -46,9 +46,18 @@ This command will build and run the latest version of the app on Android using E
 
 ### D. PROOF OF CONCEPT
 
-- [Proof of Concept](#proof-of-concept)
+- [Milestone 1](#milestone-1)
+- [Milestone 2](#milestone-2)
 
-### E. SOFTWARE ENGINEERING PRACTICES
+### E. IMPLEMENTING FEATURES
+
+1. [Authentication](#authentication)
+2. [Profile (Core)](#profile-core)
+3. [Home](#home)
+4. [Library (Core)](#library-core)
+5. [Forum (Core)](#forum-core)
+
+### F. SOFTWARE ENGINEERING PRACTICES
 
 1. [Version Controls](#version-controls)
    - [Branching](#branching)
@@ -57,13 +66,13 @@ This command will build and run the latest version of the app on Android using E
    - [User Flow Diagram](#user-flow-diagram)
    - [Microservice Architecture Diagram](#microservice-architecture-diagram)
 
-### F. DEVELOPMENT PLAN
+### G. DEVELOPMENT PLAN
 
 1. [Milestone 1 | 20/05 - 03/06](#milestone-1--2005---0306)
 2. [Milestone 2 | 03/06 - 01/07](#milestone-2--0306---0107)
 3. [Milestone 3 | 01/07 - 29/07](#milestone-3--0107---2907)
 
-### G. PROJECT LOG
+### H. PROJECT LOG
 
 - [Project Log](#project-log)
 
@@ -94,8 +103,16 @@ Our **_forum_** feature allows users to engage in discussions, ask questions, an
 ### Core Features
 
 1. In-app library for pet-specific care guides
-2. Forum for engaging in discussion, asking questions, and sharing thoughts and experiences through writing posts and pictures
-3. Authentication for user accounts
+
+   The library provides instant pet-specific care guides, from diet, training, to grooming and exercise. Users can access the in-app library whenever they want, wherever they are (Just make sure to have a strong internet connection!)
+
+3. Forum for engaging in discussion, asking questions, and sharing thoughts and experiences through writing posts and pictures
+
+   In addition to the library, our forum offers essential support for users’ pet care needs. The forum helps users to connect with fellow pet owners who share real-life experiences. Users can engage in discussions, ask questions, share thoughts and experiences through posts and pictures, and enjoy lively chats with like-minded individuals who share their interests.
+
+5. Authentication for user accounts
+
+   The profile feature will help to manage user accounts and handle the authentication; users can create a new account, log in and log out. 
 
 ### Bonus Features
 
@@ -141,9 +158,157 @@ _PREVIEW:_
 
 ## Proof of Concept
 
-In our initial milestone, we have effectively integrated the Authentication feature into the application. This advancement enables users to conveniently access Pawllywood by either logging in through an existing account or signing up for a new one.
+### Milestone 1
 
-The process of registration is straightforward. Users simply need to tap the "Sign Up" button and provide their desired username, email address, and password. Upon completion, they will be welcomed with a "Welcome" screen. For those who already have an account, logging in is a seamless process. By entering their registered email address and password, users can swiftly access the application's features and content.
+In our initial milestone, we have integrated the Authentication feature into the application. This advancement enables users to conveniently access Pawllywood by either logging in through an existing account or signing up for a new one.
+
+**Registration:** The process of registration is straightforward. Users simply need to tap the "Sign Up" button and provide their desired username, email address, and password. Upon completion, they will be welcomed with a "Welcome" screen. For those who already have an account, logging in is a seamless process. By entering their registered email address and password, users can swiftly access the application's features and content.
+
+### Milestone 2
+
+In our second milestone, we have integrated the core features of the app: Profile, Library, and Forum features, with the home screen to display users’ pets profiles. Upon creating an account, users will be redirected to the home screen. There is a navigation bar at the bottom of the screen to help users easily navigate through profile, notebook, home, library, and forum screens. 
+
+- **Profile Feature** (for managing user account): The profile screen will store users’ basic information: Username, profile picture, and bio description. Users can edit their profile info by clicking on the ‘Edit Profile’ Button and update their new info. Additionally, users can add more pet profiles with a simple click ‘Add Pet’, just fill in the space and you now have a new pet! You can view your pets and posts in ‘My Pets’ and ‘My Posts’, and also have ‘Friends’, ‘Message’, ‘Notification’ features that will be implemented in the next milestones. Press the ‘Log out’ button and users will be prompted with a modal to confirm logging out.
+
+- **Home Screen** (for displaying pet profiles): Users can view their pet profiles in the home screen, swiping left to view more. Users can press the ‘Add’ button at the bottom of the screen to add more pets (same as ‘Add Pet’ in profile screen). To edit the pet profile, click on the 3 dots icon on the top right of the pet info box.
+
+- **Library Screen** (for looking up care guides): Users can choose to view either dog or cat information. There are over two hundred dog and cat breeds in the library. When searching for a breed, the library will present information on the chosen breed across 5 to 6 aspects (About, Health, Grooming, Exercise, Training and Nutrition for Dog and About, Appearance & Colors, Personality, Care, and Health for Cat).
+
+- **Forum Screen** (for asking questions and engaging in discussions): Users can search for posts to find information, post questions or thoughts for comments and engagement, and interact with other users by commenting, voting, and sharing posts.
+
+
+## Implementing Features
+
+### Authentication
+- **Proposed Feature:** Handle authentication step using email and password.
+
+- **Progress:**
+
+   (1) Handle Authentication: Users will be able to create a new account and log out using their email and password; they can also log out of the app.
+
+   (2) Welcome Screen: Upon signing in, users will be greeted with a welcome screen and redirect to the home screen.
+
+- **Problems Encountered:**
+   
+   (1) Initially the code was complex and doesn’t support scalability as it is stored inside the App.js file.
+
+   (2) The UI of the authenticated screen for welcoming the users is problematic (the picture was not high-quality and the position of the picture covered up the whole screen).
+
+   (3) Security of the account (There is no verification step for the email, so users can create accounts using non-existent emails).
+
+- **Solutions:**
+
+   - We broke down the code to smaller sections (divide-and-conquer) and create new files to specifically handle the authentication logic.
+
+   - We used Dimensions to adjust the size of the picture while maintaining its quality.
+
+   - We will solve problem (3) in the next milestone.
+
+### Profile (Core)
+
+- **Proposed Feature:** Manage user profile, including their profile, pet profiles, posts, friends, message, and notification. Users can also log out from their account in the profile screen.
+
+- **Progress:**
+
+   (1) Display Profile details: Displays user’s profile picture, username, and their bio description.
+
+   (2) Edit Profile details: Allows users to modify their profile information such as username, profile picture, and description.
+
+   (3) Add Pet Profile details: Enables users to add new pet profiles, inputting the pet’s picture, name, breed, birth date (with automatically calculated age), gender, and their adopted date.
+
+   (4) My Pets: Allows users to know how many pets they have (displaying in a list format with the pets’ names, pictures, and adopted dates). Clicking on the pet profile will redirect the users to the home screen. Users can edit the pet lists by clicking on the 3 dots, showing a prompted box to confirm the edit. If they choose ‘yes’, users can delete the pet profile from the pet lists. If there are no pets inside the list, users will be prompted to add their first pet by clicking on the box.
+
+   (5) My Posts: Displays a list of posts created by the user within the forum. Users are also allowed to delete their own posts, providing control over their contributions to the community. If there are no posts inside the list, users will be prompted to share their thoughts by clicking on the box and be redirected to the forum screen.
+
+- **Problems Encountered:** 
+
+   (1) Creating a database for users.
+
+   (2) Users are able to upload profile pictures but unable to display it on the screen; same problems for pets’ profile pictures.
+
+   (3) Initially using the [currentScreen, setCurrentScreen] method like App.js to redirect from ‘My Pets’ to add-more-pet screen and ‘My Posts’ to the forum when the lists are empty and adding the navigation bar, but it doesn’t work properly and cannot direct from the lists to other screens.
+
+   (4) Redirect each pet in the pet lists to the exact page storing the pet profile in the home screen.
+
+- **Solutions:** 
+
+   - Upon creating a new account (which was handled inside the AuthScreen), we initialize users database.
+
+   - We observed that the picture fields within the users collection were stored as a number instead of a string intended for a url. Hence, we changed the way of uploading data based on the issue and managed to solve the problem.
+
+   - Taking advantage of the ’add-more-pet screen’ and ‘directToForum’ that are in (/passed to) the profile screen, we passed these to ‘My Pets’ and ‘My Posts’ and was able to redirect to add-more-pet screen (add pet) and the forum.
+
+   - We will try to fix this problem in the next milestone.
+
+### Home
+
+- **Proposed Feature:** Display and manage the pet profiles (editing existing pet profiles and add new) .
+
+- **Progress:** 
+
+   (1) Displaying Pet Profiles: Users can view their pet profiles in alphabetical order; swipe left to view more. The pet profile box displays the pet’s name, picture, breed, birth date, age, and gender. 
+
+   (2) Edit Pet Profile details: By clicking on the 3 dots on the top right of the info box, users will be able to edit and update their pet’s details.
+
+   (3) Add Pet Profile: By clicking on the ‘plus’ button at the bottom right of the screen, users will be able to add more pets and see the changes they made in the home screen right away.
+
+- **Problems Encountered:**
+
+   (1) Difficulties in implementing scroll view for the 2 ‘pet profile’ and ‘notes’ boxes, as we wanted the labels to stay fixed in the position when we swipe left, and the counting of the pet profile needs to be accurate.
+
+   (2) Displaying and editing pet profile pictures.
+
+- **Solutions:**
+
+   - We changed the UI design of the home screen: instead of having 2 boxed of ‘pet profile’ and ‘notes’ that need to be swipeable while the labels of the 2 boxed stay still, we put the ‘notes’ component inside the pet profile, and thus, making the ‘pet profile’ labels with the counting stay still.
+
+   - By changing the data type of the picture stored in the database (same as profile screen), we were able to edit, update and edit the pet profile picture.
+
+### Library (Core)
+
+- **Proposed Feature:** Offers comprehensive pet care guides covering diet, training, grooming, and exercise, accessible anytime with an internet connection.
+
+- **Progress:** 
+
+   (1) Filter Dogs/Cats: Allows users to narrow their search to either dogs or cats.
+
+   (2) Search and Select Breed: A search bar lets users type and select a specific breed from the database.
+
+   (3) Select Pet Aspect: Provides detailed information on selected aspects (e.g., health, exercise, grooming) of the pet.
+
+   (4) Swipe Functionality: Users can swipe left or right to view different aspects of the pet without returning to the main list.
+
+- **Problems Encountered:** Difficulties in uploading breed data into the Firestore database due to the large volume of data (200+ dog breeds and 30+ cat breeds, each with 5/6 fields).
+
+- **Solutions:** We attempted to automate data upload using Python and managed to upload the breed names into the database. However, due to the complicated design of the websites we found as the source of the data, we failed to upload the information in each aspect. As a result, we eventually opted to manually input data into the Firestore database to ensure accuracy and completeness.
+
+### Forum (Core)
+
+- **Proposed Feature:** A feature designed for user engagements and information sharing. Users are allowed to to search, post questions/thoughts, comment, vote, and share posts.
+
+- **Progress:**
+
+   (1) Post Functionality: Enables users to create and share their own posts within the forum.
+
+   (2) Upvotes/downvotes Functionality: Allows users to upvote or downvote posts to indicate their approval or disapproval.
+
+   (3) Share Functionality: Provides options for users to share posts with others through various platforms.
+
+   (4) Comment Functionality: Users are encouraged to comment on posts, facilitating discussions and interactions.
+
+   (5) Search Posts: Users can search for specific posts using keywords or filters to find relevant content quickly.
+
+- **Problems Encountered:** 
+
+   (1) Unable to display the profile pictures of other users.
+
+   (2) The profile picture and username from posts and comments were not in sync with the newest profile picture and username.
+
+- **Solutions:** 
+
+   - Upon further review, we discovered that the URLs stored in the picture field within the users collection were specific to each user's private album, restricting access for other users. This prompted us to reevaluate how our app handles picture uploads to the database. By implementing necessary adjustments, we successfully resolved the issue that was causing profiles not to display correctly on the screen.
+
+   - We fetched the posts and comments made by the user and updated the profile picture and username inside the function that handles updating the user information in the profile screen. 
 
 ## Software Engineering Practices
 
@@ -151,11 +316,13 @@ The process of registration is straightforward. Users simply need to tap the "Si
 
 #### Branching
 
-During our development, we achieved parallel work streams by utilizing different branches. Each team member created separate branches to independently develop features and fixes. This strategy allowed us to isolate our commits, effectively track, and manage changes. Once a feature was completed or a fix implemented, we merged the respective changes into the main branch. At this stage, since we only focus on one single feature, we named our branches using our names, making it easy for us to identify individual work streams. As we move into Milestone 2, we will create additional branches specific to each feature to maintain our organized workflow and ensure smooth integration.
+During our development, we achieved parallel work streams by utilizing different branches. For each feature, we created separate branches, which allowed us to isolate changes related to specific features or fixes. Moreover, it enabled us to work independently without interfering with each other's code.
 
 #### Commits
 
-For milestone 1, our regular commits focus on developing user authentication. To ensure easy tracking and management of our changes, we named our commits according to the specific changes made. Some examples of our commits are “Add Retype Password for Sign In”, “Login & Sign up Screen” and, “organize files”.
+*For milestone 1,* our regular commits focus on developing user authentication. To ensure easy tracking and management of our changes, we named our commits according to the specific changes made. Some examples of our commits are “Add Retype Password for Sign In”, “Login & Sign up Screen” and, “organize files”.
+
+*For milestone 2,* we split tasks so two of us focused on different features. Our regular commits continued to reflect the division of work, with each commit focusing on the respective feature assigned to us. This division allowed us to maintain productivity and progress efficiently towards our milestone goals, ensuring that each feature received dedicated attention and timely updates. Just as what we did in the previous milestone, we named our commits according to the specific changes made. Some examples of our commits are “fix profile displaying issue + adjust UI”, “fix bugs: profile pic can now be displayed on the screen” and, “Update Home Screen (calculate pet's age)”. However, we did help out each other and commit to each other’s branch when one of us encountered issues. For example, Jeslyn helped to fix the profile picture not displaying problems for the profile screen and Marianne added the “view more comments” function and formatted the UI in the forum screen.
 
 ### Software Architecture
 
@@ -179,36 +346,50 @@ For milestone 1, our regular commits focus on developing user authentication. To
 ### Milestone 2 | 03/06 - 01/07
 
 - Create database
-- Refine UI
 - Implement core features (Profile, Library, and Forum)
-- System testing
+- Deployment & System testing
 
 ### Milestone 3 | 01/07 - 29/07
 
 - Implement bonus features (Notebook, User Engagement, Multi-device synchronization, and Push Notification)
-- System testing
-- Bug fixing
+- System testing & Bug fixing
 
 ## Project Log
 
-Total hours for Milestone 1:
+**Total hours for Milestone 1:**
 
 Jeslyn: 41
 
 Marianne: 42
 
-| Milestone    | Tasks                                                              | PIC      | Start | End   | Hrs |
-| ------------ | ------------------------------------------------------------------ | -------- | ----- | ----- | --- |
-| 1 - Ideation |                                                                    |          |       |       |     |
-| 1.1          | Formulate project idea                                             | Both     | 12/05 | 13/05 | 3   |
-| 1.2          | Brainstorm features                                                | Both     | 13/05 | 14/05 | 2   |
-| 1.3          | Project Poster + Video for Lift-off                                | Both     | 14/05 | 20/05 | 8   |
-| 1.4          | Design first draft UI for the app                                  | Marianne | 21/05 | 23/05 | 8   |
-| 1.5          | Design development plan                                            | Marianne | 28/05 | -     | 1   |
-| 1.6          | Refine User Flow Diagram                                           | Marianne | 28/05 | 29/05 | 1   |
-| 1.7          | Refine Poster with confirmed techstack                             | Jeslyn   | 29/05 | -     | 1   |
-| 1.8          | Technical Proof of Concept (for Authentication)                    | Both     | 29/05 | 31/05 | 12  |
-| 1.9          | Deployment                                                         | Jeslyn   | 31/05 | 01/06 | 6   |
-| 1.10         | Update Video with PoC + next plan                                  | Both     | 01/06 | 02/06 | 4   |
-| 1.11         | Refine Code in ReactNative (make it scalable, organize in folders) | Jeslyn   | 02/06 | 03/06 | 2   |
-| 1.12         | Write report                                                       | Both     | 03/06 | -     | 3   |
+**Total hours for Milestones 2:**
+
+Jeslyn: 134
+
+Marianne: 131
+
+| Milestone     | Tasks                                                              | PIC      | Start | End   | Hrs |
+| ------------  | ------------------------------------------------------------------ | -------- | ----- | ----- | --- |
+| 1 - Ideation  |                                                                    |          |       |       |     |
+| 1.1           | Formulate project idea                                             | Both     | 12/05 | 13/05 | 3   |
+| 1.2           | Brainstorm features                                                | Both     | 13/05 | 14/05 | 2   |
+| 1.3           | Project Poster + Video for Lift-off                                | Both     | 14/05 | 20/05 | 8   |
+| 1.4           | Design first draft UI for the app                                  | Marianne | 21/05 | 23/05 | 8   |
+| 1.5           | Design development plan                                            | Marianne | 28/05 | -     | 1   |
+| 1.6           | Refine User Flow Diagram                                           | Marianne | 28/05 | 29/05 | 1   |
+| 1.7           | Refine Poster with confirmed techstack                             | Jeslyn   | 29/05 | -     | 1   |
+| 1.8           | Technical Proof of Concept (for Authentication)                    | Both     | 29/05 | 31/05 | 12  |
+| 1.9           | Deployment                                                         | Jeslyn   | 31/05 | 01/06 | 6   |
+| 1.10          | Update Video with PoC + next plan                                  | Both     | 01/06 | 02/06 | 4   |
+| 1.11          | Refine Code in ReactNative (make it scalable, organize in folders) | Jeslyn   | 02/06 | 03/06 | 2   |
+| 1.12          | Write report                                                       | Both     | 03/06 | -     | 3   |
+| 2 - Prototype |                                                                    |          |       |       |     |
+| 2.1           | Create database with Firebase                                      | Both     | -     | -     | 15  |
+| 2.2           | Integrate Profile feature                                          | Marianne | 09/06 | 23/06 | 71  |
+| 2.3           | System Testing for Profile feature                                 | Jeslyn   | 23/06 | -     | 1   |
+| 2.4           | Integrate Library feature                                          | Jeslyn   | 09/06 | 23/06 | 74  |
+| 2.5           | System Testing for Library feature                                 | Marianne | 23/06 | -     | 1   |
+| 2.6           | Integrate Forum feature                                            | Both     | 23/06 | 29/06 | 34  |
+| 2.7           | System Testing for Forum feature                                   | Both     | 29/06 | -     | 1   |
+| 2.8           | Final Testing for core features with users + feedback (Deployment) | Both     | 29/06 | 30/06 | 4   |
+| 2.9           | Finalize documentation                                             | Both     | 30/06 | 01/07 | 5   |
