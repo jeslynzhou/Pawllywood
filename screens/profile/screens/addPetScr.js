@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { db, auth, storage } from '../../../initializeFB';
 import { collection, addDoc } from 'firebase/firestore';
-import { getDownloadURL, ref } from 'firebase/storage';
+import { getDownloadURL, ref , uploadBytes } from 'firebase/storage';
 
 import UploadImageModal from '../components/uploapImageModal';
 import BirthDateModal from '../../home/components/birthDateModal';
@@ -44,6 +44,22 @@ export default function AddPetScreen({ fetchPetData, closeAddPet }) {
         getDefaultPetPicture();
     }, []);
 
+    const uploadImageToFirebase = async (uri) => {
+        try {
+            const user = auth.currentUser;
+            const response = await fetch(uri);
+            const blob = await response.blob();
+            const filename = `${user.uid}/${new Date().getTime()}-pet.jpg`;
+            const storageRef = ref(storage, `pet_images/${filename}`);
+            const uploadTask = await uploadBytes(storageRef, blob);
+            const downloadURL = await getDownloadURL(uploadTask.ref);
+            return downloadURL;
+        } catch (error) {
+            console.error('Error uploading image to Firebase:', error);
+            throw error;
+        }
+    };
+
     const handleAddPet = async () => {
         try {
             const user = auth.currentUser;
@@ -55,7 +71,7 @@ export default function AddPetScreen({ fetchPetData, closeAddPet }) {
         } catch (error) {
             console.error('Error adding pet:', error.message);
         }
-    };
+    };    
 
     {/* Upload Image Modal */ }
     const handleOpenUploadImageModal = () => {
@@ -73,23 +89,24 @@ export default function AddPetScreen({ fetchPetData, closeAddPet }) {
                 Alert.alert('Permission Denied', 'Permission to access camera is required.');
                 return;
             }
-
+    
             let cameraResult = await ImagePicker.launchCameraAsync({
                 cameraType: ImagePicker.CameraType.front,
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 1,
             });
-
+    
             if (!cameraResult.canceled) {
-                setPetData({ ...petData, picture: cameraResult.assets[0].uri });
+                const downloadURL = await uploadImageToFirebase(cameraResult.assets[0].uri);
+                setPetData({ ...petData, picture: downloadURL });
                 setShowUploadImageModal(false);
             }
         } catch (error) {
             console.log('Error uploading image from camera:', error);
         }
     };
-
+    
     const handleUploadFromLibrary = async () => {
         try {
             let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -97,23 +114,24 @@ export default function AddPetScreen({ fetchPetData, closeAddPet }) {
                 Alert.alert('Permission Denied', 'Permission to access library is required.');
                 return;
             }
-
+    
             let libraryResult = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 1,
             });
-
+    
             if (!libraryResult.canceled) {
-                setPetData({ ...petData, picture: libraryResult.assets[0].uri });
+                const downloadURL = await uploadImageToFirebase(libraryResult.assets[0].uri);
+                setPetData({ ...petData, picture: downloadURL });
                 setShowUploadImageModal(false);
             }
         } catch (error) {
             console.log('Error uploading image from library:', error);
         }
     };
-
+    
     {/* BirthDate & Age & AdoptedDate Modals */ }
     const openBirthDateModal = () => {
         setShowBirthDateModal(true);
