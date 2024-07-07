@@ -364,9 +364,9 @@ Marianne: 42
 
 **Total hours for Milestones 2:**
 
-Jeslyn: 134
+Jeslyn: 137
 
-Marianne: 131
+Marianne: 134
 
 | Milestone     | Tasks                                                              | PIC      | Start | End   | Hrs |
 | ------------  | ------------------------------------------------------------------ | -------- | ----- | ----- | --- |
@@ -386,10 +386,10 @@ Marianne: 131
 | 2 - Prototype |                                                                    |          |       |       |     |
 | 2.1           | Create database with Firebase                                      | Both     | -     | -     | 15  |
 | 2.2           | Integrate Profile feature                                          | Marianne | 09/06 | 23/06 | 71  |
-| 2.3           | System Testing for Profile feature                                 | Jeslyn   | 23/06 | -     | 1   |
+| 2.3           | System Testing for Profile feature                                 | Jeslyn   | 23/06 | -     | 2   |
 | 2.4           | Integrate Library feature                                          | Jeslyn   | 09/06 | 23/06 | 74  |
-| 2.5           | System Testing for Library feature                                 | Marianne | 23/06 | -     | 1   |
+| 2.5           | System Testing for Library feature                                 | Marianne | 23/06 | -     | 2   |
 | 2.6           | Integrate Forum feature                                            | Both     | 23/06 | 29/06 | 34  |
-| 2.7           | System Testing for Forum feature                                   | Both     | 29/06 | -     | 1   |
+| 2.7           | System Testing for Forum feature                                   | Both     | 29/06 | -     | 2   |
 | 2.8           | Final Testing for core features with users + feedback (Deployment) | Both     | 29/06 | 30/06 | 4   |
 | 2.9           | Finalize documentation                                             | Both     | 30/06 | 01/07 | 5   |
