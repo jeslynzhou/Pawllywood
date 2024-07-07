@@ -57,18 +57,17 @@ const AuthScreen = ({
           birthDate: '',
           age: '',
           gender: '',
-          notes: '',
           adoptedDate: new Date().toLocaleDateString(),
         });
 
         const notesCollectionRef = collection(db, 'users', user.uid, 'notes');
-        await setDoc(doc(notesCollectionRef, {
-          folderName: '',
+        await setDoc(doc(notesCollectionRef), {
+          folderName: 'Default Pets',
           createdDate: new Date().toLocaleDateString(),
           notes: [
             { title: 'Default Pet Info', createdDate: new Date().toLocaleDateString(), context: 'Start taking notes now!' },
           ],
-        }));
+        });
 
         setCurrentScreen('Authenticated');
         console.log('You have created an account successfully!');

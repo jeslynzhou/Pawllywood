@@ -10,10 +10,11 @@ import EditProfileScreen from './editProfileScr';
 import AddPetScreen from './addPetScr';
 import MyPetsScreen from './myPetsScr';
 import MyPostsScreen from './myPostsScr';
+import ManageAccountScreen from './manageAccountScr';
 import LogoutModal from '../components/logoutModal';
 
 
-export default function ProfileScreen({ handleSignOut, directToProfile, directToNotebook, directToHome, directToLibrary, directToForum }) {
+export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
   const [userProfile, setUserProfile] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -138,6 +139,15 @@ export default function ProfileScreen({ handleSignOut, directToProfile, directTo
     setCurrentScreen('Profile');
   };
 
+  {/* Manage Account Screen */ }
+  const openManageAccountScreen = () => {
+    setCurrentScreen('ManageAccount');
+  };
+
+  const closeManageAccountScreen = () => {
+    setCurrentScreen('Profile');
+  };
+
   {/*Log Out Modal */ }
   const openLogoutModal = () => {
     setShowLogoutModal(true);
@@ -244,6 +254,16 @@ export default function ProfileScreen({ handleSignOut, directToProfile, directTo
 
               <View style={styles.separatorLine} />
 
+              <TouchableOpacity onPress={openManageAccountScreen}>
+                <View style={styles.featurePanel}>
+                  <Ionicons name="settings-outline" size={24} color='#000000' />
+                  <Text style={styles.featurePanelText}>Manage Account</Text>
+                  <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.separatorLine} />
+
               <TouchableOpacity onPress={openLogoutModal}>
                 <View style={styles.featurePanel}>
                   <Ionicons name="log-out-outline" size={24} color='#000000' />
@@ -288,6 +308,12 @@ export default function ProfileScreen({ handleSignOut, directToProfile, directTo
         <MyPostsScreen
           closeMyPostsScreen={closeMyPostsScreen}
           directToForum={directToForum}
+        />
+      )}
+      {currentScreen === 'ManageAccount' && (
+        <ManageAccountScreen
+          closeManageAccountScreen={closeManageAccountScreen}
+
         />
       )}
       <LogoutModal
