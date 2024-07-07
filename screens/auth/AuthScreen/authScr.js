@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 import { auth, db, storage } from '../../../initializeFB';
 import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
@@ -24,12 +24,13 @@ const AuthScreen = ({
   const handleAuthentication = async () => {
     try {
       if (isLogin) {
+        // Sign in
         await signInWithEmailAndPassword(auth, email, password);
         setCurrentScreen('Authenticated');
         console.log('You have signed in successfully!');
       } else {
         if (password !== retypePassword) {
-          console.error("Passwords don't match");
+          Alert.alert('Authentication error', "Passwords don't match");
           return;
         }
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -60,11 +61,20 @@ const AuthScreen = ({
           adoptedDate: new Date().toLocaleDateString(),
         });
 
+        const notesCollectionRef = collection(db, 'users', user.uid, 'notes');
+        await setDoc(doc(notesCollectionRef, {
+          folderName: '',
+          createdDate: new Date().toLocaleDateString(),
+          notes: [
+            { title: 'Default Pet Info', createdDate: new Date().toLocaleDateString(), context: 'Start taking notes now!' },
+          ],
+        }));
+
         setCurrentScreen('Authenticated');
         console.log('You have created an account successfully!');
       }
     } catch (error) {
-      console.error('Authentication error:', error.message);
+      Alert.alert('Authentication error', error.message);
     }
   };
 

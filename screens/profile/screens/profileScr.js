@@ -13,7 +13,7 @@ import MyPostsScreen from './myPostsScr';
 import LogoutModal from '../components/logoutModal';
 
 
-export default function ProfileScreen({ handleSignOut, directToNotebook, directToHome, directToLibrary, directToForum }) {
+export default function ProfileScreen({ handleSignOut, directToProfile, directToNotebook, directToHome, directToLibrary, directToForum }) {
   const [currentScreen, setCurrentScreen] = useState('Profile');
   const [userProfile, setUserProfile] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -274,6 +274,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       {currentScreen === 'AddPet' && (
         <AddPetScreen
           closeAddPet={closeAddPet}
+          directToHome={directToHome}
         />
       )}
       {currentScreen === 'MyPets' && (

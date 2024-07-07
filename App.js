@@ -150,16 +150,6 @@ const App = () => {
           directToLibrary={directToLibrary}
         />
       )}
-      {currentScreen === 'MyPosts' && (
-        <MyPostsScreen
-          closeMyPostsScreen={() => { setCurrentScreen('Profile'), console.log('Back to Profile') }}
-          directToProfile={directToProfile}
-          directToNotebook={directToNotebook}
-          directToHome={directToHome}
-          directToLibrary={directToLibrary}
-          directToForum={directToForum}
-        />
-      )}
     </ScrollView>
   );
 };
