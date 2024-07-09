@@ -94,7 +94,7 @@ export default function AddPetScreen({ fetchPetData, closeAddPet }) {
                 cameraType: ImagePicker.CameraType.front,
                 allowsEditing: true,
                 aspect: [1, 1],
-                quality: 1,
+                quality: 0.2,
             });
     
             if (!cameraResult.canceled) {
@@ -119,7 +119,7 @@ export default function AddPetScreen({ fetchPetData, closeAddPet }) {
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
-                quality: 1,
+                quality: 0.2,
             });
     
             if (!libraryResult.canceled) {

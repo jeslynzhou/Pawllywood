@@ -1,14 +1,14 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+ 
 import { auth, db, storage } from '../../../initializeFB';
 import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
 import { getDownloadURL, ref } from 'firebase/storage';
-
+ 
 import LogInScreen from './logIn';
 import SignUpScreen from './signUp';
-
+ 
 const AuthScreen = ({
   username, setUsername,
   email, setEmail,
@@ -20,34 +20,35 @@ const AuthScreen = ({
   const { height } = Dimensions.get('window');
   // image
   const imageSize = height * 0.2;
-
+ 
   const handleAuthentication = async () => {
     try {
       if (isLogin) {
+        // Sign in
         await signInWithEmailAndPassword(auth, email, password);
         setCurrentScreen('Authenticated');
         console.log('You have signed in successfully!');
       } else {
         if (password !== retypePassword) {
-          console.error("Passwords don't match");
+          Alert.alert('Authentication error', "Passwords don't match");
           return;
         }
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-
+ 
         const defaultUserPictureRef = ref(storage, 'default_profile_picture/default_profile_picture.png');
         const defaultUserPictureURL = await getDownloadURL(defaultUserPictureRef);
-
+ 
         await setDoc(doc(db, 'users', user.uid), {
           username: username,
           email: email,
           picture: defaultUserPictureURL,
           description: 'Write something about yourself!',
         });
-
+ 
         const defaultPetPictureRef = ref(storage, 'default_profile_picture/default_pet_image_square.png');
         const defaultPetPictureURL = await getDownloadURL(defaultPetPictureRef);
-
+ 
         const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
         await addDoc(petsCollectionRef, {
           name: 'Your default pet',
@@ -56,29 +57,37 @@ const AuthScreen = ({
           birthDate: '',
           age: '',
           gender: '',
-          notes: '',
           adoptedDate: new Date().toLocaleDateString(),
         });
-
+ 
+        const notesCollectionRef = collection(db, 'users', user.uid, 'notes');
+        await setDoc(doc(notesCollectionRef), {
+          folderName: 'Default Pets',
+          createdDate: new Date().toLocaleDateString(),
+          notes: [
+            { title: 'Default Pet Info', createdDate: new Date().toLocaleDateString(), context: 'Start taking notes now!' },
+          ],
+        });
+ 
         setCurrentScreen('Authenticated');
         console.log('You have created an account successfully!');
       }
     } catch (error) {
-      console.error('Authentication error:', error.message);
+      Alert.alert('Authentication error', error.message);
     }
   };
-
+ 
   return (
     <View style={styles.authContainer}>
       <Text style={styles.title}>{isLogin ? 'Sign In' : 'Sign Up'}</Text>
-
+ 
       {isLogin && (
         <Image
           source={require('../../../assets/app_images/magic_cat.png')}
           style={[styles.image, { width: imageSize, height: imageSize }]}
         />
       )}
-
+ 
       {isLogin ? (
         <LogInScreen
           email={email}
@@ -100,7 +109,7 @@ const AuthScreen = ({
           handleAuthentication={handleAuthentication}
         />
       )}
-
+ 
       <TouchableOpacity onPress={() => setIsLogin(!isLogin)} style={styles.toggleButton}>
         <Text style={styles.toggleButtonText}>
           {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
@@ -109,7 +118,7 @@ const AuthScreen = ({
     </View>
   );
 };
-
+ 
 const styles = StyleSheet.create({
   authContainer: {
     width: '100%',
@@ -139,5 +148,5 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
 });
-
+ 
 export default AuthScreen;
