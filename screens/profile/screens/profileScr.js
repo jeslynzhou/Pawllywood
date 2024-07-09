@@ -70,7 +70,8 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
           const post = postDoc.data();
           if (post.userId === user.uid) {
             batch.update(postDoc.ref, {
-              text: post.text,
+              title: post.title,
+              content: post.content,
               username: updatedProfile.username,
               userId: post.userId,
               userProfilePicture: updatedProfile.picture,
@@ -79,6 +80,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
               comments: post.comments,
               upvotes: post.upvotes,
               downvotes: post.downvotes,
+              images: post.images,
             });
           }
 
@@ -273,6 +275,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       )}
       {currentScreen === 'AddPet' && (
         <AddPetScreen
+          directToHome={directToHome}
           closeAddPet={closeAddPet}
         />
       )}

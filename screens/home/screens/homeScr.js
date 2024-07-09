@@ -8,7 +8,7 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 import NavigationBar from '../../../components/navigationBar';
 import EditPetProfileScreen from './editPetProfileScr';
-import AddPetScreen from '../../profile/screens/addPetScr';
+import AddPetScreen from './addPetScr';
 
 export default function HomeScreen({ directToProfile, directToNotebook, directToLibrary, directToForum }) {
     const [currentScreen, setCurrentScreen] = useState('Home');

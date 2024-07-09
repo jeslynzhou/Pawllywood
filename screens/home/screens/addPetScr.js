@@ -7,11 +7,11 @@ import { db, auth, storage } from '../../../initializeFB';
 import { collection, addDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
-import UploadImageModal from '../components/uploapImageModal';
-import BirthDateModal from '../../home/components/birthDateModal';
-import GenderOptionsModal from '../components/genderOptionsModal';
+import UploadImageModal from '../../profile/components/uploapImageModal';
+import BirthDateModal from '../components/birthDateModal';
+import GenderOptionsModal from '../../profile/components/genderOptionsModal';
 
-export default function AddPetScreen({ directToHome, closeAddPet }) {
+export default function AddPetScreen({ fetchPetData, closeAddPet }) {
     const [showUploadImageModal, setShowUploadImageModal] = useState(false);
     const [showBirthDateModal, setShowBirthDateModal] = useState(false);
     const [showAdoptedDateModal, setShowAdoptedDateModal] = useState(false);
@@ -65,8 +65,9 @@ export default function AddPetScreen({ directToHome, closeAddPet }) {
             const user = auth.currentUser;
             const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
             await addDoc(petsCollectionRef, petData);
+            fetchPetData();
             console.log('Pet added successfully!');
-            directToHome(); // Close the add pet screen after successful addition
+            closeAddPet(); // Close the add pet screen after successful addition
         } catch (error) {
             console.error('Error adding pet:', error.message);
         }
