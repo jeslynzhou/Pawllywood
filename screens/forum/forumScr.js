@@ -295,7 +295,9 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
     const marginTop = searchHeight + profileHeight + height * 0.04;
 
     if (selectedPost) {
-        return <PostDetailsScr post={selectedPost} onBack={() => setSelectedPost(null)} />;
+        return <PostDetailsScr post={selectedPost} onBack={() => setSelectedPost(null)} 
+            openImageViewer={openImageViewer} imageViewerVisible={imageViewerVisible} 
+            currentImages={currentImages} currentImageIndex={currentImageIndex} closeImageViewer={closeImageViewer}/>;
     }
 
     return (
@@ -748,7 +750,7 @@ const styles = StyleSheet.create({
     },
     modalContainer: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.9)', // Adjust opacity or color as needed
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
         justifyContent: 'center',
         alignItems: 'center',
     },
