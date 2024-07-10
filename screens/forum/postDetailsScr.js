@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, Button, StyleSheet } from 'react-native';
+import { View, Text, Image, ScrollView, Button, StyleSheet, TouchableOpacity, Modal, Dimensions } from 'react-native';
 
-const PostDetailsScr = ({ post, onBack }) => {
+const PostDetailsScr = ({ post, onBack, openImageViewer, imageViewerVisible, currentImages, currentImageIndex, closeImageViewer }) => {
     return (
         <View style={styles.postDetailsContainer}>
             <Button title="Back" onPress={onBack} />
@@ -24,11 +24,12 @@ const PostDetailsScr = ({ post, onBack }) => {
             {/* Images */}
             <ScrollView horizontal style={styles.imageScrollContainer}>
                 {post.images && post.images.map((imageUri, index) => (
-                    <Image
-                        key={index}
-                        source={{ uri: imageUri }}
-                        style={styles.postImage}
-                    />
+                    <TouchableOpacity key={index} onPress={() => openImageViewer(post.images, index)}>
+                        <Image
+                            source={{ uri: imageUri }}
+                            style={styles.postImage}
+                        />
+                    </TouchableOpacity>
                 ))}
             </ScrollView>
             {/* Comments */}
@@ -40,6 +41,27 @@ const PostDetailsScr = ({ post, onBack }) => {
                     </View>
                 ))}
             </ScrollView>
+            {/* Image Viewer Modal */}
+            <Modal visible={imageViewerVisible} transparent={true}>
+                <View style={styles.imageViewerContainer}>
+                    <ScrollView
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ flexGrow: 1 }}
+                    >
+                        {currentImages.map((imageUri, index) => (
+                            <TouchableOpacity key={index} onPress={closeImageViewer} style={styles.fullscreenImageContainer}>
+                                <Image
+                                    source={{ uri: imageUri }}
+                                    style={styles.fullscreenImage}
+                                    resizeMode="contain"
+                                />
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -53,34 +75,10 @@ const styles = StyleSheet.create({
         width: '100%',
         flex: 1,
     },
-    searchSection: {
-        alignItems: 'center',
-        marginHorizontal: 16,
-        flexDirection: 'row',
-        marginTop: 12,
-        marginBottom: 5,
-        height: '6%',
-    },
-    searchInput: {
-        flex: 1,
-        padding: 10,
-        borderColor: '#CCCCCC',
-        borderWidth: 1,
-        borderRadius: 17,
-    },
-    profileSection: {
-        alignItems: 'center',
-        marginHorizontal: 16,
-        flexDirection: 'row',
-        marginVertical: 4,
-        justifyContent: 'space-between',
-    },
     profilePictureContainer: {
-        width: 53,
-        height: 53,
-        borderWidth: 1,
-        borderRadius: 30,
-        borderColor: '#CCCCCC',
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         overflow: 'hidden',
         marginRight: 10,
     },
@@ -88,53 +86,13 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
-    postInput: {
-        flex: 1,
-        padding: 10,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 17,
-        marginRight: 10,
-    },
-    postButtons: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    button: {
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 17,
-        backgroundColor: '#F26419',
-    },
-    buttonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        textAlign: 'center',
-        fontWeight: 'bold',
-    },
-    postsContainer: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-        borderWidth: 1,
-        borderColor: '#CCCCCC',
-        width: '100%',
-        alignSelf: 'center',
-        height: '75.2%',
-        marginTop: 16,
-        position: 'absolute',
-    },
-    postContainer: {
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderBottomColor: '#CCCCCC',
-        borderBottomWidth: 1,
-    },
     postUserContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginVertical: 8,
     },
     postUser: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#000000',
     },
@@ -143,103 +101,48 @@ const styles = StyleSheet.create({
         color: '#808080',
     },
     postTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 8,
+        marginVertical: 10,
     },
     postText: {
-        marginTop: 10,
         fontSize: 16,
+        marginBottom: 10,
     },
     imageScrollContainer: {
         flexDirection: 'row',
-        marginBottom: 8,
+        marginBottom: 10,
     },
     postImage: {
         width: 100,
         height: 100,
         borderRadius: 8,
-        marginRight: 8,
-    },
-    postActions: {
-        flexDirection: 'row',
-        marginVertical: 8,
-    },
-    votesContainer: {
-        flexDirection: 'row',
-        borderWidth: 1,
-        borderRadius: 15,
-        paddingVertical: 3,
-        borderColor: '#CCCCCC',
-        justifyContent: 'flex-start',
-    },
-    votesSmallerContainer: {
-        flexDirection: 'row',
-        paddingHorizontal: 3,
-    },
-    voteTextContainer: {
-        paddingRight: 7,
-        paddingLeft: 20,
-        justifyContent: 'center',
-    },
-    shareContainer: {
-        justifyContent: 'center',
-        marginHorizontal: 8,
-    },
-    commentSection: {
-        marginTop: 8,
-    },
-    commentInputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderTopWidth: 1,
-        borderTopColor: '#CCCCCC',
-        paddingTop: '3%',
-    },
-    commentInput: {
-        flex: 1,
-        paddingHorizontal: 8,
-        paddingVertical: 8,
-        borderColor: '#CCCCCC',
-        borderWidth: 1,
-        borderRadius: 17,
         marginRight: 10,
     },
-    commentContainer: {
-        flexDirection: 'row',
-        marginVertical: 8,
-    },
-    commentInfoContainer: {
+    commentsContainer: {
         flex: 1,
     },
     comment: {
-        flex: 1,
-        padding: 8,
         backgroundColor: '#F0F0F0',
-        borderRadius: 17,
+        padding: 10,
+        marginVertical: 5,
+        borderRadius: 8,
     },
-    commentUser: {
-        fontWeight: 'bold',
-    },
-    commentText: {
-        fontSize: 14,
-    },
-    commentDateTimeContainer: {
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-    },
-    commentDateTime: {
-        fontSize: 12,
-        color: '#808080',
-    },
-    loadingContainer: {
+    imageViewerContainer: {
         flex: 1,
-        alignSelf: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    verticalLine: {
-        width: 1,
+    fullscreenImageContainer: {
+        width: Dimensions.get('window').width,
         height: '100%',
-        backgroundColor: '#CCCCCC',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    fullscreenImage: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
     },
 });
