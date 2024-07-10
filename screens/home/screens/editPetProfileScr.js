@@ -93,6 +93,12 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
             const selectedDate = new Date(selectedYear, selectedMonth - 1, selectedDay);
             const today = new Date();
 
+            // Check if selected date is after today's date
+            if (selectedDate > today) {
+                Alert.alert('Invalid Date', 'Please select a date that is not later than today.');
+                return;
+            }
+
             // Calculate age
             let age = today.getFullYear() - selectedDate.getFullYear();
             const monthDiff = today.getMonth() - selectedDate.getMonth();

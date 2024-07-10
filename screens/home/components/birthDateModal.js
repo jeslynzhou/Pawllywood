@@ -71,9 +71,9 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(252, 249, 217, 1)',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
         padding: 32,
-        marginTop: 64,
+
     },
     buttonsContainer: {
         flexDirection: 'row',
