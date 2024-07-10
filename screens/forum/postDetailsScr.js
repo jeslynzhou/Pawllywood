@@ -47,8 +47,8 @@ const PostDetailsScr = ({ post, onBack, openImageViewer, imageViewerVisible, cur
                     <ScrollView
                         horizontal
                         pagingEnabled
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ flexGrow: 1 }}
+                        style={styles.fullscreenImageScroll}
+                        contentOffset={{ x: currentImageIndex * Dimensions.get('window').width, y: 0 }}
                     >
                         {currentImages.map((imageUri, index) => (
                             <TouchableOpacity key={index} onPress={closeImageViewer} style={styles.fullscreenImageContainer}>
@@ -144,5 +144,8 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         height: '100%',
+    },
+    fullscreenImageScroll: {
+        flexDirection: 'row',
     },
 });
