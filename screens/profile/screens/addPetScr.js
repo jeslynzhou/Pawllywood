@@ -16,6 +16,7 @@ export default function AddPetScreen({ directToHome, closeAddPet }) {
     const [showBirthDateModal, setShowBirthDateModal] = useState(false);
     const [showAdoptedDateModal, setShowAdoptedDateModal] = useState(false);
     const [showGenderOptionsModal, setShowGenderOptionsModal] = useState(false);
+    const [isFormValid, setIsFormValid] = useState(false);
     const { height } = Dimensions.get('window');
     const imageSize = height * 0.2;
 
@@ -29,6 +30,10 @@ export default function AddPetScreen({ directToHome, closeAddPet }) {
         adoptedDate: '',
         picture: null,
     });
+
+    useEffect(() => {
+        setIsFormValid(petData.name !== '' && petData.breed !== '');
+    }, [petData.name, petData.breed]);
 
     useEffect(() => {
         const getDefaultPetPicture = async () => {
@@ -229,7 +234,9 @@ export default function AddPetScreen({ directToHome, closeAddPet }) {
                 </TouchableOpacity>
 
                 {/* Pet name */}
-                <Text style={styles.labels}>Pet Name</Text>
+                <Text style={styles.labels}>
+                    Pet Name <Text style={styles.required}>*</Text>
+                </Text>
                 <TextInput
                     style={styles.input}
                     value={petData.name}
@@ -238,7 +245,9 @@ export default function AddPetScreen({ directToHome, closeAddPet }) {
                 />
 
                 {/* Breed */}
-                <Text style={styles.labels}>Breed</Text>
+                <Text style={styles.labels}>
+                    Breed <Text style={styles.required}>*</Text>
+                </Text>
                 <TextInput
                     style={styles.input}
                     value={petData.breed}
@@ -286,7 +295,11 @@ export default function AddPetScreen({ directToHome, closeAddPet }) {
                 </TouchableOpacity>
 
                 {/* Button to Add Pet */}
-                <TouchableOpacity style={styles.button} onPress={handleAddPet}>
+                <TouchableOpacity
+                    onPress={handleAddPet}
+                    style={[styles.button, isFormValid ? null : styles.disabledButton]}
+                    disabled={!isFormValid}
+                >
                     <Text style={styles.buttonText}>Add Pet</Text>
                 </TouchableOpacity>
             </View>
@@ -393,6 +406,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 5,
     },
+    disabledButton: {
+        height: 45,
+        backgroundColor: 'rgba(242, 100, 25, 0.7)',
+        borderRadius: 17,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 15,
+    },
     buttonText: {
         fontSize: 16,
         fontWeight: 'bold',
@@ -401,5 +422,8 @@ const styles = StyleSheet.create({
     inputTextContainer: {
         flex: 1,
         justifyContent: 'center',
+    },
+    required: {
+        color: '#F26419',
     },
 });
