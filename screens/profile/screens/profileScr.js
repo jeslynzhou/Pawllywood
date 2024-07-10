@@ -3,13 +3,14 @@ import { Text, View, TouchableOpacity, Image, StyleSheet, ActivityIndicator } fr
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
-import { doc, getDoc, setDoc, getDocs, writeBatch, collection, query, where } from 'firebase/firestore';
+import { doc, getDoc, setDoc, getDocs, writeBatch, collection } from 'firebase/firestore';
 
 import NavigationBar from '../../../components/navigationBar';
 import EditProfileScreen from './editProfileScr';
 import AddPetScreen from './addPetScr';
 import MyPetsScreen from './myPetsScr';
 import MyPostsScreen from './myPostsScr';
+import ManageAccountScreen from './manageAccountScr';
 import LogoutModal from '../components/logoutModal';
 
 
@@ -42,7 +43,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
     fetchUserProfile();
   }, []);
 
-  {/* Edit Profile Screen */ }
+  { /* Edit Profile Screen */ }
   const handleEditProfile = () => {
     setCurrentScreen('EditProfile');
   };
@@ -113,34 +114,11 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
     }
   };
 
-  {/* Add Pet Screen */ }
-  const handleAddingPet = () => {
-    setCurrentScreen('AddPet');
-  };
-
-  const closeAddPet = () => {
+  const onClose = () => {
     setCurrentScreen('Profile');
   };
 
-  {/* My Pets Screen */ }
-  const openMyPetsScreen = () => {
-    setCurrentScreen('MyPets');
-  };
-
-  const closeMyPetsScreen = () => {
-    setCurrentScreen('Profile');
-  };
-
-  {/* My Posts Screen */ }
-  const openMyPostsScreen = () => {
-    setCurrentScreen('MyPosts');
-  };
-
-  const closeMyPostsScreen = () => {
-    setCurrentScreen('Profile');
-  };
-
-  {/*Log Out Modal */ }
+  { /* Log Out Modal */ }
   const openLogoutModal = () => {
     setShowLogoutModal(true);
   };
@@ -183,7 +161,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
                   <TouchableOpacity onPress={handleEditProfile} style={styles.functionButton}>
                     <Text style={styles.functionButtonText}>Edit Profile</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={handleAddingPet} style={styles.functionButton}>
+                  <TouchableOpacity onPress={() => setCurrentScreen('AddPet')} style={styles.functionButton}>
                     <Text style={styles.functionButtonText}>Add Pet</Text>
                   </TouchableOpacity>
                 </View>
@@ -195,7 +173,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
           <View style={styles.featurePanelGroup}>
             {/* Group 1: My Pets and My Posts */}
             <View style={styles.featureBox}>
-              <TouchableOpacity onPress={openMyPetsScreen}>
+              <TouchableOpacity onPress={() => setCurrentScreen('MyPets')}>
                 <View style={styles.featurePanel}>
                   <Ionicons name="paw-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>My Pets</Text>
@@ -205,7 +183,7 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
 
               <View style={styles.separatorLine} />
 
-              <TouchableOpacity onPress={openMyPostsScreen}>
+              <TouchableOpacity onPress={() => setCurrentScreen('MyPosts')}>
                 <View style={styles.featurePanel}>
                   <Ionicons name="document-outline" size={24} color='#000000' />
                   <Text style={styles.featurePanelText}>My Posts</Text>
@@ -246,6 +224,16 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
 
               <View style={styles.separatorLine} />
 
+              <TouchableOpacity onPress={() => setCurrentScreen('ManageAccount')}>
+                <View style={styles.featurePanel}>
+                  <Ionicons name="settings-outline" size={24} color='#000000' />
+                  <Text style={styles.featurePanelText}>Manage Account</Text>
+                  <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' style={{ marginLeft: 'auto' }} />
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.separatorLine} />
+
               <TouchableOpacity onPress={openLogoutModal}>
                 <View style={styles.featurePanel}>
                   <Ionicons name="log-out-outline" size={24} color='#000000' />
@@ -276,20 +264,25 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
       {currentScreen === 'AddPet' && (
         <AddPetScreen
           directToHome={directToHome}
-          closeAddPet={closeAddPet}
+          closeAddPet={onClose}
         />
       )}
       {currentScreen === 'MyPets' && (
         <MyPetsScreen
-          closeMyPetsScreen={closeMyPetsScreen}
-          handleAddingPet={handleAddingPet}
+          closeMyPetsScreen={onClose}
+          handleAddingPet={() => setCurrentScreen('AddPet')}
           directToHome={directToHome}
         />
       )}
       {currentScreen === 'MyPosts' && (
         <MyPostsScreen
-          closeMyPostsScreen={closeMyPostsScreen}
+          closeMyPostsScreen={onClose}
           directToForum={directToForum}
+        />
+      )}
+      {currentScreen === 'ManageAccount' && (
+        <ManageAccountScreen
+          closeManageAccountScreen={onClose}
         />
       )}
       <LogoutModal
