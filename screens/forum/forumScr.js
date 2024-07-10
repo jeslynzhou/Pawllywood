@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share, Modal } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { auth, db, storage } from '../../initializeFB';
 import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
 import { ref } from 'firebase/storage';
 import NavigationBar from '../../components/navigationBar';
 import PostScreen from './postScr';
+import PostDetailsScr from './postDetailsScr';
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
@@ -20,6 +21,10 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [imageUris, setImageUris] = useState([]);
+    const [selectedPost, setSelectedPost] = useState(null);
+    const [imageViewerVisible, setImageViewerVisible] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [currentImages, setCurrentImages] = useState([]);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -109,6 +114,19 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         setCurrentScreen('Forum');
     };
 
+    const handlePress = (post) => {
+        setSelectedPost(post);
+    };
+
+    const openImageViewer = (images, index) => {
+        setCurrentImages(images);
+        setCurrentImageIndex(index);
+        setImageViewerVisible(true);
+    };
+
+    const closeImageViewer = () => {
+        setImageViewerVisible(false);
+    };
 
     const handleComment = async (postId, commentText) => {
         if (!commentText.trim() || !userData) return;
@@ -228,6 +246,8 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const onShare = async (post) => {
         try {
             const message = `
+Title: ${post.title}
+
 Post: ${post.content}
  
 Upvotes: ${post.upvotes.length}
@@ -274,227 +294,254 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
     const { height } = Dimensions.get('window');
     const marginTop = searchHeight + profileHeight + height * 0.04;
 
+    if (selectedPost) {
+        return <PostDetailsScr post={selectedPost} onBack={() => setSelectedPost(null)} />;
+    }
+
     return (
         <View style={styles.forumContainer}>
             {currentScreen === 'Forum' ? (
                 <>
                     {/* Search Box */}
+                    <View
+                        style={styles.searchSection}
+                        onLayout={(event) => {
+                            const { height } = event.nativeEvent.layout;
+                            setSearchHeight(height);
+                        }}
+                    >
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="Search posts..."
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
+                        />
+                    </View>
+
+                    {/* Profile Section */}
+                    {isLoadingUserData ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size='large' color='#F26419' />
+                        </View>
+                    ) : userData ? (
                         <View
-                            style={styles.searchSection}
+                            style={styles.profileSection}
                             onLayout={(event) => {
                                 const { height } = event.nativeEvent.layout;
-                                setSearchHeight(height);
+                                setProfileHeight(height);
                             }}
                         >
-                            <TextInput
-                                style={styles.searchInput}
-                                placeholder="Search posts..."
-                                value={searchQuery}
-                                onChangeText={setSearchQuery}
-                            />
+                            <View style={styles.profilePictureContainer}>
+                                <Image
+                                    source={userData.picture ? { uri: userData.picture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                                    style={styles.profilePicture}
+                                />
+                            </View>
+                            <View style={styles.postButtons}>
+                                <TouchableOpacity
+                                    style={styles.button}
+                                    onPress={handlePost}
+                                >
+                                    <Text style={styles.buttonText}>Post</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
+                    ) : (
+                        <Text>User not logged in.</Text>
+                    )}
 
-                        {/* Profile Section */}
-                        {isLoadingUserData ? (
-                            <View style={styles.loadingContainer}>
-                                <ActivityIndicator size='large' color='#F26419' />
-                            </View>
-                        ) : userData ? (
-                            <View
-                                style={styles.profileSection}
-                                onLayout={(event) => {
-                                    const { height } = event.nativeEvent.layout;
-                                    setProfileHeight(height);
-                                }}
-                            >
-                                <View style={styles.profilePictureContainer}>
-                                    <Image
-                                        source={userData.picture ? { uri: userData.picture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
-                                        style={styles.profilePicture}
-                                    />
-                                </View>
-                                <View style={styles.postButtons}>
-                                    <TouchableOpacity
-                                        style={styles.button}
-                                        onPress={handlePost}
-                                    >
-                                        <Text style={styles.buttonText}>Post</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        ) : (
-                            <Text>User not logged in.</Text>
-                        )}
-
-                        {/* Posts List */}
-                        <ScrollView style={[styles.postsContainer, { marginTop }]}>
-                            {filteredPosts.map(post => (
-                                <View key={post.id} style={styles.postContainer}>
-                                    <View style={styles.postUserContainer}>
-                                        <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
-                                            <Image
-                                                source={post.userProfilePicture ? { uri: post.userProfilePicture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
-                                                style={styles.profilePicture}
-                                            />
-                                        </View>
-                                        <View>
-                                            <Text style={styles.postUser}>{post.username}</Text>
-                                            <Text style={styles.postDate}>{post.date} • {post.time}</Text>
-                                        </View>
+                    {/* Posts List */}
+                    <ScrollView style={[styles.postsContainer, { marginTop }]}>
+                        {filteredPosts.map(post => (
+                            <View key={post.id} style={styles.postContainer}>
+                                <View style={styles.postUserContainer}>
+                                    <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
+                                        <Image
+                                            source={post.userProfilePicture ? { uri: post.userProfilePicture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                                            style={styles.profilePicture}
+                                        />
                                     </View>
+                                    <View>
+                                        <Text style={styles.postUser}>{post.username}</Text>
+                                        <Text style={styles.postDate}>{post.date} • {post.time}</Text>
+                                    </View>
+                                </View>
+                                <TouchableOpacity onPress={() => handlePress(post)} key={post.id}>
                                     {/* Title */}
                                     <Text style={styles.postTitle}>{post.title}</Text>
                                     {/* Content */}
                                     <Text style={styles.postText}>{post.content}</Text>
-                                    {/* Images */}
-                                    <ScrollView horizontal style={styles.imageScrollContainer}>
-                                        {post.images && post.images.map((imageUri, index) => (
+                                </TouchableOpacity>
+                                {/* Images */}
+                                <ScrollView horizontal style={styles.imageScrollContainer}>
+                                    {post.images && post.images.map((imageUri, index) => (
+                                        <TouchableOpacity key={index} onPress={() => openImageViewer(post.images, index)}>
                                             <Image
-                                            key={index}
-                                            source={{ uri: imageUri }}
-                                            style={styles.postImage}
+                                                source={{ uri: imageUri }}
+                                                style={styles.postImage}
                                             />
-                                        ))}
-                                    </ScrollView>
-                                    <View style={styles.postActions}>
-                                        <View style={styles.votesContainer}>
-                                            <TouchableOpacity style={styles.votesSmallerContainer} onPress={() => handleUpvote(post.id)}>
-                                                <MaterialCommunityIcons
-                                                    name={post.upvotes.includes(userData.email) ? 'arrow-up-bold' : 'arrow-up-bold-outline'}
-                                                    size={20}
-                                                    color={post.upvotes.includes(userData.email) ? '#33658A' : '#000000'}
-                                                />
-                                                <View style={styles.voteTextContainer}>
-                                                    <Text>{post.upvotes.length}</Text>
-                                                </View>
-                                            </TouchableOpacity>
-
-                                            <View style={styles.verticalLine} />
-
-                                            <TouchableOpacity style={styles.votesSmallerContainer} onPress={() => handleDownvote(post.id)}>
-                                                <MaterialCommunityIcons
-                                                    name={post.downvotes.includes(userData.email) ? 'arrow-down-bold' : 'arrow-down-bold-outline'}
-                                                    size={20}
-                                                    color={post.downvotes.includes(userData.email) ? '#F26419' : '#000000'}
-                                                />
-                                                <View style={styles.voteTextContainer}>
-                                                    <Text>{post.downvotes.length}</Text>
-                                                </View>
-                                            </TouchableOpacity>
-                                        </View>
-
-                                        <TouchableOpacity style={styles.shareContainer} onPress={() => onShare(post)}>
-                                            <Ionicons name="arrow-redo-outline" size={20} color='#000000' />
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                                <View style={styles.postActions}>
+                                    <View style={styles.votesContainer}>
+                                        <TouchableOpacity style={styles.votesSmallerContainer} onPress={() => handleUpvote(post.id)}>
+                                            <MaterialCommunityIcons
+                                                name={post.upvotes.includes(userData.email) ? 'arrow-up-bold' : 'arrow-up-bold-outline'}
+                                                size={20}
+                                                color={post.upvotes.includes(userData.email) ? '#33658A' : '#000000'}
+                                            />
+                                            <View style={styles.voteTextContainer}>
+                                                <Text>{post.upvotes.length}</Text>
+                                            </View>
                                         </TouchableOpacity>
 
-                                    </View>
-                                    <View style={styles.commentInputContainer}>
-                                        <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
-                                            <Image
-                                                source={userData.picture ? { uri: userData.picture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
-                                                style={styles.profilePicture}
+                                        <View style={styles.verticalLine} />
+
+                                        <TouchableOpacity style={styles.votesSmallerContainer} onPress={() => handleDownvote(post.id)}>
+                                            <MaterialCommunityIcons
+                                                name={post.downvotes.includes(userData.email) ? 'arrow-down-bold' : 'arrow-down-bold-outline'}
+                                                size={20}
+                                                color={post.downvotes.includes(userData.email) ? '#F26419' : '#000000'}
                                             />
-                                        </View>
-                                        <TextInput
-                                            style={styles.commentInput}
-                                            placeholder="Add a comment..."
-                                            value={commentTexts[post.id] || ''}
-                                            onChangeText={text => {
-                                                setCommentTexts(prevState => ({
-                                                    ...prevState,
-                                                    [post.id]: text
-                                                }));
+                                            <View style={styles.voteTextContainer}>
+                                                <Text>{post.downvotes.length}</Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    <TouchableOpacity style={styles.shareContainer} onPress={() => onShare(post)}>
+                                        <Ionicons name="arrow-redo-outline" size={20} color='#000000' />
+                                    </TouchableOpacity>
+
+                                </View>
+                                <View style={styles.commentInputContainer}>
+                                    <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
+                                        <Image
+                                            source={userData.picture ? { uri: userData.picture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                                            style={styles.profilePicture}
+                                        />
+                                    </View>
+                                    <TextInput
+                                        style={styles.commentInput}
+                                        placeholder="Add a comment..."
+                                        value={commentTexts[post.id] || ''}
+                                        onChangeText={text => {
+                                            setCommentTexts(prevState => ({
+                                                ...prevState,
+                                                [post.id]: text
+                                            }));
+                                        }}
+                                    />
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            if (commentTexts[post.id]?.trim()) {
+                                                handleComment(post.id, commentTexts[post.id]);
+                                            }
+                                        }}
+                                        disabled={!commentTexts[post.id]?.trim()}  // Disable button if comment text is empty
+                                    >
+                                        <Ionicons
+                                            name={"send-outline"}
+                                            size={20}
+                                            style={{
+                                                color: commentTexts[post.id]?.trim() ? '#33658A' : '#CCCCCC', // Change color based on comment text presence
                                             }}
                                         />
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={styles.commentSection}>
+                                    {/* View more comments */}
+                                    {post.comments.length > 1 && (
                                         <TouchableOpacity
-                                            onPress={() => {
-                                                if (commentTexts[post.id]?.trim()) {
-                                                    handleComment(post.id, commentTexts[post.id]);
-                                                }
-                                            }}
-                                            disabled={!commentTexts[post.id]?.trim()}  // Disable button if comment text is empty
+                                            onPress={() => toggleExpandedComments(post.id)}
+                                            style={styles.expandedCommentsButtonContainer}
                                         >
-                                            <Ionicons
-                                                name={"send-outline"}
-                                                size={20}
-                                                style={{
-                                                    color: commentTexts[post.id]?.trim() ? '#33658A' : '#CCCCCC', // Change color based on comment text presence
-                                                }}
+                                            <Text style={{ fontWeight: 'bold', color: '#808080' }}>{expandedComments[post.id] ? 'View less comments' : 'View more comments'}</Text>
+                                        </TouchableOpacity>
+                                    )}
+
+                                    {/* Display one comment initially */}
+                                    {post.comments.length > 0 && (
+                                        <View style={styles.commentContainer}>
+                                            <View>
+                                                <View style={[styles.profilePictureContainer, { width: 40, height: 40, alignSelf: 'flex-start' }]}>
+                                                    <Image
+                                                        source={post.comments[0].userProfilePicture ? { uri: post.comments[0].userProfilePicture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                                                        style={styles.profilePicture}
+                                                    />
+                                                </View>
+                                            </View>
+
+                                            <View style={styles.commentInfoContainer}>
+                                                <View style={styles.comment}>
+                                                    <Text style={styles.commentUser}>{post.comments[0].username}</Text>
+                                                    <Text style={styles.commentText}>{post.comments[0].text}</Text>
+                                                </View>
+                                                <View style={styles.commentDateTimeContainer}>
+                                                    <Text style={styles.commentDateTime}>{post.comments[0].date} • {post.comments[0].time}</Text>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    )}
+
+                                    {/* Additional comments if expanded */}
+                                    {expandedComments[post.id] && post.comments.slice(1).map((comment, index) => (
+                                        <View key={index} style={styles.commentContainer}>
+                                            <View>
+                                                <View style={[styles.profilePictureContainer, { width: 40, height: 40, alignSelf: 'flex-start' }]}>
+                                                    <Image
+                                                        source={comment.userProfilePicture ? { uri: comment.userProfilePicture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                                                        style={styles.profilePicture}
+                                                    />
+                                                </View>
+                                            </View>
+
+                                            <View style={styles.commentInfoContainer}>
+                                                <View style={styles.comment}>
+                                                    <Text style={styles.commentUser}>{comment.username}</Text>
+                                                    <Text style={styles.commentText}>{comment.text}</Text>
+                                                </View>
+                                                <View style={styles.commentDateTimeContainer}>
+                                                    <Text style={styles.commentDateTime}>{comment.date} • {comment.time}</Text>
+                                                </View>
+                                            </View>
+                                        </View>
+
+                                    ))}
+                                </View>
+                            </View>
+                        ))}
+                        <Modal visible={imageViewerVisible} transparent={true}>
+                            <View style={styles.modalContainer}>
+                                <ScrollView
+                                    horizontal
+                                    pagingEnabled
+                                    style={styles.fullscreenImageScroll}
+                                    contentOffset={{ x: currentImageIndex * Dimensions.get('window').width, y: 0 }}
+                                >
+                                    {currentImages.map((imageUri, index) => (
+                                        <TouchableOpacity key={index} onPress={closeImageViewer} style={styles.fullscreenImageContainer}>
+                                            <Image
+                                                source={{ uri: imageUri }}
+                                                style={styles.fullscreenImage}
+                                                resizeMode="contain"
                                             />
                                         </TouchableOpacity>
-                                    </View>
-                                    <View style={styles.commentSection}>
-                                        {/* View more comments */}
-                                        {post.comments.length > 1 && (
-                                            <TouchableOpacity
-                                                onPress={() => toggleExpandedComments(post.id)}
-                                                style={styles.expandedCommentsButtonContainer}
-                                            >
-                                                <Text style={{ fontWeight: 'bold', color: '#808080' }}>{expandedComments[post.id] ? 'View less comments' : 'View more comments'}</Text>
-                                            </TouchableOpacity>
-                                        )}
+                                    ))}
+                                </ScrollView>
+                            </View>
+                        </Modal>
+                    </ScrollView>
 
-                                        {/* Display one comment initially */}
-                                        {post.comments.length > 0 && (
-                                            <View style={styles.commentContainer}>
-                                                <View>
-                                                    <View style={[styles.profilePictureContainer, { width: 40, height: 40, alignSelf: 'flex-start' }]}>
-                                                        <Image
-                                                            source={post.comments[0].userProfilePicture ? { uri: post.comments[0].userProfilePicture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
-                                                            style={styles.profilePicture}
-                                                        />
-                                                    </View>
-                                                </View>
-
-                                                <View style={styles.commentInfoContainer}>
-                                                    <View style={styles.comment}>
-                                                        <Text style={styles.commentUser}>{post.comments[0].username}</Text>
-                                                        <Text style={styles.commentText}>{post.comments[0].text}</Text>
-                                                    </View>
-                                                    <View style={styles.commentDateTimeContainer}>
-                                                        <Text style={styles.commentDateTime}>{post.comments[0].date} • {post.comments[0].time}</Text>
-                                                    </View>
-                                                </View>
-                                            </View>
-                                        )}
-
-                                        {/* Additional comments if expanded */}
-                                        {expandedComments[post.id] && post.comments.slice(1).map((comment, index) => (
-                                            <View key={index} style={styles.commentContainer}>
-                                                <View>
-                                                    <View style={[styles.profilePictureContainer, { width: 40, height: 40, alignSelf: 'flex-start' }]}>
-                                                        <Image
-                                                            source={comment.userProfilePicture ? { uri: comment.userProfilePicture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
-                                                            style={styles.profilePicture}
-                                                        />
-                                                    </View>
-                                                </View>
-
-                                                <View style={styles.commentInfoContainer}>
-                                                    <View style={styles.comment}>
-                                                        <Text style={styles.commentUser}>{comment.username}</Text>
-                                                        <Text style={styles.commentText}>{comment.text}</Text>
-                                                    </View>
-                                                    <View style={styles.commentDateTimeContainer}>
-                                                        <Text style={styles.commentDateTime}>{comment.date} • {comment.time}</Text>
-                                                    </View>
-                                                </View>
-                                            </View>
-
-                                        ))}
-                                    </View>
-                                </View>
-                            ))}
-                        </ScrollView>
-
-                        {/* Navigation Bar */}
-                        <NavigationBar
-                            activeScreen={currentScreen}
-                            directToProfile={directToProfile}
-                            directToNotebook={directToNotebook}
-                            directToHome={directToHome}
-                            directToLibrary={directToLibrary}
-                        />
+                    {/* Navigation Bar */}
+                    <NavigationBar
+                        activeScreen={currentScreen}
+                        directToProfile={directToProfile}
+                        directToNotebook={directToNotebook}
+                        directToHome={directToHome}
+                        directToLibrary={directToLibrary}
+                    />
                 </>
             ) : (
                 <PostScreen handlePostSubmit={handlePostSubmit} handleCancel={handleCancelPost} />
@@ -698,5 +745,23 @@ const styles = StyleSheet.create({
         width: 1,
         height: '100%',
         backgroundColor: '#CCCCCC',
+    },
+    modalContainer: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.9)', // Adjust opacity or color as needed
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    fullscreenImageScroll: {
+        flexDirection: 'row',
+    },
+    fullscreenImageContainer: {
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').height,
+    },
+    fullscreenImage: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
     },
 });
