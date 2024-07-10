@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../initializeFB';
 import { addDoc, collection } from 'firebase/firestore';
@@ -47,6 +48,12 @@ export default function AddNoteScreen({ fetchNotes, closeAddNote }) {
 
     return (
         <View style={styles.container}>
+            <View style={styles.headerContainer}>
+                <TouchableOpacity onPress={closeAddNote} style={styles.backButton}>
+                    <Ionicons name="arrow-back-outline" size={24} color='#000000' />
+                </TouchableOpacity>
+                <Text style={styles.headerText}>New Note</Text>
+            </View>
             <Text style={styles.label}>Title</Text>
             <TextInput
                 style={styles.input}
@@ -85,9 +92,22 @@ export default function AddNoteScreen({ fetchNotes, closeAddNote }) {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
+        marginTop: '10%',
+        padding: 16,
+    },
+    headerContainer: {
+        flexDirection: 'row',
+        alignContent: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 40,
+    },
+    backButton: {
+        position: 'absolute',
+        zIndex: 1,
+    },
+    headerText: {
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     label: {
         fontSize: 18,
@@ -97,7 +117,7 @@ const styles = StyleSheet.create({
     input: {
         borderWidth: 1,
         borderColor: '#ccc',
-        borderRadius: 5,
+        borderRadius: 17,
         padding: 10,
         marginTop: 5,
         fontSize: 16,
@@ -105,7 +125,7 @@ const styles = StyleSheet.create({
     addButton: {
         backgroundColor: '#F26419',
         padding: 12,
-        borderRadius: 8,
+        borderRadius: 17,
         alignItems: 'center',
         marginTop: 20,
     },
