@@ -61,13 +61,21 @@ const AuthScreen = ({
         });
 
         const notesCollectionRef = collection(db, 'users', user.uid, 'notes');
-        await setDoc(doc(notesCollectionRef), {
-          folderName: 'Default Pets',
-          createdDate: new Date().toLocaleDateString(),
-          notes: [
-            { title: 'Default Pet Info', createdDate: new Date().toLocaleDateString(), context: 'Start taking notes now!' },
-          ],
+        const defaultNoteRef = await addDoc(notesCollectionRef, {
+          title: 'About Default Pets',
+          createdAt: new Date().toLocaleDateString(),
+          text: 'I love my pet!',
+          folderId: '', // optional
         });
+
+        const foldersCollectionRef = collection(db, 'users', user.uid, 'folders');
+        const defaultFolderRef = await addDoc(foldersCollectionRef, {
+          folderName: 'Default Pets',
+          noteIds: [defaultNoteRef.id], //Array to holde note IDs (for reference)
+        });
+
+        // Update the note to include the folderId (the first note gets assigned to the default folder)
+        await setDoc(defaultNoteRef, { folderId: defaultFolderRef.id }, { merge: true });
 
         setCurrentScreen('Authenticated');
         console.log('You have created an account successfully!');

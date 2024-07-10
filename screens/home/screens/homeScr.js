@@ -106,6 +106,13 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                     {/* Pet Profile Label */}
                     <View style={styles.petProfileLabelContainer}>
                         <Text style={styles.labels}>Pet Profile ({petProfilesData.length > 0 ? `${activePetIndex + 1}/${petProfilesData.length}` : ''})</Text>
+
+                        <View style={styles.editButtonContainer}>
+                            <TouchableOpacity onPress={handleEditPetProfile} style={styles.editButton}>
+                                <Text style={styles.editButtonText}>Edit Pet Profile</Text>
+                            </TouchableOpacity>
+                        </View>
+
                     </View>
 
                     <View style={styles.contentContainer}>
@@ -121,9 +128,6 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                                 <View key={index} style={styles.swiperSlide}>
                                     {/* Pet Profile Box */}
                                     <View style={styles.petProfileBox}>
-                                        <TouchableOpacity onPress={handleEditPetProfile} style={styles.editButton}>
-                                            <Ionicons name='ellipsis-horizontal' size={15} color='#000000' />
-                                        </TouchableOpacity>
                                         <View style={styles.petProfileContainer}>
                                             {/* Pet Picture & Name */}
                                             <View style={styles.pictureNameContainer}>
@@ -227,6 +231,7 @@ const styles = StyleSheet.create({
         margin: 16,
     },
     petProfileLabelContainer: {
+        flexDirection: 'row',
         position: 'absolute',
         top: 80,
         left: 16,
@@ -239,6 +244,22 @@ const styles = StyleSheet.create({
         marginVertical: 5,
         marginRight: 10,
     },
+    editButtonContainer: {
+        margin: 11,
+        left: '120%',
+    },
+    editButton: {
+        backgroundColor: '#FFFFFF',
+        borderColor: '#000000',
+        borderWidth: 1,
+        borderRadius: 9,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+    },
+    editButtonText: {
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
     petProfileBox: {
         backgroundColor: '#FFFFFF',
         borderWidth: 1,
@@ -246,12 +267,8 @@ const styles = StyleSheet.create({
         borderRadius: 17,
         marginTop: 37,
         paddingHorizontal: 12,
-        paddingTop: 5,
-        paddingBottom: 12,
+        paddingVertical: 12,
         height: 605,
-    },
-    editButton: {
-        alignSelf: 'flex-end',
     },
     petProfileContainer: {
         flexDirection: 'row',

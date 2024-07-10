@@ -15,7 +15,7 @@ const NavigationBar = ({ activeScreen, directToProfile, directToNotebook, direct
 
                 <TouchableOpacity onPress={directToNotebook} style={[styles.navBarButton, activeScreen === 'Notebook' ? styles.activeNavButton : null]}>
                     <View style={[styles.iconWrapper, activeScreen === 'Notebook' ? styles.activeIcon : null]}>
-                        <Ionicons name="bookmark-outline" size={24} color={'#FFFFFF'} />
+                        <Ionicons name="reader-outline" size={24} color={'#FFFFFF'} />
                     </View>
                 </TouchableOpacity>
 
