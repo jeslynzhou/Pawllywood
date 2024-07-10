@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share, Modal } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share, Modal, RefreshControl } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { auth, db, storage } from '../../initializeFB';
-import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
+import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, deleteDoc } from 'firebase/firestore';
 import { ref } from 'firebase/storage';
 import NavigationBar from '../../components/navigationBar';
 import PostScreen from './postScr';
@@ -25,6 +25,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [imageViewerVisible, setImageViewerVisible] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [currentImages, setCurrentImages] = useState([]);
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -53,18 +54,25 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         fetchUserData();
     }, []);
 
-    useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const postsSnapshot = await getDocs(collection(db, 'posts'));
-                const postsData = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setPosts(postsData);
-            } catch (error) {
-                console.error('Error fetching posts:', error.message);
-            }
-        };
+    const fetchPosts = async () => {
+        try {
+            const postsSnapshot = await getDocs(collection(db, 'posts'));
+            const postsData = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setPosts(postsData);
+        } catch (error) {
+            console.error('Error fetching posts:', error.message);
+        }
+    };
 
+    useEffect(() => {
         fetchPosts();
+    }, []);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        fetchPosts().then(() => {
+            setRefreshing(false);
+        });
     }, []);
 
     const handlePost = () => {
@@ -126,6 +134,20 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
     const closeImageViewer = () => {
         setImageViewerVisible(false);
+    };
+
+    const deletePost = async (postId) => {
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const postDocRef = doc(db, 'posts', postId);
+                await deleteDoc(postDocRef);
+
+                fetchPosts();
+            }
+        } catch (error) {
+            console.error('Error deleting post:', error.message);
+        }
     };
 
     const handleComment = async (postId, commentText) => {
@@ -353,7 +375,12 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                     )}
 
                     {/* Posts List */}
-                    <ScrollView style={[styles.postsContainer, { marginTop }]}>
+                    <ScrollView
+                        style={[styles.postsContainer, { marginTop }]}
+                        refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        }
+                    >
                         {filteredPosts.map(post => (
                             <View key={post.id} style={styles.postContainer}>
                                 <View style={styles.postUserContainer}>
@@ -367,6 +394,9 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                         <Text style={styles.postUser}>{post.username}</Text>
                                         <Text style={styles.postDate}>{post.date} • {post.time}</Text>
                                     </View>
+                                    <TouchableOpacity onPress={() => deletePost(post.id)}>
+                                        <Ionicons name="trash-outline" size={22} color='#000000' />
+                                    </TouchableOpacity>
                                 </View>
                                 <TouchableOpacity onPress={() => handlePress(post)} key={post.id}>
                                     {/* Title */}
