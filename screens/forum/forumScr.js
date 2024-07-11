@@ -99,6 +99,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             downvotes: [],
             images: imageUrls, // Add the array of image URLs
             isPinned: false,
+            isSaved: false,
         };
 
         try {
@@ -150,6 +151,21 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             );
         } catch (error) {
             console.error('Error updating post pin status:', error.message);
+        }
+    };
+
+    const toggleSavePost = async (postId, currentIsSaved) => {
+        try {
+          const postDocRef = doc(db, 'posts', postId);
+      
+          // Update the isSaved status to its opposite value
+          await updateDoc(postDocRef, {
+            isSaved: !currentIsSaved
+          });
+      
+          console.log(`Post ${postId} saved status toggled successfully! New status: ${!currentIsSaved}`);
+        } catch (error) {
+          console.error('Error toggling save post:', error.message);
         }
     };
     
@@ -331,13 +347,6 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
         }
     };
 
-    const filteredPosts = posts.filter(post => {
-        if (post.content) {
-          const matchesQuery = post.content.toLowerCase().includes(searchQuery.toLowerCase());
-          return matchesQuery;
-        }
-        return false; // Or handle this case based on your logic
-    });
 
     const toggleExpandedComments = (postId) => {
         setExpandedComments(prevState => ({
@@ -427,11 +436,17 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                         <Text style={styles.postUser}>{post.username}</Text>
                                         <Text style={styles.postDate}>{post.date} • {post.time}</Text>
                                     </View>
+                                    {/* delete posts */}
                                     <TouchableOpacity onPress={() => deletePost(post.id)}>
                                         <Ionicons name="trash-outline" size={22} color='#000000' />
                                     </TouchableOpacity>
+                                    {/* pin posts */}
                                     <TouchableOpacity onPress={() => togglePinPost(post.id, post.isPinned)}>
                                         <Ionicons name={post.isPinned ? "pin" : "pin-outline"} size={22} color='#000000' />
+                                    </TouchableOpacity>
+                                    {/* save posts */}
+                                    <TouchableOpacity onPress={() => toggleSavePost(post.id, post.isSaved)}>
+                                        <Ionicons name={post.isSaved? "star" : "star-outline"} size={22} color='#000000' />
                                     </TouchableOpacity>
                                 </View>
                                 <TouchableOpacity onPress={() => handlePress(post)} key={post.id}>
