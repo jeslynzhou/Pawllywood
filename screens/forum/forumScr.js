@@ -26,6 +26,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [currentImages, setCurrentImages] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
+    const [sortedPosts, setSortedPosts] = useState([]);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -97,6 +98,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             upvotes: [],
             downvotes: [],
             images: imageUrls, // Add the array of image URLs
+            isPinned: false,
         };
 
         try {
@@ -135,6 +137,37 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const closeImageViewer = () => {
         setImageViewerVisible(false);
     };
+
+    const togglePinPost = async (postId, isCurrentlyPinned) => {
+        try {
+            const postRef = doc(db, 'posts', postId);
+            await updateDoc(postRef, { isPinned: !isCurrentlyPinned });
+    
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId ? { ...post, isPinned: !isCurrentlyPinned } : post
+                )
+            );
+        } catch (error) {
+            console.error('Error updating post pin status:', error.message);
+        }
+    };
+    
+    const filterAndSortPosts = (posts, searchQuery) => {
+        const filteredPosts = posts.filter(post => {
+            if (post.content) {
+                const matchesQuery = post.content.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesQuery;
+            }
+            return false;
+        });
+    
+        return filteredPosts.sort((a, b) => b.isPinned - a.isPinned || new Date(b.date) - new Date(a.date));
+    };
+
+    useEffect(() => {
+        setSortedPosts(filterAndSortPosts(posts, searchQuery));
+    }, [posts, searchQuery]);
 
     const deletePost = async (postId) => {
         try {
@@ -381,7 +414,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                         }
                     >
-                        {filteredPosts.map(post => (
+                        {sortedPosts.map(post => (
                             <View key={post.id} style={styles.postContainer}>
                                 <View style={styles.postUserContainer}>
                                     <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
@@ -396,6 +429,9 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                     </View>
                                     <TouchableOpacity onPress={() => deletePost(post.id)}>
                                         <Ionicons name="trash-outline" size={22} color='#000000' />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => togglePinPost(post.id, post.isPinned)}>
+                                        <Ionicons name={post.isPinned ? "pin" : "pin-outline"} size={22} color='#000000' />
                                     </TouchableOpacity>
                                 </View>
                                 <TouchableOpacity onPress={() => handlePress(post)} key={post.id}>
