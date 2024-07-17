@@ -13,16 +13,18 @@ export default function AddNoteScreen({ fetchNotes, closeAddNote }) {
     const handleAddNote = async () => {
         try {
             // Validate inputs
-            if (!title.trim()) {
-                Alert.alert('Error', 'Please enter a title for your note.');
+            if (!title.trim() && !text.trim()) {
+                closeAddNote();
                 return;
             }
+
+            const noteTitle = title.trim() || 'Untitled';
 
             // Create a new note document
             const user = auth.currentUser;
             const notesCollectionRef = collection(db, 'users', user.uid, 'notes'); // Replace 'currentUserId' with the actual user ID
             const newNoteRef = await addDoc(notesCollectionRef, {
-                title: title.trim(),
+                title: noteTitle,
                 text: text.trim(),
                 createdAt: new Date().toLocaleDateString(),
                 folderId: folderId.trim() || '', // Optionally assign a folder ID
@@ -49,43 +51,27 @@ export default function AddNoteScreen({ fetchNotes, closeAddNote }) {
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                <TouchableOpacity onPress={closeAddNote} style={styles.backButton}>
+                <TouchableOpacity onPress={handleAddNote} style={styles.backButton}>
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
-                <Text style={styles.headerText}>New Note</Text>
+                <TextInput
+                    style={styles.headerText}
+                    value={title}
+                    onChangeText={setTitle}
+                    placeholder="Title..."
+                    maxLength={100}
+                />
             </View>
-            <Text style={styles.label}>Title</Text>
-            <TextInput
-                style={styles.input}
-                value={title}
-                onChangeText={setTitle}
-                placeholder="Enter title"
-                maxLength={100}
-            />
 
-            <Text style={styles.label}>Text</Text>
-            <TextInput
-                style={[styles.input, { height: 120 }]}
-                value={text}
-                onChangeText={setText}
-                placeholder="Enter text"
-                multiline
-            />
-
-            {/* Optional: Add folder selection UI */}
-            {/* Replace this with your actual folder selection UI */}
-            {/* For simplicity, assume a basic folder selection */}
-            {/* <Text style={styles.label}>Folder</Text>
-      <TextInput
-        style={styles.input}
-        value={folderId}
-        onChangeText={setFolderId}
-        placeholder="Enter folder ID (optional)"
-      /> */}
-
-            <TouchableOpacity style={styles.addButton} onPress={handleAddNote}>
-                <Text style={styles.buttonText}>Add Note</Text>
-            </TouchableOpacity>
+            <View style={styles.textInputContainer}>
+                <TextInput
+                    style={styles.input}
+                    value={text}
+                    onChangeText={setText}
+                    placeholder="Enter text"
+                    multiline
+                />
+            </View>
         </View>
     );
 };
@@ -93,13 +79,13 @@ export default function AddNoteScreen({ fetchNotes, closeAddNote }) {
 const styles = StyleSheet.create({
     container: {
         marginTop: '10%',
-        padding: 16,
     },
     headerContainer: {
         flexDirection: 'row',
         alignContent: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 40,
+        margin: 16,
     },
     backButton: {
         position: 'absolute',
@@ -108,30 +94,17 @@ const styles = StyleSheet.create({
     headerText: {
         fontSize: 20,
         fontWeight: 'bold',
+        flex: 1,
     },
-    label: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginTop: 10,
+    textInputContainer: {
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 25,
+        backgroundColor: '#FFFFFF',
+        height: 665,
     },
     input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 17,
-        padding: 10,
-        marginTop: 5,
         fontSize: 16,
-    },
-    addButton: {
-        backgroundColor: '#F26419',
-        padding: 12,
-        borderRadius: 17,
-        alignItems: 'center',
-        marginTop: 20,
-    },
-    buttonText: {
-        color: '#FFF',
-        fontSize: 18,
-        fontWeight: 'bold',
+        textAlignVertical: 'top',
     },
 });

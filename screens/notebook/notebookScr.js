@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../initializeFB';
@@ -7,6 +7,9 @@ import { collection, getDocs } from 'firebase/firestore';
 
 import NavigationBar from '../../components/navigationBar';
 import AddNoteScreen from './addNoteScr.js';
+
+const { width } = Dimensions.get('window');
+const ITEM_WIDTH = (width - 48) / 2; // Two items per row with margin
 
 export default function NotebookScreen({ directToProfile, directToHome, directToLibrary, directToForum }) {
     const [currentScreen, setCurrentScreen] = useState('Notebook');
@@ -59,6 +62,31 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         console.log('Navigating to folder with ID:', folderId);
     };
 
+    const renderNoteItem = (note) => (
+        <View>
+            <TouchableOpacity key={note.id} style={styles.noteItem}>
+                <Text>{note.text}</Text>
+            </TouchableOpacity>
+            <Text style={styles.noteTitle}>{note.title}</Text>
+            <Text style={styles.noteDate}>{note.createdAt}</Text>
+        </View>
+    );
+
+    const renderNotesRows = () => {
+        const rows = [];
+        for (let i = 0; i < filteredNotes.length; i += 2) {
+            const note1 = filteredNotes[i];
+            const note2 = filteredNotes[i + 1];
+            rows.push(
+                <View key={`row_${i}`} style={styles.notesRow}>
+                    {note1 && renderNoteItem(note1)}
+                    {note2 && renderNoteItem(note2)}
+                </View>
+            )
+        }
+        return rows;
+    };
+
     return (
         <>
             {currentScreen === 'Notebook' && (
@@ -81,39 +109,13 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                     </View>
 
                     {/* Example of displaying fetched notes or folders */}
-                    {viewMode === 'allNotes' && (
-                        <View style={styles.notesContainer}>
-                            {filteredNotes.length > 0 ? (
-                                filteredNotes.map(note => (
-                                    <TouchableOpacity key={note.id} style={styles.noteItem}>
-                                        <Text>{note.title}</Text>
-                                        <Text>{note.text}</Text>
-                                    </TouchableOpacity>
-                                ))
-                            ) : (
-                                <Text>No notes found.</Text>
-                            )}
-                        </View>
-                    )}
-
-                    {/* Example of displaying folders */}
-                    {viewMode === 'folders' && (
-                        <View style={styles.notesContainer}>
-                            <Text style={styles.sectionTitle}>Your Folders:</Text>
-                            {folders.length > 0 ? (
-                                folders.map(folder => (
-                                    <TouchableOpacity key={folder.id} style={styles.folderItem} onPress={() => navigateToFolder(folder.id)}>
-                                        <Text>{folder.name}</Text>
-                                        {/* Additional folder details if needed */}
-                                    </TouchableOpacity>
-                                ))
-                            ) : (
-                                <Text>No folders found.</Text>
-                            )}
-                        </View>
-                    )}
-
-
+                    <View style={styles.notesContainer}>
+                        {filteredNotes.length > 0 ? (
+                            renderNotesRows()
+                        ) : (
+                            <Text>No notes found.</Text>
+                        )}
+                    </View>
                 </View>
             )}
             {currentScreen === 'AddNote' && (
@@ -132,9 +134,11 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 directToForum={directToForum}
             />
             {/* Add Note Button */}
-            <TouchableOpacity style={styles.addNoteButton} onPress={handleAddingNote}>
-                <Ionicons name="add-circle" size={70} color='rgba(242, 100, 25, 0.7)' />
-            </TouchableOpacity>
+            {currentScreen !== 'AddNote' && (
+                <TouchableOpacity style={styles.addNoteButton} onPress={handleAddingNote}>
+                    <Ionicons name="add-circle" size={70} color='rgba(242, 100, 25, 0.7)' />
+                </TouchableOpacity>
+            )}
         </>
     );
 };
@@ -142,7 +146,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 const styles = StyleSheet.create({
     notebookContainer: {
         marginTop: '10%',
-        margin: 16,
+        marginHorizontal: 16,
     },
     searchContainer: {
         marginTop: '3%',
@@ -161,6 +165,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         width: '100%',
+        marginBottom: 10,
     },
     headerButton: {
         backgroundColor: '#FFFFFF',
@@ -181,20 +186,34 @@ const styles = StyleSheet.create({
     notesContainer: {
         marginTop: 10,
         width: '100%',
+        marginBottom: '10%',
+    },
+    notesRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
     },
     noteItem: {
+        width: ITEM_WIDTH,
+        height: 200,
         backgroundColor: '#FFFFFF',
         borderWidth: 1,
         borderRadius: 17,
         borderColor: '#CCCCCC',
         padding: 10,
-        marginBottom: 10,
     },
-    folderItem: {
-        backgroundColor: '#FFFFFF',
-        borderWidth: 1,
-        borderColor: '#CCCCCC',
-        padding: 10,
+    noteTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginTop: 5,
+    },
+    noteDate: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: '#808080',
+        textAlign: 'center',
+        marginTop: 2,
         marginBottom: 10,
     },
     addNoteButton: {
