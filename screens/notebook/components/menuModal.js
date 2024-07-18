@@ -27,7 +27,7 @@ const MenuModal = ({ visible, onClose, handleAllNotesView, handleFoldersView, ha
                         style={[styles.modalButton, currentViewMode === 'allNotes' ? styles.activeModalButton : null]}
                     >
                         <Ionicons name="document-text-outline" size={24} color='#000000' />
-                        <Text style={styles.modalButtonText}>All Notes</Text>
+                        <Text style={[styles.modalButtonText, currentViewMode === 'allNotes' ? styles.activeModalButtonText : null]}>All Notes</Text>
                     </TouchableOpacity>
 
                     <View style={styles.separatorLine} />
@@ -37,7 +37,7 @@ const MenuModal = ({ visible, onClose, handleAllNotesView, handleFoldersView, ha
                         style={[styles.modalButton, currentViewMode !== 'allNotes' ? styles.activeModalButton : null]}
                     >
                         <Ionicons name="folder-open-outline" size={24} color='#000000' />
-                        <Text style={styles.modalButtonText}>Folders</Text>
+                        <Text style={[styles.modalButtonText, currentViewMode !== 'allNotes' ? styles.activeModalButtonText : null]}>Folders</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={handleManageFolders} style={styles.manageFoldersButton} >
@@ -93,6 +93,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#CCCCCC',
         borderRadius: 17,
         margin: 5,
+    },
+    activeModalButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginLeft: 10,
     },
     separatorLine: {
         height: 1,

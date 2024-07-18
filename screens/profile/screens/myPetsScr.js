@@ -92,8 +92,8 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>My Pets</Text>
-                <TouchableOpacity onPress={petProfilesData.length > 0 ? openEditMyPetsList : closeEditMyPetsList} style={styles.settingButton}>
-                    <Ionicons name="ellipsis-horizontal" size={24} color='#000000' />
+                <TouchableOpacity onPress={petProfilesData.length > 0 ? openEditMyPetsList : closeEditMyPetsList} style={styles.editContainer}>
+                    <Text style={styles.editText}>Edit</Text>
                 </TouchableOpacity>
             </View>
 
@@ -199,19 +199,24 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignContent: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 40,
+        paddingLeft: 40,
         marginBottom: 21,
     },
     backButton: {
         position: 'absolute',
         zIndex: 1,
+        alignSelf: 'center',
     },
     headerText: {
         fontSize: 20,
         fontWeight: 'bold',
     },
-    settingButton: {
-        marginLeft: 230,
+    editContainer: {
+        justifyContent: 'flex-end',
+    },
+    editText: {
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     contentContainer: {
         borderRadius: 17,

@@ -9,7 +9,7 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
                 <TouchableOpacity onPress={closeManageFolders} style={styles.backButton}>
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
-                <Text>Manage Folders Screen</Text>
+                <Text style={styles.headerText}>Manage Folders</Text>
             </View>
         </View>
     );
@@ -29,6 +29,7 @@ const styles = StyleSheet.create({
     backButton: {
         position: 'absolute',
         zIndex: 1,
+        alignSelf: 'center',
     },
     headerText: {
         fontSize: 20,

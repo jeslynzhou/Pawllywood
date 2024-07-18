@@ -153,7 +153,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 <View style={styles.notebookContainer}>
                     <View style={styles.searchContainer}>
                         <TouchableOpacity onPress={openMenuModal} style={styles.toggleMenuButton}>
-                            <Ionicons name="menu-outline" size={24} color='#000000' />
+                            <Ionicons name="menu-outline" size={30} color='#000000' />
                         </TouchableOpacity>
                         <TextInput
                             style={styles.searchInput}
@@ -243,7 +243,8 @@ const styles = StyleSheet.create({
     },
     searchInput: {
         flex: 1,
-        padding: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 9,
         borderColor: '#CCCCCC',
         borderWidth: 1,
         borderRadius: 17,

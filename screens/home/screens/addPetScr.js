@@ -355,6 +355,7 @@ const styles = StyleSheet.create({
     backButton: {
         position: 'absolute',
         zIndex: 1,
+        alignSelf: 'center',
     },
     headerText: {
         fontSize: 20,
