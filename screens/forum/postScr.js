@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth } from '../../initializeFB';
 import { Ionicons } from '@expo/vector-icons';
+import MapScreen from './mapScr';
 
 export default function PostScreen({ handlePostSubmit, handleCancel }) {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [imageUris, setImageUris] = useState([]);
+    const [isCrowdAlert, setIsCrowdAlert] = useState(false);
+    const [location, setLocation] = useState(null);
+    const [showMap, setShowMap] = useState(false);
 
     const handleUploadFromCamera = async () => {
         try {
@@ -68,6 +73,29 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
         setImageUris(imageUris.filter(imageUri => imageUri !== uri));
     };
 
+    const handleToggleSwitch = () => {
+        setIsCrowdAlert(previousState => !previousState);
+    };
+
+    const handleGetLocation = async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Permission to access location is required!');
+            return;
+        }
+
+        let currentLocation = await Location.getCurrentPositionAsync({});
+        const roundedLocation = {
+            latitude: parseFloat(currentLocation.coords.latitude.toFixed(3)),
+            longitude: parseFloat(currentLocation.coords.longitude.toFixed(3)),
+        };
+        setLocation(roundedLocation);
+    };
+
+    if (showMap && location) {
+        return <MapScreen latitude={location.latitude} longitude={location.longitude} onBack={() => setShowMap(false)} />;
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
@@ -103,6 +131,34 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
                     </View>
                 ))}
             </ScrollView>
+            <View style={styles.switchContainer}>
+                <Text style={styles.switchLabel}>Crowd Alert</Text>
+                <TouchableOpacity
+                    style={[styles.switch, isCrowdAlert ? styles.switchOn : styles.switchOff]}
+                    onPress={handleToggleSwitch}
+                >
+                    <View style={[styles.toggle, isCrowdAlert ? styles.toggleOn : styles.toggleOff]} />
+                </TouchableOpacity>
+            </View>
+            <View style={styles.locationContainer}>
+                <Text style={styles.locationLabel}>Location</Text>
+                <TouchableOpacity
+                    style={styles.locationButton}
+                    onPress={handleGetLocation}
+                >
+                    <Ionicons name="location-outline" size={24} color="black" />
+                </TouchableOpacity>
+                {location && (
+                    <>
+                        <Text style={styles.locationText}>
+                            {`Lat: ${location.latitude}, Lon: ${location.longitude}`}
+                        </Text>
+                        <TouchableOpacity onPress={() => setShowMap(true)}>
+                            <Text style={styles.viewMapText}>View on Map</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+            </View>
             <TouchableOpacity
                 style={styles.button}
                 onPress={handleUploadFromLibrary}
@@ -123,7 +179,7 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
                         const uploadedUrl = await handleImageUpload(uri);
                         uploadedImageUrls.push(uploadedUrl);
                     }
-                    handlePostSubmit(title, content, uploadedImageUrls);
+                    handlePostSubmit(title, content, uploadedImageUrls, isCrowdAlert, location);
                 }}
             >
                 <Text style={styles.buttonText}>Submit</Text>
@@ -154,13 +210,13 @@ const styles = StyleSheet.create({
         padding: 8,
         marginVertical: 8,
         fontWeight: 'bold',
-        fontSize: '20%'
+        fontSize: 20,
     },
     contentInput: {
         borderColor: '#CCCCCC',
         padding: 8,
         marginVertical: 8,
-        fontSize: '15%',
+        fontSize: 15,
     },
     contentContainer: {
         padding: 5,
@@ -201,5 +257,61 @@ const styles = StyleSheet.create({
     buttonText: {
         color: '#FFFFFF',
         fontWeight: 'bold',
+    },
+    switchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 8,
+    },
+    switchLabel: {
+        marginRight: 8,
+    },
+    switch: {
+        width: 50,
+        height: 25,
+        borderRadius: 12.5,
+        justifyContent: 'center',
+        padding: 3,
+    },
+    switchOn: {
+        backgroundColor: '#4cd137',
+    },
+    switchOff: {
+        backgroundColor: '#dcdde1',
+    },
+    toggle: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+    },
+    toggleOn: {
+        backgroundColor: '#fff',
+        alignSelf: 'flex-end',
+    },
+    toggleOff: {
+        backgroundColor: '#fff',
+        alignSelf: 'flex-start',
+    },
+    locationContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 8,
+    },
+    locationLabel: {
+        marginRight: 8,
+    },
+    locationButton: {
+        backgroundColor: '#CCCCCC',
+        padding: 10,
+        borderRadius: 10,
+    },
+    locationText: {
+        marginLeft: 10,
+    },
+    viewMapText: {
+        fontSize: 14,
+        color: 'blue',
+        textDecorationLine: 'underline',
+        marginLeft: 8,
     },
 });
