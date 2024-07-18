@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../initializeFB';
@@ -24,17 +24,30 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     const fetchNotes = async () => {
         try {
             const user = auth.currentUser;
+
+            // Fetch notes
             const notesCollectionRef = collection(db, 'users', user.uid, 'notes');
-            const querySnapshot = await getDocs(notesCollectionRef);
-            const fetchedNotes = querySnapshot.docs.map(doc => ({
+            const notesSnapshot = await getDocs(notesCollectionRef);
+            const fetchedNotes = notesSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
             setNotes(fetchedNotes);
+
+            // Fetch folders
+            const foldersCollectionRef = collection(db, 'users', user.uid, 'folders');
+            const foldersSnapshot = await getDocs(foldersCollectionRef);
+            const fetchedFolders = foldersSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setFolders(fetchedFolders);
         } catch (error) {
-            console.error('Error fetching notes:', error.message);
+            console.error('Error fetching data:', error.message);
         }
     };
+
+
 
     { /* Search Notes */ }
     const handleSearch = (query) => {
@@ -53,15 +66,6 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         setCurrentScreen('AddNote');
     };
 
-    const toggleViewMode = () => {
-        setViewMode(viewMode === 'allNotes' ? 'folders' : 'allNotes');
-    };
-
-    const navigateToFolder = (folderId) => {
-        // Implement navigation or filtering based on selected folder
-        console.log('Navigating to folder with ID:', folderId);
-    };
-
     const renderNoteItem = (note) => (
         <View>
             <TouchableOpacity key={note.id} style={styles.noteItem}>
@@ -72,7 +76,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         </View>
     );
 
-    const renderNotesRows = () => {
+    const renderNoteRows = () => {
         const rows = [];
         for (let i = 0; i < filteredNotes.length; i += 2) {
             const note1 = filteredNotes[i];
@@ -108,14 +112,26 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                         </TouchableOpacity>
                     </View>
 
-                    {/* Example of displaying fetched notes or folders */}
-                    <View style={styles.notesContainer}>
-                        {filteredNotes.length > 0 ? (
-                            renderNotesRows()
+                    <ScrollView style={styles.notesContainer}>
+                        {viewMode === 'allNotes' ? (
+                            filteredNotes.length > 0 ? (
+                                renderNoteRows()
+                            ) : (
+                                <Text>No notes found.</Text>
+                            )
                         ) : (
-                            <Text>No notes found.</Text>
+                            folders.length > 0 ? (
+                                folders.map(folder => (
+                                    <TouchableOpacity key={folder.id} style={styles.folderItemContainer} onPress={() => console.log("Navigate to folder:", folder.id)}>
+                                        <View style={styles.folderItem} />
+                                        <Text>{folder.folderName}</Text>
+                                    </TouchableOpacity>
+                                ))
+                            ) : (
+                                <Text>No folders found.</Text>
+                            )
                         )}
-                    </View>
+                    </ScrollView>
                 </View>
             )}
             {currentScreen === 'AddNote' && (
@@ -133,6 +149,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 directToLibrary={directToLibrary}
                 directToForum={directToForum}
             />
+
             {/* Add Note Button */}
             {currentScreen !== 'AddNote' && (
                 <TouchableOpacity style={styles.addNoteButton} onPress={handleAddingNote}>
@@ -186,7 +203,7 @@ const styles = StyleSheet.create({
     notesContainer: {
         marginTop: 10,
         width: '100%',
-        marginBottom: '10%',
+        height: 600,
     },
     notesRow: {
         flexDirection: 'row',
@@ -215,6 +232,18 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 2,
         marginBottom: 10,
+    },
+    folderItemContainer: {
+        borderWidth: 1,
+    },
+    folderItem: {
+        width: ITEM_WIDTH,
+        height: 200,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderRadius: 17,
+        borderColor: '#CCCCCC',
+        padding: 10,
     },
     addNoteButton: {
         position: 'absolute',
