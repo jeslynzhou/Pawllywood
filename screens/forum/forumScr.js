@@ -22,6 +22,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [content, setContent] = useState('');
     const [imageUris, setImageUris] = useState([]);
     const [isCrowdAlert, setIsCrowdAlert] = useState(false);
+    const [location, setLocation] = useState(null);
     const [selectedPost, setSelectedPost] = useState(null);
     const [imageViewerVisible, setImageViewerVisible] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -81,7 +82,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         setCurrentScreen('Post');
     };
 
-    const handlePostSubmit = async (title, content, imageUrls, isCrowdAlert) => {
+    const handlePostSubmit = async (title, content, imageUrls, isCrowdAlert, location) => {
         if (!title.trim() || !content.trim()) {
             console.log('Title or content is empty.');
             return;
@@ -102,6 +103,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             isPinned: false,
             isSaved: false,
             isCrowdAlert: isCrowdAlert,
+            location: location,
         };
 
         try {
@@ -116,6 +118,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             setContent('');
             setImageUris([]);
             setIsCrowdAlert(false);
+            setLocation(null);
 
             // Navigate or set the current screen state
             setCurrentScreen('Forum');
@@ -470,6 +473,17 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                             </TouchableOpacity>
                                         ))}
                                     </ScrollView>
+                                    {/* Location Container */}
+                                    {post.location && (
+                                        <TouchableOpacity>
+                                            <View style={styles.locationContainer}>
+                                                <Ionicons name="location-outline" size={20} color="#000" />
+                                                <Text style={styles.locationText}>
+                                                    Lat: {post.location.latitude}, Lon: {post.location.longitude}
+                                                </Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    )}
                                     <View style={styles.postActions}>
                                         <View style={styles.votesContainer}>
                                             <TouchableOpacity style={styles.votesSmallerContainer} onPress={() => handleUpvote(post.id)}>
@@ -861,5 +875,12 @@ const styles = StyleSheet.create({
     },
     crowdAlertBackground: {
         backgroundColor: '#FFE5B4',
+    },
+    locationContainer: {
+        flexDirection: 'row',
+    },
+    locationText: {
+        marginLeft: 8,
+        fontSize: 14,
     },
 });

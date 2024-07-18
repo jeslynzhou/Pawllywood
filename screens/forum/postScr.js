@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth } from '../../initializeFB';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +11,7 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
     const [content, setContent] = useState('');
     const [imageUris, setImageUris] = useState([]);
     const [isCrowdAlert, setIsCrowdAlert] = useState(false);
+    const [location, setLocation] = useState(null);
 
     const handleUploadFromCamera = async () => {
         try {
@@ -73,6 +75,17 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
         setIsCrowdAlert(previousState => !previousState);
     };
 
+    const handleGetLocation = async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Permission to access location is required!');
+            return;
+        }
+
+        let currentLocation = await Location.getCurrentPositionAsync({});
+        setLocation(currentLocation.coords);
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
@@ -117,6 +130,20 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
                     <View style={[styles.toggle, isCrowdAlert ? styles.toggleOn : styles.toggleOff]} />
                 </TouchableOpacity>
             </View>
+            <View style={styles.locationContainer}>
+                <Text style={styles.locationLabel}>Location</Text>
+                <TouchableOpacity
+                    style={styles.locationButton}
+                    onPress={handleGetLocation}
+                >
+                    <Ionicons name="location-outline" size={24} color="black" />
+                </TouchableOpacity>
+                {location && (
+                    <Text style={styles.locationText}>
+                        {`Lat: ${location.latitude}, Lon: ${location.longitude}`}
+                    </Text>
+                )}
+            </View>
             <TouchableOpacity
                 style={styles.button}
                 onPress={handleUploadFromLibrary}
@@ -137,7 +164,7 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
                         const uploadedUrl = await handleImageUpload(uri);
                         uploadedImageUrls.push(uploadedUrl);
                     }
-                    handlePostSubmit(title, content, uploadedImageUrls, isCrowdAlert);
+                    handlePostSubmit(title, content, uploadedImageUrls, isCrowdAlert, location);
                 }}
             >
                 <Text style={styles.buttonText}>Submit</Text>
@@ -168,13 +195,13 @@ const styles = StyleSheet.create({
         padding: 8,
         marginVertical: 8,
         fontWeight: 'bold',
-        fontSize: '20%'
+        fontSize: 20,
     },
     contentInput: {
         borderColor: '#CCCCCC',
         padding: 8,
         marginVertical: 8,
-        fontSize: '15%',
+        fontSize: 15,
     },
     contentContainer: {
         padding: 5,
@@ -250,4 +277,20 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignSelf: 'flex-start',
     },
+    locationContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 8,
+    },
+    locationLabel: {
+        marginRight: 8,
+    },
+    locationButton: {
+        backgroundColor: '#CCCCCC',
+        padding: 10,
+        borderRadius: 10,
+    },
+    locationText: {
+        marginLeft: 10,
+    }
 });
