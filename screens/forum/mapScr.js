@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 
 export default function MapScreen({ latitude, longitude, onBack }) {
@@ -29,14 +29,13 @@ export default function MapScreen({ latitude, longitude, onBack }) {
 const styles = StyleSheet.create({
     mapContainer: {
         flex: 1,
-        marginTop: '3%',
     },
     map: {
         flex: 1,
     },
     backButton: {
         position: 'absolute',
-        top: 20,
+        top: 50,
         left: 20,
         backgroundColor: 'white',
         padding: 10,

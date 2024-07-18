@@ -7,6 +7,7 @@ import { ref } from 'firebase/storage';
 import NavigationBar from '../../components/navigationBar';
 import PostScreen from './postScr';
 import PostDetailsScr from './postDetailsScr';
+import MapScreen from './mapScr';
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
@@ -29,6 +30,14 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [currentImages, setCurrentImages] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [sortedPosts, setSortedPosts] = useState([]);
+    const [mapVisible, setMapVisible] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState(null);
+
+
+    const handleLocationPress = (location) => {
+        setSelectedLocation(location);
+        setMapVisible(true);
+    };
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -369,6 +378,10 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
             openImageViewer={openImageViewer} imageViewerVisible={imageViewerVisible} 
             currentImages={currentImages} currentImageIndex={currentImageIndex} closeImageViewer={closeImageViewer}/>;
     }
+    
+    if (mapVisible && selectedLocation) {
+        return <MapScreen latitude={selectedLocation.latitude} longitude={selectedLocation.longitude} onBack={() => setMapVisible(false)} />;
+    }
 
     return (
         <View style={styles.forumContainer}>
@@ -475,7 +488,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                     </ScrollView>
                                     {/* Location Container */}
                                     {post.location && (
-                                        <TouchableOpacity>
+                                        <TouchableOpacity onPress={() => handleLocationPress(post.location)}>
                                             <View style={styles.locationContainer}>
                                                 <Ionicons name="location-outline" size={20} color="#000" />
                                                 <Text style={styles.locationText}>
