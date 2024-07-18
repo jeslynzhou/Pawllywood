@@ -9,6 +9,7 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [imageUris, setImageUris] = useState([]);
+    const [isCrowdAlert, setIsCrowdAlert] = useState(false);
 
     const handleUploadFromCamera = async () => {
         try {
@@ -68,6 +69,10 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
         setImageUris(imageUris.filter(imageUri => imageUri !== uri));
     };
 
+    const handleToggleSwitch = () => {
+        setIsCrowdAlert(previousState => !previousState);
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
@@ -103,6 +108,15 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
                     </View>
                 ))}
             </ScrollView>
+            <View style={styles.switchContainer}>
+                <Text style={styles.switchLabel}>Crowd Alert</Text>
+                <TouchableOpacity
+                    style={[styles.switch, isCrowdAlert ? styles.switchOn : styles.switchOff]}
+                    onPress={handleToggleSwitch}
+                >
+                    <View style={[styles.toggle, isCrowdAlert ? styles.toggleOn : styles.toggleOff]} />
+                </TouchableOpacity>
+            </View>
             <TouchableOpacity
                 style={styles.button}
                 onPress={handleUploadFromLibrary}
@@ -123,7 +137,7 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
                         const uploadedUrl = await handleImageUpload(uri);
                         uploadedImageUrls.push(uploadedUrl);
                     }
-                    handlePostSubmit(title, content, uploadedImageUrls);
+                    handlePostSubmit(title, content, uploadedImageUrls, isCrowdAlert);
                 }}
             >
                 <Text style={styles.buttonText}>Submit</Text>
@@ -201,5 +215,39 @@ const styles = StyleSheet.create({
     buttonText: {
         color: '#FFFFFF',
         fontWeight: 'bold',
+    },
+    switchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 8,
+    },
+    switchLabel: {
+        marginRight: 8,
+    },
+    switch: {
+        width: 50,
+        height: 25,
+        borderRadius: 12.5,
+        justifyContent: 'center',
+        padding: 3,
+    },
+    switchOn: {
+        backgroundColor: '#4cd137',
+    },
+    switchOff: {
+        backgroundColor: '#dcdde1',
+    },
+    toggle: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+    },
+    toggleOn: {
+        backgroundColor: '#fff',
+        alignSelf: 'flex-end',
+    },
+    toggleOff: {
+        backgroundColor: '#fff',
+        alignSelf: 'flex-start',
     },
 });
