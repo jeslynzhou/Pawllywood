@@ -5,6 +5,7 @@ import * as Location from 'expo-location';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth } from '../../initializeFB';
 import { Ionicons } from '@expo/vector-icons';
+import MapScreen from './mapScr';
 
 export default function PostScreen({ handlePostSubmit, handleCancel }) {
     const [title, setTitle] = useState('');
@@ -12,6 +13,7 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
     const [imageUris, setImageUris] = useState([]);
     const [isCrowdAlert, setIsCrowdAlert] = useState(false);
     const [location, setLocation] = useState(null);
+    const [showMap, setShowMap] = useState(false);
 
     const handleUploadFromCamera = async () => {
         try {
@@ -83,8 +85,16 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
         }
 
         let currentLocation = await Location.getCurrentPositionAsync({});
-        setLocation(currentLocation.coords);
+        const roundedLocation = {
+            latitude: parseFloat(currentLocation.coords.latitude.toFixed(3)),
+            longitude: parseFloat(currentLocation.coords.longitude.toFixed(3)),
+        };
+        setLocation(roundedLocation);
     };
+
+    if (showMap && location) {
+        return <MapScreen latitude={location.latitude} longitude={location.longitude} onBack={() => setShowMap(false)} />;
+    }
 
     return (
         <View style={styles.container}>
@@ -139,9 +149,14 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
                     <Ionicons name="location-outline" size={24} color="black" />
                 </TouchableOpacity>
                 {location && (
-                    <Text style={styles.locationText}>
-                        {`Lat: ${location.latitude}, Lon: ${location.longitude}`}
-                    </Text>
+                    <>
+                        <Text style={styles.locationText}>
+                            {`Lat: ${location.latitude}, Lon: ${location.longitude}`}
+                        </Text>
+                        <TouchableOpacity onPress={() => setShowMap(true)}>
+                            <Text style={styles.viewMapText}>View on Map</Text>
+                        </TouchableOpacity>
+                    </>
                 )}
             </View>
             <TouchableOpacity
@@ -292,5 +307,11 @@ const styles = StyleSheet.create({
     },
     locationText: {
         marginLeft: 10,
-    }
+    },
+    viewMapText: {
+        fontSize: 14,
+        color: 'blue',
+        textDecorationLine: 'underline',
+        marginLeft: 8,
+    },
 });
