@@ -9,6 +9,7 @@ import PostScreen from './postScr';
 import PostDetailsScr from './postDetailsScr';
 import MapScreen from './mapScr';
 import DeleteModal from './deleteModal';
+import FilterMenu from './filterMenu';
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
@@ -35,6 +36,38 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [isModalVisible, setModalVisible] = useState(false);
     const [postToDelete, setPostToDelete] = useState(null);
+    const [isFilterMenuVisible, setFilterMenuVisible] = useState(false); // State for filter menu visibility
+    const [selectedFilters, setSelectedFilters] = useState({
+        saved: false,
+        pinned: false,
+        crowdAlert: false,
+        notCrowdAlert: false,
+    });
+
+    const handleToggleFilterMenu = () => {
+        setFilterMenuVisible(!isFilterMenuVisible);
+    };
+
+    const handleApplyFilters = () => {
+        // Filter posts based on selected filters
+        const filteredPosts = posts.filter(post => {
+            let include = true;
+            if (selectedFilters.saved && !post.isSaved) include = false;
+            if (selectedFilters.pinned && !post.isPinned) include = false;
+            if (selectedFilters.crowdAlert && !post.isCrowdAlert) include = false;
+            if (selectedFilters.notCrowdAlert && post.isCrowdAlert) include = false;
+            return include;
+        });
+        setSortedPosts(filteredPosts);
+        setFilterMenuVisible(false);
+    };
+
+    const handleChangeFilter = (filterName, value) => {
+        setSelectedFilters(prevFilters => ({
+            ...prevFilters,
+            [filterName]: value,
+        }));
+    };
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -443,6 +476,12 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                             <View style={styles.postButtons}>
                                 <TouchableOpacity
                                     style={styles.button}
+                                    onPress={handleToggleFilterMenu} // Toggle filter menu visibility
+                                >
+                                    <Text style={styles.buttonText}>Filter</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.button}
                                     onPress={handlePost}
                                 >
                                     <Text style={styles.buttonText}>Post</Text>
@@ -510,7 +549,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                             <View style={styles.locationContainer}>
                                                 <Ionicons name="location-outline" size={20} color="#000" />
                                                 <Text style={styles.locationText}>
-                                                    Lat: {post.location.latitude}, Lon: {post.location.longitude}
+                                                    Lat: {post.location.latitude.toFixed(3)}, Lon: {post.location.longitude.toFixed(3)}
                                                 </Text>
                                             </View>
                                         </TouchableOpacity>
@@ -669,6 +708,14 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                             isVisible={isModalVisible}
                             onConfirm={confirmDelete}
                             onCancel={cancelDelete}
+                        />
+                        {/* Filter Menu */}
+                        <FilterMenu
+                            isVisible={isFilterMenuVisible}
+                            onClose={() => setFilterMenuVisible(false)}
+                            onApply={handleApplyFilters}
+                            selectedFilters={selectedFilters}
+                            onChangeFilter={handleChangeFilter}
                         />
                     </ScrollView>
                     {/* Navigation Bar */}
