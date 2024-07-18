@@ -49,18 +49,10 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     };
 
     const handleApplyFilters = () => {
-        // Filter posts based on selected filters
-        const filteredPosts = posts.filter(post => {
-            let include = true;
-            if (selectedFilters.saved && !post.isSaved) include = false;
-            if (selectedFilters.pinned && !post.isPinned) include = false;
-            if (selectedFilters.crowdAlert && !post.isCrowdAlert) include = false;
-            if (selectedFilters.notCrowdAlert && post.isCrowdAlert) include = false;
-            return include;
-        });
-        setSortedPosts(filteredPosts);
+        // Apply filters
         setFilterMenuVisible(false);
     };
+
 
     const handleChangeFilter = (filterName, value) => {
         setSelectedFilters(prevFilters => ({
@@ -100,7 +92,18 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         try {
             const postsSnapshot = await getDocs(collection(db, 'posts'));
             const postsData = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setPosts(postsData);
+            
+            // Apply filters
+            const filteredPosts = postsData.filter(post => {
+                let include = true;
+                if (selectedFilters.saved && !post.isSaved) include = false;
+                if (selectedFilters.pinned && !post.isPinned) include = false;
+                if (selectedFilters.crowdAlert && !post.isCrowdAlert) include = false;
+                if (selectedFilters.notCrowdAlert && post.isCrowdAlert) include = false;
+                return include;
+            });
+
+            setPosts(filteredPosts);
         } catch (error) {
             console.error('Error fetching posts:', error.message);
         }
@@ -108,14 +111,13 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
     useEffect(() => {
         fetchPosts();
-    }, []);
+    }, [selectedFilters]);
 
-    const onRefresh = useCallback(() => {
+    const onRefresh = useCallback(async () => {
         setRefreshing(true);
-        fetchPosts().then(() => {
-            setRefreshing(false);
-        });
-    }, []);
+        await fetchPosts();
+        setRefreshing(false);
+    }, [selectedFilters]);
 
     const handlePost = () => {
         setCurrentScreen('Post');

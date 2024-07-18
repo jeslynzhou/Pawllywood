@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Switch, Modal, TouchableWithoutFeedback } from 'react-native';
 
-const FilterMenu = ({ isVisible, onClose, onApply, selectedFilters, onChangeFilter }) => {
+const FilterMenu = ({ isVisible, onClose, onApply, onClear, selectedFilters, onChangeFilter }) => {
     // Handle mutually exclusive selection for crowd alert filters
     const handleCrowdAlertToggle = (type) => {
         if (type === 'crowdAlert') {
@@ -11,6 +11,15 @@ const FilterMenu = ({ isVisible, onClose, onApply, selectedFilters, onChangeFilt
             onChangeFilter('crowdAlert', false);
             onChangeFilter('notCrowdAlert', true);
         }
+    };
+
+    // Function to handle clearing all filters
+    const handleClearFilters = () => {
+        onChangeFilter('saved', false);
+        onChangeFilter('pinned', false);
+        onChangeFilter('crowdAlert', false);
+        onChangeFilter('notCrowdAlert', false);
+        if (onClear) onClear(); // Optionally call onClear if provided
     };
 
     return (
@@ -63,6 +72,15 @@ const FilterMenu = ({ isVisible, onClose, onApply, selectedFilters, onChangeFilt
                 >
                     <Text style={styles.applyButtonText}>Apply Filters</Text>
                 </TouchableOpacity>
+                <TouchableOpacity 
+                    style={styles.clearButton} 
+                    onPress={() => {
+                        handleClearFilters();
+                        onClose(); // Close the modal after clearing filters
+                    }}
+                >
+                    <Text style={styles.clearButtonText}>Clear Filters</Text>
+                </TouchableOpacity>
             </View>
         </Modal>
     );
@@ -102,6 +120,17 @@ const styles = StyleSheet.create({
     },
     applyButtonText: {
         color: '#fff',
+        fontSize: 16,
+    },
+    clearButton: {
+        marginTop: 10,
+        backgroundColor: '#ddd',
+        paddingVertical: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+    },
+    clearButtonText: {
+        color: '#000',
         fontSize: 16,
     },
 });
