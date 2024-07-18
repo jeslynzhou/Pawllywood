@@ -8,6 +8,7 @@ import NavigationBar from '../../components/navigationBar';
 import PostScreen from './postScr';
 import PostDetailsScr from './postDetailsScr';
 import MapScreen from './mapScr';
+import DeleteModal from './deleteModal';
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
@@ -32,12 +33,8 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [sortedPosts, setSortedPosts] = useState([]);
     const [mapVisible, setMapVisible] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState(null);
-
-
-    const handleLocationPress = (location) => {
-        setSelectedLocation(location);
-        setMapVisible(true);
-    };
+    const [isModalVisible, setModalVisible] = useState(false);
+    const [postToDelete, setPostToDelete] = useState(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -212,6 +209,27 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         } catch (error) {
             console.error('Error deleting post:', error.message);
         }
+    };
+
+    const handleDeletePress = (postId) => {
+        setPostToDelete(postId);
+        setModalVisible(true);
+    };
+
+    const confirmDelete = () => {
+        deletePost(postToDelete);
+        setModalVisible(false);
+        setPostToDelete(null);
+    };
+
+    const cancelDelete = () => {
+        setModalVisible(false);
+        setPostToDelete(null);
+    };
+
+    const handleLocationPress = (location) => {
+        setSelectedLocation(location);
+        setMapVisible(true);
     };
 
     const handleComment = async (postId, commentText) => {
@@ -457,7 +475,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                             <Text style={styles.postDate}>{post.date} • {post.time}</Text>
                                         </View>
                                         {/* delete posts */}
-                                        <TouchableOpacity onPress={() => deletePost(post.id)}>
+                                        <TouchableOpacity onPress={() => handleDeletePress(post.id)}>
                                             <Ionicons name="trash-outline" size={22} color='#000000' />
                                         </TouchableOpacity>
                                         {/* pin posts */}
@@ -647,8 +665,12 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                 </ScrollView>
                             </View>
                         </Modal>
+                        <DeleteModal
+                            isVisible={isModalVisible}
+                            onConfirm={confirmDelete}
+                            onCancel={cancelDelete}
+                        />
                     </ScrollView>
-
                     {/* Navigation Bar */}
                     <NavigationBar
                         activeScreen={currentScreen}
