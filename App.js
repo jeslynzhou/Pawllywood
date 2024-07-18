@@ -5,7 +5,7 @@ import AuthScreen from './screens/auth/AuthScreen/authScr.js';
 import AuthenticatedScreen from './screens/auth/AuthenticatedScreen/authenticatedScr.js';
 import SplashScreen from './screens/auth/AuthScreen/splashScr.js';
 import ProfileScreen from './screens/profile/screens/profileScr.js';
-import NotebookScreen from './screens/notebook/notebookScr.js';
+import NotebookScreen from './screens/notebook/screens/notebookScr.js';
 import HomeScreen from './screens/home/screens/homeScr.js';
 import LibraryScreen from './screens/library/libraryScr.js';
 import ForumScreen from './screens/forum/forumScr.js';

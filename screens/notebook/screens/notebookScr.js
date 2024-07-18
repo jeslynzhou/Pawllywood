@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions, ScrollView } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Dimensions, ScrollView, Touchable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { db, auth } from '../../initializeFB';
+import { db, auth } from '../../../initializeFB.js';
 import { collection, getDocs } from 'firebase/firestore';
 
-import NavigationBar from '../../components/navigationBar';
+import NavigationBar from '../../../components/navigationBar.js';
 import AddNoteScreen from './addNoteScr.js';
+import ManageFoldersScreen from './manageFoldersScr.js';
+import MenuModal from '../components/menuModal.js';
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = (width - 48) / 2; // Two items per row with margin
@@ -14,9 +16,11 @@ const ITEM_WIDTH = (width - 48) / 2; // Two items per row with margin
 export default function NotebookScreen({ directToProfile, directToHome, directToLibrary, directToForum }) {
     const [currentScreen, setCurrentScreen] = useState('Notebook');
     const [notes, setNotes] = useState([]);
-    const [viewMode, setViewMode] = useState('allNotes'); // 'allNotes' or 'folders'
+    const [viewMode, setViewMode] = useState('allNotes');
     const [folders, setFolders] = useState([]); // Array to store folder details if needed
     const [searchQuery, setSearchQuery] = useState('');
+    const [showMenuModal, setShowMenuModal] = useState(false);
+
     useEffect(() => {
         fetchNotes();
     }, []);
@@ -47,7 +51,9 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         }
     };
 
-
+    const onClose = () => {
+        setCurrentScreen('Notebook');
+    };
 
     { /* Search Notes */ }
     const handleSearch = (query) => {
@@ -58,14 +64,37 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         return note.title.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
-    const closeAddNote = () => {
-        setCurrentScreen('Notebook');
-    };
-
+    { /* Add Note */ }
     const handleAddingNote = () => {
         setCurrentScreen('AddNote');
     };
 
+    { /* Menu Modal */ }
+    const openMenuModal = () => {
+        setShowMenuModal(true);
+    };
+
+    const closeMenuModal = () => {
+        setShowMenuModal(false);
+    };
+
+    const handleAllNotesView = () => {
+        setViewMode('allNotes');
+        setShowMenuModal(false);
+    };
+
+    const handleFoldersView = () => {
+        setViewMode('folders');
+        setShowMenuModal(false);
+    };
+
+    { /* Manage Folders Screen */ }
+    const openManageFoldersScreen = () => {
+        setCurrentScreen('ManageFolders');
+        setShowMenuModal(false);
+    };
+
+    { /* Render Note & Folder Rows */ }
     const renderNoteItem = (note) => (
         <View>
             <TouchableOpacity key={note.id} style={styles.noteItem}>
@@ -82,7 +111,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
             const note1 = filteredNotes[i];
             const note2 = filteredNotes[i + 1];
             rows.push(
-                <View key={`row_${i}`} style={styles.notesRow}>
+                <View key={`row_${i}`} style={styles.rows}>
                     {note1 && renderNoteItem(note1)}
                     {note2 && renderNoteItem(note2)}
                 </View>
@@ -91,11 +120,41 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         return rows;
     };
 
+    const renderFolderItem = (folder) => (
+        <TouchableOpacity key={folder.id}>
+            <Image
+                source={require('../../../assets/notebook_images/default_folder.png')}
+                style={styles.folderImage}
+                resizeMode='contain'
+            />
+            <Text style={styles.folderName}>{folder.folderName}</Text>
+        </TouchableOpacity>
+    );
+
+    const renderFolderRows = () => {
+        const rows = [];
+        for (let i = 0; i < folders.length; i += 2) {
+            const folder1 = folders[i];
+            const folder2 = folders[i + 1];
+            rows.push(
+                <View key={`row_${i}`} style={styles.rows}>
+                    {folder1 && renderFolderItem(folder1)}
+                    {folder2 && renderFolderItem(folder2)}
+                </View>
+            );
+        }
+        return rows;
+    };
+
+
     return (
         <>
             {currentScreen === 'Notebook' && (
                 <View style={styles.notebookContainer}>
                     <View style={styles.searchContainer}>
+                        <TouchableOpacity onPress={openMenuModal} style={styles.toggleMenuButton}>
+                            <Ionicons name="menu-outline" size={24} color='#000000' />
+                        </TouchableOpacity>
                         <TextInput
                             style={styles.searchInput}
                             placeholder="Search notes..."
@@ -121,12 +180,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                             )
                         ) : (
                             folders.length > 0 ? (
-                                folders.map(folder => (
-                                    <TouchableOpacity key={folder.id} style={styles.folderItemContainer} onPress={() => console.log("Navigate to folder:", folder.id)}>
-                                        <View style={styles.folderItem} />
-                                        <Text>{folder.folderName}</Text>
-                                    </TouchableOpacity>
-                                ))
+                                renderFolderRows()
                             ) : (
                                 <Text>No folders found.</Text>
                             )
@@ -137,7 +191,13 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
             {currentScreen === 'AddNote' && (
                 <AddNoteScreen
                     fetchNotes={fetchNotes}
-                    closeAddNote={closeAddNote}
+                    closeAddNote={onClose}
+                />
+            )}
+
+            {currentScreen === 'ManageFolders' && (
+                <ManageFoldersScreen
+                    closeManageFolders={onClose}
                 />
             )}
 
@@ -148,6 +208,16 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 directToHome={directToHome}
                 directToLibrary={directToLibrary}
                 directToForum={directToForum}
+            />
+
+            { /* Menu Modal */}
+            <MenuModal
+                visible={showMenuModal}
+                onClose={closeMenuModal}
+                handleAllNotesView={handleAllNotesView}
+                handleFoldersView={handleFoldersView}
+                handleManageFolders={openManageFoldersScreen}
+                currentViewMode={viewMode}
             />
 
             {/* Add Note Button */}
@@ -169,6 +239,7 @@ const styles = StyleSheet.create({
         marginTop: '3%',
         width: '100%',
         marginBottom: 10,
+        flexDirection: 'row',
     },
     searchInput: {
         flex: 1,
@@ -183,6 +254,10 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         width: '100%',
         marginBottom: 10,
+    },
+    toggleMenuButton: {
+        marginRight: 10,
+        alignSelf: 'center',
     },
     headerButton: {
         backgroundColor: '#FFFFFF',
@@ -205,7 +280,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 600,
     },
-    notesRow: {
+    rows: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 10,
@@ -223,7 +298,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginTop: 5,
+        marginTop: '2%',
     },
     noteDate: {
         fontSize: 13,
@@ -233,17 +308,15 @@ const styles = StyleSheet.create({
         marginTop: 2,
         marginBottom: 10,
     },
-    folderItemContainer: {
-        borderWidth: 1,
-    },
-    folderItem: {
+    folderImage: {
         width: ITEM_WIDTH,
-        height: 200,
-        backgroundColor: '#FFFFFF',
-        borderWidth: 1,
-        borderRadius: 17,
-        borderColor: '#CCCCCC',
-        padding: 10,
+        height: ITEM_WIDTH,
+    },
+    folderName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginTop: '-5%',
     },
     addNoteButton: {
         position: 'absolute',

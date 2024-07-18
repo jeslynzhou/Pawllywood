@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { db, auth } from '../../initializeFB';
+import { db, auth } from '../../../initializeFB';
 import { addDoc, collection } from 'firebase/firestore';
 
 export default function AddNoteScreen({ fetchNotes, closeAddNote }) {

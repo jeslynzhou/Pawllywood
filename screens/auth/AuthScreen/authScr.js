@@ -70,8 +70,8 @@ const AuthScreen = ({
 
         const foldersCollectionRef = collection(db, 'users', user.uid, 'folders');
         const defaultFolderRef = await addDoc(foldersCollectionRef, {
-          folderName: 'Default Pets',
-          noteIds: [defaultNoteRef.id], //Array to holde note IDs (for reference)
+          folderName: 'My Pets (Default)',
+          noteIds: [defaultNoteRef.id], //Array to hold note IDs (for reference)
         });
 
         // Update the note to include the folderId (the first note gets assigned to the default folder)
