@@ -8,6 +8,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import NavigationBar from '../../../components/navigationBar.js';
 import AddNoteScreen from './addNoteScr.js';
 import ManageFoldersScreen from './manageFoldersScr.js';
+import NoteDetailsScreen from './noteDetailsScr.js';
 import MenuModal from '../components/menuModal.js';
 
 const { width } = Dimensions.get('window');
@@ -17,7 +18,8 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     const [currentScreen, setCurrentScreen] = useState('Notebook');
     const [notes, setNotes] = useState([]);
     const [viewMode, setViewMode] = useState('allNotes');
-    const [folders, setFolders] = useState([]); // Array to store folder details if needed
+    const [folders, setFolders] = useState([]);
+    const [selectedNote, setSelectedNote] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [showMenuModal, setShowMenuModal] = useState(false);
 
@@ -95,10 +97,16 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         setShowMenuModal(false);
     };
 
+    { /* Note Details Screen */ }
+    const handleNoteDetails = (note) => {
+        setSelectedNote(note);
+        setCurrentScreen('NoteDetails');
+    };
+
     { /* Render Note & Folder Rows */ }
     const renderNoteItem = (note) => (
         <View>
-            <TouchableOpacity key={note.id} style={styles.noteItem}>
+            <TouchableOpacity key={note.id} onPress={() => handleNoteDetails(note)} style={styles.noteItem}>
                 <Text>{note.text}</Text>
             </TouchableOpacity>
             <Text style={styles.noteTitle}>{note.title}</Text>
@@ -193,6 +201,13 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 <AddNoteScreen
                     fetchNotes={fetchNotes}
                     closeAddNote={onClose}
+                />
+            )}
+
+            {currentScreen === 'NoteDetails' && selectedNote && (
+                <NoteDetailsScreen
+                    note={selectedNote}
+                    closeNoteDetails={onClose}
                 />
             )}
 
