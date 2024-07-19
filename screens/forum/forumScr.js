@@ -7,6 +7,9 @@ import { ref } from 'firebase/storage';
 import NavigationBar from '../../components/navigationBar';
 import PostScreen from './postScr';
 import PostDetailsScr from './postDetailsScr';
+import MapScreen from './mapScr';
+import DeleteModal from './deleteModal';
+import FilterMenu from './filterMenu';
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
@@ -29,6 +32,34 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [currentImages, setCurrentImages] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [sortedPosts, setSortedPosts] = useState([]);
+    const [mapVisible, setMapVisible] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState(null);
+    const [isModalVisible, setModalVisible] = useState(false);
+    const [postToDelete, setPostToDelete] = useState(null);
+    const [isFilterMenuVisible, setFilterMenuVisible] = useState(false); // State for filter menu visibility
+    const [selectedFilters, setSelectedFilters] = useState({
+        saved: false,
+        pinned: false,
+        crowdAlert: false,
+        notCrowdAlert: false,
+    });
+
+    const handleToggleFilterMenu = () => {
+        setFilterMenuVisible(!isFilterMenuVisible);
+    };
+
+    const handleApplyFilters = () => {
+        // Apply filters
+        setFilterMenuVisible(false);
+    };
+
+
+    const handleChangeFilter = (filterName, value) => {
+        setSelectedFilters(prevFilters => ({
+            ...prevFilters,
+            [filterName]: value,
+        }));
+    };
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -61,7 +92,18 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         try {
             const postsSnapshot = await getDocs(collection(db, 'posts'));
             const postsData = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setPosts(postsData);
+            
+            // Apply filters
+            const filteredPosts = postsData.filter(post => {
+                let include = true;
+                if (selectedFilters.saved && !post.isSaved) include = false;
+                if (selectedFilters.pinned && !post.isPinned) include = false;
+                if (selectedFilters.crowdAlert && !post.isCrowdAlert) include = false;
+                if (selectedFilters.notCrowdAlert && post.isCrowdAlert) include = false;
+                return include;
+            });
+
+            setPosts(filteredPosts);
         } catch (error) {
             console.error('Error fetching posts:', error.message);
         }
@@ -69,14 +111,13 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
     useEffect(() => {
         fetchPosts();
-    }, []);
+    }, [selectedFilters]);
 
-    const onRefresh = useCallback(() => {
+    const onRefresh = useCallback(async () => {
         setRefreshing(true);
-        fetchPosts().then(() => {
-            setRefreshing(false);
-        });
-    }, []);
+        await fetchPosts();
+        setRefreshing(false);
+    }, [selectedFilters]);
 
     const handlePost = () => {
         setCurrentScreen('Post');
@@ -203,6 +244,27 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         } catch (error) {
             console.error('Error deleting post:', error.message);
         }
+    };
+
+    const handleDeletePress = (postId) => {
+        setPostToDelete(postId);
+        setModalVisible(true);
+    };
+
+    const confirmDelete = () => {
+        deletePost(postToDelete);
+        setModalVisible(false);
+        setPostToDelete(null);
+    };
+
+    const cancelDelete = () => {
+        setModalVisible(false);
+        setPostToDelete(null);
+    };
+
+    const handleLocationPress = (location) => {
+        setSelectedLocation(location);
+        setMapVisible(true);
     };
 
     const handleComment = async (postId, commentText) => {
@@ -369,6 +431,10 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
             openImageViewer={openImageViewer} imageViewerVisible={imageViewerVisible} 
             currentImages={currentImages} currentImageIndex={currentImageIndex} closeImageViewer={closeImageViewer}/>;
     }
+    
+    if (mapVisible && selectedLocation) {
+        return <MapScreen latitude={selectedLocation.latitude} longitude={selectedLocation.longitude} onBack={() => setMapVisible(false)} />;
+    }
 
     return (
         <View style={styles.forumContainer}>
@@ -412,6 +478,12 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                             <View style={styles.postButtons}>
                                 <TouchableOpacity
                                     style={styles.button}
+                                    onPress={handleToggleFilterMenu} // Toggle filter menu visibility
+                                >
+                                    <Text style={styles.buttonText}>Filter</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.button}
                                     onPress={handlePost}
                                 >
                                     <Text style={styles.buttonText}>Post</Text>
@@ -444,7 +516,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                             <Text style={styles.postDate}>{post.date} • {post.time}</Text>
                                         </View>
                                         {/* delete posts */}
-                                        <TouchableOpacity onPress={() => deletePost(post.id)}>
+                                        <TouchableOpacity onPress={() => handleDeletePress(post.id)}>
                                             <Ionicons name="trash-outline" size={22} color='#000000' />
                                         </TouchableOpacity>
                                         {/* pin posts */}
@@ -475,11 +547,11 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                     </ScrollView>
                                     {/* Location Container */}
                                     {post.location && (
-                                        <TouchableOpacity>
+                                        <TouchableOpacity onPress={() => handleLocationPress(post.location)}>
                                             <View style={styles.locationContainer}>
                                                 <Ionicons name="location-outline" size={20} color="#000" />
                                                 <Text style={styles.locationText}>
-                                                    Lat: {post.location.latitude}, Lon: {post.location.longitude}
+                                                    Lat: {post.location.latitude.toFixed(3)}, Lon: {post.location.longitude.toFixed(3)}
                                                 </Text>
                                             </View>
                                         </TouchableOpacity>
@@ -634,8 +706,20 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                 </ScrollView>
                             </View>
                         </Modal>
+                        <DeleteModal
+                            isVisible={isModalVisible}
+                            onConfirm={confirmDelete}
+                            onCancel={cancelDelete}
+                        />
+                        {/* Filter Menu */}
+                        <FilterMenu
+                            isVisible={isFilterMenuVisible}
+                            onClose={() => setFilterMenuVisible(false)}
+                            onApply={handleApplyFilters}
+                            selectedFilters={selectedFilters}
+                            onChangeFilter={handleChangeFilter}
+                        />
                     </ScrollView>
-
                     {/* Navigation Bar */}
                     <NavigationBar
                         activeScreen={currentScreen}
