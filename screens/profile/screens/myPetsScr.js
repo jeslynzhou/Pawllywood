@@ -304,7 +304,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 17,
-        paddingVertical: 12,
         marginHorizontal: 3,
     },
     editModeButtonText: {

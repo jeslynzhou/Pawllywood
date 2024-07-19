@@ -53,6 +53,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
     const onClose = () => {
         setCurrentScreen('Notebook');
+        fetchNotes();
     };
 
     { /* Search Notes */ }

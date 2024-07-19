@@ -71,6 +71,7 @@ const AuthScreen = ({
         const foldersCollectionRef = collection(db, 'users', user.uid, 'folders');
         const defaultFolderRef = await addDoc(foldersCollectionRef, {
           folderName: 'My Pets (Default)',
+          createdAt: new Date().toLocaleDateString(),
           noteIds: [defaultNoteRef.id], //Array to hold note IDs (for reference)
         });
 

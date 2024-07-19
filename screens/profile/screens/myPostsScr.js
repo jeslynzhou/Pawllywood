@@ -120,19 +120,19 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
                             <View key={post.id}>
                                 <View key={post.id} style={[styles.postInfoContainer]}>
                                     <View style={styles.postInfo}>
-                                        <Text numberOfLines={2} ellipsizeMode='tail' style={styles.text}>
-                                            {post.text.length > 80 ? `[${post.text.substring(0, 50)}...]` : `[${post.text}]`}
+                                        <Text numberOfLines={1} ellipsizeMode='tail' style={styles.postTitle}>
+                                            {post.title.length > 80 ? `${post.title.substring(0, 50)}...` : `${post.title}`}
                                         </Text>
                                     </View>
                                     {isEditMode && (
-                                        <View style={{ position: 'absolute', right: 10 }}>
+                                        <View style={{ paddingHorizontal: 17 }}>
                                             <TouchableOpacity style={{ alignSelf: 'center' }} onPress={() => toggleSelectPost(post.id)}>
                                                 <Ionicons name={selectedPostsForDelete.includes(post.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
                                             </TouchableOpacity>
                                         </View>
                                     )}
                                     {!isEditMode && (
-                                        <View style={{ right: 18 }}>
+                                        <View style={{ paddingVertical: 2.7 }}>
                                             <Text style={[styles.text, { color: '#CCCCCC' }]}>{post.time}</Text>
                                         </View>
                                     )}
@@ -226,14 +226,15 @@ const styles = StyleSheet.create({
     postInfoContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 5,
-        paddingVertical: 10,
+        padding: 10,
     },
     postInfo: {
         marginRight: 25,
+        flex: 1,
     },
-    text: {
+    postTitle: {
         fontSize: 16,
+        fontWeight: 'bold',
     },
     separatorLine: {
         height: 1,
@@ -285,6 +286,7 @@ const styles = StyleSheet.create({
         borderRadius: 17,
         paddingVertical: 12,
         marginHorizontal: 3,
+
     },
     editModeButtonText: {
         fontSize: 16,
