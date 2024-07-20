@@ -10,6 +10,7 @@ import PostDetailsScr from './postDetailsScr';
 import MapScreen from './mapScr';
 import DeleteModal from './deleteModal';
 import FilterMenu from './filterMenu';
+import EmergencyModal from './emergencyModal';
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
@@ -21,6 +22,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const [expandedComments, setExpandedComments] = useState({});
     const [searchHeight, setSearchHeight] = useState(0);
     const [profileHeight, setProfileHeight] = useState(0);
+    const [emergencyHeight, setEmergencyHeight] = useState(0);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [imageUris, setImageUris] = useState([]);
@@ -44,6 +46,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         notCrowdAlert: false,
     });
     const [pinnedPosts, setPinnedPosts] = useState([]);
+    const [showModal, setShowModal] = useState(false);
 
     const handleToggleFilterMenu = () => {
         setFilterMenuVisible(!isFilterMenuVisible);
@@ -512,7 +515,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
     };
 
     const { height } = Dimensions.get('window');
-    const marginTop = searchHeight + profileHeight + height * 0.04;
+    const marginTop = searchHeight + profileHeight + emergencyHeight * 0.4 + height * 0.04;
 
     if (selectedPost) {
         return <PostDetailsScr post={selectedPost} onBack={() => setSelectedPost(null)} 
@@ -581,6 +584,18 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                     ) : (
                         <Text>User not logged in.</Text>
                     )}
+
+                    {/* Emergency Section */}
+                    <View 
+                        style={styles.emergencySection}
+                        onLayout={(event) => {
+                            const { height } = event.nativeEvent.layout;
+                            setEmergencyHeight(height);}}
+                    >
+                        <TouchableOpacity onPress={() => setShowModal(true)}>
+                            <Text style={styles.emergencyText}>Emergencies? Call now!</Text>
+                        </TouchableOpacity>
+                    </View>
 
                     {/* Posts List */}
                     <ScrollView
@@ -807,6 +822,11 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                             selectedFilters={selectedFilters}
                             onChangeFilter={handleChangeFilter}
                         />
+                        {/* Emergency Modal */}
+                        <EmergencyModal 
+                            visible={showModal} 
+                            onClose={() => setShowModal(false)} 
+                        />
                     </ScrollView>
                     {/* Navigation Bar */}
                     <NavigationBar
@@ -898,8 +918,8 @@ const styles = StyleSheet.create({
         width: '100%',
         alignSelf: 'center',
         height: '75.2%',
-        marginTop: 16,
         position: 'absolute',
+        marginTop: 16,
     },
     postContainer: {
         paddingHorizontal: 16,
@@ -1055,4 +1075,38 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         fontSize: 14,
     },
+    emergencySection: {
+        backgroundColor: '#F8F8F8',
+        alignItems: 'center',
+        borderBottomColor: '#E0E0E0',
+    },
+    emergencyText: {
+        fontSize: 16,
+        color: '#F26419'
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)'
+    },
+    modalContainer: {
+        width: '80%',
+        padding: 20,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        alignItems: 'center'
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 15
+    },
+    hotlineButton: {
+        marginVertical: 5
+    },
+    hotlineText: {
+        fontSize: 16,
+        color: '#007BFF'
+    }
 });
