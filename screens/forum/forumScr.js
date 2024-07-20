@@ -43,6 +43,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         crowdAlert: false,
         notCrowdAlert: false,
     });
+    const [pinnedPosts, setPinnedPosts] = useState([]);
 
     const handleToggleFilterMenu = () => {
         setFilterMenuVisible(!isFilterMenuVisible);
@@ -90,24 +91,46 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
     const fetchPosts = async () => {
         try {
+            const user = auth.currentUser;
+            if (!user) {
+                console.error('No user is currently signed in.');
+                return;
+            }
+
+            // Fetch the current user's data
+            const userRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+            const userData = userDoc.data();
+            const pinnedPosts = userData.pinnedPosts || [];
+            const savedPosts = userData.savedPosts || [];
+
+            // Fetch all posts
             const postsSnapshot = await getDocs(collection(db, 'posts'));
             const postsData = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            // Apply filters
+
+            // Filter posts based on user's saved and pinned posts
             const filteredPosts = postsData.filter(post => {
                 let include = true;
-                if (selectedFilters.saved && !post.isSaved) include = false;
-                if (selectedFilters.pinned && !post.isPinned) include = false;
+                if (selectedFilters.saved && !savedPosts.includes(post.id)) include = false;
+                if (selectedFilters.pinned && !pinnedPosts.includes(post.id)) include = false;
                 if (selectedFilters.crowdAlert && !post.isCrowdAlert) include = false;
                 if (selectedFilters.notCrowdAlert && post.isCrowdAlert) include = false;
                 return include;
             });
 
-            setPosts(filteredPosts);
+            // Sort posts using the user's pinned posts
+            const sortedPosts = filterAndSortPosts(filteredPosts, searchQuery, pinnedPosts);
+            setPosts(sortedPosts);
         } catch (error) {
             console.error('Error fetching posts:', error.message);
         }
     };
+    
+    
+    useEffect(() => {
+        fetchPosts();
+    }, []);
+    
 
     useEffect(() => {
         fetchPosts();
@@ -141,7 +164,6 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             upvotes: [],
             downvotes: [],
             images: imageUrls, // Add the array of image URLs
-            isPinned: false,
             isSaved: false,
             isCrowdAlert: isCrowdAlert,
             location: location,
@@ -185,38 +207,99 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const closeImageViewer = () => {
         setImageViewerVisible(false);
     };
-
-    const togglePinPost = async (postId, isCurrentlyPinned) => {
-        try {
-            const postRef = doc(db, 'posts', postId);
-            await updateDoc(postRef, { isPinned: !isCurrentlyPinned });
     
+    const togglePinPost = async (postId) => {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                console.error('No user is currently signed in.');
+                return;
+            }
+    
+            const userRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+            let pinnedPosts = userDoc.data().pinnedPosts || [];
+    
+            // Check if the post is already pinned
+            const isCurrentlyPinned = pinnedPosts.includes(postId);
+    
+            if (isCurrentlyPinned) {
+                // Remove the post ID from the pinnedPosts array
+                pinnedPosts = pinnedPosts.filter(id => id !== postId);
+            } else {
+                // Add the post ID to the pinnedPosts array
+                pinnedPosts.push(postId);
+            }
+    
+            await updateDoc(userRef, { pinnedPosts });
+    
+            // Update the local state to reflect the change
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, isPinned: !isCurrentlyPinned } : post
                 )
             );
+    
+            // Update userData state to reflect the pin change
+            setUserData(prevUserData => ({
+                ...prevUserData,
+                pinnedPosts: pinnedPosts
+            }));
+    
+            console.log(`Post ${postId} pin status toggled successfully! New status: ${!isCurrentlyPinned}`);
         } catch (error) {
-            console.error('Error updating post pin status:', error.message);
-        }
-    };
-
-    const toggleSavePost = async (postId, currentIsSaved) => {
-        try {
-          const postDocRef = doc(db, 'posts', postId);
-      
-          // Update the isSaved status to its opposite value
-          await updateDoc(postDocRef, {
-            isSaved: !currentIsSaved
-          });
-      
-          console.log(`Post ${postId} saved status toggled successfully! New status: ${!currentIsSaved}`);
-        } catch (error) {
-          console.error('Error toggling save post:', error.message);
+            console.error('Error updating pinned posts:', error.message);
         }
     };
     
-    const filterAndSortPosts = (posts, searchQuery) => {
+
+    const toggleSavePost = async (postId) => {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                console.error('No user is currently signed in.');
+                return;
+            }
+    
+            const userRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+            let savedPosts = userDoc.data().savedPosts || [];
+    
+            // Check if the post is already saved
+            const isCurrentlySaved = savedPosts.includes(postId);
+    
+            if (isCurrentlySaved) {
+                // Remove the post ID from the savedPosts array
+                savedPosts = savedPosts.filter(id => id !== postId);
+            } else {
+                // Add the post ID to the savedPosts array
+                savedPosts.push(postId);
+            }
+    
+            await updateDoc(userRef, { savedPosts });
+    
+            // Update the local state to reflect the change
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId ? { ...post, isSaved: !isCurrentlySaved } : post
+                )
+            );
+    
+            // Update userData state to reflect the save change
+            setUserData(prevUserData => ({
+                ...prevUserData,
+                savedPosts: savedPosts
+            }));
+    
+            console.log(`Post ${postId} save status toggled successfully! New status: ${!isCurrentlySaved}`);
+        } catch (error) {
+            console.error('Error toggling save post:', error.message);
+        }
+    };
+    
+    
+    
+    const filterAndSortPosts = (posts, searchQuery, pinnedPosts) => {
         const filteredPosts = posts.filter(post => {
             if (post.content) {
                 const matchesQuery = post.content.toLowerCase().includes(searchQuery.toLowerCase());
@@ -225,12 +308,17 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             return false;
         });
     
-        return filteredPosts.sort((a, b) => b.isPinned - a.isPinned || new Date(b.date) - new Date(a.date));
+        return filteredPosts.sort((a, b) => {
+            const aIsPinned = pinnedPosts.includes(a.id);
+            const bIsPinned = pinnedPosts.includes(b.id);
+            return bIsPinned - aIsPinned || new Date(b.date) - new Date(a.date);
+        });
     };
+    
 
     useEffect(() => {
-        setSortedPosts(filterAndSortPosts(posts, searchQuery));
-    }, [posts, searchQuery]);
+        setSortedPosts(filterAndSortPosts(posts, searchQuery, pinnedPosts));
+    }, [posts, searchQuery, pinnedPosts]);
 
     const deletePost = async (postId) => {
         try {
@@ -521,11 +609,11 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                         </TouchableOpacity>
                                         {/* pin posts */}
                                         <TouchableOpacity onPress={() => togglePinPost(post.id, post.isPinned)}>
-                                            <Ionicons name={post.isPinned ? "pin" : "pin-outline"} size={22} color='#000000' />
+                                            <Ionicons name={userData.pinnedPosts.includes(post.id) ? "pin" : "pin-outline"} size={22} color='#000000' />
                                         </TouchableOpacity>
                                         {/* save posts */}
                                         <TouchableOpacity onPress={() => toggleSavePost(post.id, post.isSaved)}>
-                                            <Ionicons name={post.isSaved? "star" : "star-outline"} size={22} color='#000000' />
+                                            <Ionicons name={userData.savedPosts.includes(post.id) ? "star" : "star-outline"} size={22} color='#000000' />
                                         </TouchableOpacity>
                                     </View>
                                     <TouchableOpacity onPress={() => handlePress(post)} key={post.id}>
