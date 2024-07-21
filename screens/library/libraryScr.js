@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Image, Dimensions, PanResponder, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-import { db } from '../../initializeFB';
-import { getDocs, collection } from 'firebase/firestore';
-
+import { auth, db } from '../../initializeFB';
+import { doc, getDoc, getDocs, collection, updateDoc } from 'firebase/firestore';
 import NavigationBar from '../../components/navigationBar';
-
 
 export default function LibraryScreen({ directToProfile, directToNotebook, directToLibrary, directToForum, directToHome }) {
   const [currentScreen, setCurrentScreen] = useState('Library');
@@ -21,6 +18,7 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
   const [buttonContainerHeight, setButtonContainerHeight] = useState(0);
   const [searchContainerHeight, setSearchContainerHeight] = useState(0);
   const [marginTopContentContainer, setMarginTopContentContainer] = useState(0);
+  const [highlightedContent, setHighlightedContent] = useState({});
 
   useEffect(() => {
     const fetchBreeds = async () => {
@@ -77,6 +75,55 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
       breed.breed.toLowerCase().includes(searchQuery.toLowerCase()) &&
       (selectedType ? breed.type === selectedType : true)
   );
+
+  const handleHighlightContent = async (contentId) => {
+    const updatedHighlight = !highlightedContent[contentId];
+    setHighlightedContent(prev => ({
+        ...prev,
+        [contentId]: updatedHighlight
+    }));
+
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            console.error('No user is currently signed in.');
+            return;
+        }
+
+        const userRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userRef);
+        const userHighlights = userDoc.data().highlights || {};
+
+        userHighlights[contentId] = updatedHighlight;
+
+        await updateDoc(userRef, { highlights: userHighlights });
+    } catch (error) {
+        console.error('Error updating highlighted content:', error.message);
+    }
+  };
+
+  useEffect(() => {
+    const fetchHighlightedContent = async () => {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                console.error('No user is currently signed in.');
+                return;
+            }
+
+            const userRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+            const highlights = userDoc.data().highlights || {};
+
+            setHighlightedContent(highlights);
+        } catch (error) {
+            console.error('Error fetching highlighted content:', error.message);
+        }
+    };
+
+    fetchHighlightedContent();
+  }, []);
+
 
   const handleBreedSelect = breed => {
     setSelectedBreed(breed);
@@ -191,9 +238,15 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
             </TouchableOpacity>
           ))}
         </ScrollView>
-        <ScrollView style={styles.scrollViewContent}>
-          <Text style={styles.contentText}>{contentMap[selectedAspect]}</Text>
-        </ScrollView>
+        <Text
+            style={[
+                styles.contentText,
+                highlightedContent[selectedAspect] && styles.highlightedContent
+            ]}
+            onPress={() => handleHighlightContent(selectedAspect)}
+        >
+            {contentMap[selectedAspect]}
+        </Text>
       </View>
     );
   };
@@ -460,5 +513,9 @@ const styles = StyleSheet.create({
   loadingContainer: {
     justifyContent: 'center',
     flex: 1,
+  },
+  highlightedContent: {
+    backgroundColor: 'rgba(242, 100, 25, 0.2)', // light orange background
+    padding: 5,
   },
 });
