@@ -237,8 +237,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     separatorLine: {
-        height: 1,
-        backgroundColor: '#CCCCCC',
+        borderColor: '#CCCCCC',
+        borderTopWidth: 1,
     },
     modalContainer: {
         flex: 1,
@@ -286,7 +286,6 @@ const styles = StyleSheet.create({
         borderRadius: 17,
         paddingVertical: 12,
         marginHorizontal: 3,
-
     },
     editModeButtonText: {
         fontSize: 16,

@@ -9,6 +9,12 @@ export default function AddNoteScreen({ fetchNotes, closeAddNote }) {
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
     const [folderId, setFolderId] = useState(''); // Optional folder ID
+    const formatDate = (date) => {
+        const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Ensure two digits
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
 
     const handleAddNote = async () => {
         try {
@@ -23,10 +29,10 @@ export default function AddNoteScreen({ fetchNotes, closeAddNote }) {
             // Create a new note document
             const user = auth.currentUser;
             const notesCollectionRef = collection(db, 'users', user.uid, 'notes'); // Replace 'currentUserId' with the actual user ID
-            const newNoteRef = await addDoc(notesCollectionRef, {
+            await addDoc(notesCollectionRef, {
                 title: noteTitle,
                 text: text.trim(),
-                createdAt: new Date().toLocaleDateString(),
+                createdAt: formatDate(new Date()),
                 folderId: folderId.trim() || '', // Optionally assign a folder ID
             });
 

@@ -290,8 +290,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     separatorLine: {
-        height: 1,
-        backgroundColor: '#CCCCCC',
+        borderColor: '#CCCCCC',
+        borderTopWidth: 1,
     },
     editModeButtonsContainer: {
         flexDirection: 'row',

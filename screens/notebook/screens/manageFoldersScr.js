@@ -157,7 +157,7 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
                     {foldersData.length === 0 ? (
                         <TouchableOpacity>
                             <View style={{ flex: 1 }}>
-                                <Text style={[styles.folderName, { color: '#CCCCCC' }]}>You don't have any folders.</Text>
+                                <Text style={{ fontSize: 16, margin: 15, }}>You don't have any folders.</Text>
                             </View>
                         </TouchableOpacity>
                     ) : (

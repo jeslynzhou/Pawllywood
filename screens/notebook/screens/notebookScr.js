@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Dimensions, ScrollView, Touchable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions, ScrollView } from 'react-native';
+import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB.js';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, deleteDoc, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 import NavigationBar from '../../../components/navigationBar.js';
 import AddNoteScreen from './addNoteScr.js';
@@ -20,8 +21,15 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     const [viewMode, setViewMode] = useState('allNotes');
     const [folders, setFolders] = useState([]);
     const [selectedNote, setSelectedNote] = useState(null);
+    const [selectedFolder, setSelectedFolder] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [showMenuModal, setShowMenuModal] = useState(false);
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [selectedNotes, setSelectedNotes] = useState([]);
+    const [selectedDestinationFolder, setSelectedDestinationFolder] = useState(null);
+    const [showSelectingFolderModal, setShowSelectingFolderModal] = useState(false);
+    const [isDeleteMode, setIsDeleteMode] = useState(false);
+    const [isMovingMode, setIsMovingMode] = useState(false);
 
     useEffect(() => {
         fetchNotes();
@@ -63,9 +71,11 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         setSearchQuery(query);
     };
 
-    const filteredNotes = notes.filter(note => {
-        return note.title.toLowerCase().includes(searchQuery.toLowerCase());
-    });
+    const filteredNotes = viewMode === 'allNotes'
+        ? notes.filter(note => note.title.toLowerCase().includes(searchQuery.toLowerCase()))
+        : selectedFolder
+            ? notes.filter(note => note.folderId === selectedFolder.id && note.title.toLowerCase().includes(searchQuery.toLowerCase()))
+            : [];
 
     { /* Add Note */ }
     const handleAddingNote = () => {
@@ -81,8 +91,93 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         setShowMenuModal(false);
     };
 
+    { /* Edit Mode */ }
+    const openEditModeModal = () => {
+        setShowConfirmationModal(true);
+    };
+
+    const closeEditModeModal = () => {
+        setShowConfirmationModal(false);
+        setSelectedNotes([]);
+        setIsMovingMode(false);
+        setIsDeleteMode(false);
+    };
+
+    const onMovingNotes = () => {
+        setIsMovingMode(true);
+        setShowConfirmationModal(false);
+        setSelectedDestinationFolder(selectedFolder);
+    };
+
+    const confirmMovingNotes = () => {
+        if (selectedNotes.length > 0) {
+            setShowSelectingFolderModal(true);
+            setShowConfirmationModal(false);
+        }
+    };
+
+    const moveSelectedNotes = async () => {
+        try {
+            const user = auth.currentUser;
+            if (user && selectedDestinationFolder) {
+                const movingPromises = selectedNotes.map(async (noteId) => {
+                    const noteDocRef = doc(db, 'users', user.uid, 'notes', noteId);
+                    await updateDoc(noteDocRef, {
+                        folderId: selectedDestinationFolder.id,
+                    });
+                });
+
+                await Promise.all(movingPromises);
+
+                fetchNotes();  // Update the state after moving notes
+                setSelectedNotes([]);
+                setSelectedDestinationFolder(null);
+                setIsMovingMode(false);
+            }
+        } catch (error) {
+            console.error('Error moving notes:', error.message);
+        }
+    };
+
+    const confirmDeleteNotes = () => {
+        setIsDeleteMode(true);
+        setShowConfirmationModal(false);
+    };
+
+    const toggleSelectNotesForEdit = (noteId) => {
+        const index = selectedNotes.indexOf(noteId);
+        if (index === -1) {
+            setSelectedNotes([...selectedNotes, noteId]);
+        } else {
+            const updatedSelectedNotesForDelete = [...selectedNotes];
+            updatedSelectedNotesForDelete.splice(index, 1);
+            setSelectedNotes(updatedSelectedNotesForDelete);
+        }
+    };
+
+    const deleteSelectedNotes = async () => {
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const deletionPromises = selectedNotes.map(async (noteId) => {
+                    const noteDocRef = doc(db, 'users', user.uid, 'notes', noteId);
+                    await deleteDoc(noteDocRef);
+                });
+
+                await Promise.all(deletionPromises);
+
+                fetchNotes();
+                setSelectedNotes([]);
+                setIsDeleteMode(false);
+            }
+        } catch (error) {
+            console.error('Error deleting notes:', error.message);
+        }
+    };
+
     const handleAllNotesView = () => {
         setViewMode('allNotes');
+        setSelectedFolder(null);
         setShowMenuModal(false);
     };
 
@@ -106,8 +201,23 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     { /* Render Note & Folder Rows */ }
     const renderNoteItem = (note) => (
         <View>
-            <TouchableOpacity key={note.id} onPress={() => handleNoteDetails(note)} style={styles.noteItem}>
+            <TouchableOpacity onPress={() => {
+                if (isDeleteMode) {
+                    toggleSelectNotesForEdit(note.id);
+                } else if (isMovingMode) {
+                    toggleSelectNotesForEdit(note.id);
+                    setSelectedDestinationFolder(selectedFolder);
+                } else {
+                    handleNoteDetails(note);
+                }
+            }}
+                style={styles.noteItem}>
                 <Text>{note.text}</Text>
+                {(isDeleteMode || isMovingMode) && (
+                    <View style={styles.checkboxContainer}>
+                        <Ionicons name={selectedNotes.includes(note.id) ? 'checkmark-circle-outline' : 'ellipse-outline'} size={24} color='#000000' />
+                    </View>
+                )}
             </TouchableOpacity>
             <Text style={styles.noteTitle}>{note.title}</Text>
             <Text style={styles.noteDate}>{note.createdAt}</Text>
@@ -129,32 +239,30 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         return rows;
     };
 
+    const handleFolderPress = (folder) => {
+        setSelectedFolder(folder);
+    };
+
     const renderFolderItem = (folder) => (
-        <TouchableOpacity key={folder.id}>
-            <Image
-                source={require('../../../assets/notebook_images/default_folder.png')}
-                style={styles.folderImage}
-                resizeMode='contain'
-            />
-            <Text style={styles.folderName}>{folder.folderName}</Text>
+        <TouchableOpacity key={folder.id} onPress={() => handleFolderPress(folder)}>
+            <View style={[
+                styles.folderItem,
+                { backgroundColor: selectedFolder && selectedFolder.id === folder.id ? '#F26419' : '#FFFFFF' }
+            ]}>
+                <Text style={styles.folderName}>{folder.folderName}</Text>
+            </View>
         </TouchableOpacity>
     );
 
     const renderFolderRows = () => {
-        const rows = [];
-        for (let i = 0; i < folders.length; i += 2) {
-            const folder1 = folders[i];
-            const folder2 = folders[i + 1];
-            rows.push(
-                <View key={`row_${i}`} style={styles.rows}>
-                    {folder1 && renderFolderItem(folder1)}
-                    {folder2 && renderFolderItem(folder2)}
-                </View>
-            );
-        }
-        return rows;
+        return (
+            <View>
+                <ScrollView horizontal style={styles.foldersContainer}>
+                    {folders.map(folder => renderFolderItem(folder))}
+                </ScrollView>
+            </View>
+        )
     };
-
 
     return (
         <>
@@ -170,6 +278,9 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                             value={searchQuery}
                             onChangeText={handleSearch}
                         />
+                        <TouchableOpacity onPress={notes.length > 0 ? openEditModeModal : closeEditModeModal} style={styles.editButtonContainer}>
+                            <Ionicons name='ellipsis-vertical' size={20} color='#000000' />
+                        </TouchableOpacity>
                     </View>
                     <View style={styles.header}>
                         <TouchableOpacity style={[styles.headerButton, viewMode === 'allNotes' ? styles.activeButton : null]} onPress={() => setViewMode('allNotes')}>
@@ -180,42 +291,157 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView style={styles.notesContainer}>
+                    <View style={styles.notesContainer}>
                         {viewMode === 'allNotes' ? (
                             filteredNotes.length > 0 ? (
-                                renderNoteRows()
+                                <ScrollView style={styles.notesContainer}>
+                                    {renderNoteRows()}
+                                </ScrollView>
                             ) : (
-                                <Text>No notes found.</Text>
+                                <Text style={styles.text}>No notes found.</Text>
                             )
                         ) : (
                             folders.length > 0 ? (
-                                renderFolderRows()
+                                <>
+                                    {renderFolderRows()}
+                                    {selectedFolder && (
+                                        <ScrollView style={styles.notesContainer}>
+                                            {filteredNotes.length > 0 ? (
+                                                renderNoteRows()
+                                            ) : (
+                                                <Text style={styles.text}>No notes found in this folder.</Text>
+                                            )}
+                                        </ScrollView>
+                                    )}
+
+                                </>
                             ) : (
-                                <Text>No folders found.</Text>
+                                <Text style={styles.text}>No folders found.</Text>
                             )
                         )}
-                    </ScrollView>
-                </View>
-            )}
-            {currentScreen === 'AddNote' && (
-                <AddNoteScreen
-                    fetchNotes={fetchNotes}
-                    closeAddNote={onClose}
-                />
-            )}
 
-            {currentScreen === 'NoteDetails' && selectedNote && (
-                <NoteDetailsScreen
-                    note={selectedNote}
-                    closeNoteDetails={onClose}
-                />
-            )}
+                        {/* Confirmation Modal */}
+                        <Modal
+                            isVisible={showConfirmationModal}
+                            transparent={true}
+                            animationIn='fadeIn'
+                            animationOut='fadeOut'
+                            onBackdropPress={() => setShowConfirmationModal(false)}
+                        >
+                            <View style={styles.modalContent}>
+                                <Text style={styles.modalTitle}>Edit notes</Text>
+                                <View style={styles.modalButtonContainer}>
+                                    <View style={styles.separatorLine} />
 
-            {currentScreen === 'ManageFolders' && (
-                <ManageFoldersScreen
-                    closeManageFolders={onClose}
-                />
-            )}
+                                    <TouchableOpacity onPress={onMovingNotes} style={styles.modalButton}>
+                                        <Text style={styles.modalButtonText}>Move to folder</Text>
+                                    </TouchableOpacity>
+
+                                    <View style={styles.separatorLine} />
+
+                                    <TouchableOpacity onPress={confirmDeleteNotes} style={styles.modalButton}>
+                                        <Text style={styles.modalButtonText}>Delete</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </Modal>
+
+                        { /* Select Folder Modal */}
+                        <Modal
+                            isVisible={showSelectingFolderModal}
+                            transparent={true}
+                            animationIn='fadeIn'
+                            animationOut='fadeOut'
+                            onBackdropPress={() => setShowSelectingFolderModal(false)}
+                        >
+                            <View style={styles.modalContent}>
+                                <View style={{ width: '100%', }}>
+                                    <Text style={[styles.modalTitle, { alignSelf: 'center' }]}>Select folder</Text>
+                                    <View style={styles.separatorLine} />
+                                </View>
+
+                                <View style={styles.modalButtonContainer}>
+                                    <ScrollView>
+                                        {folders.map(folder => (
+                                            <TouchableOpacity
+                                                key={folder.id}
+                                                style={[styles.modalButton, { alignItems: 'flex-start', paddingHorizontal: 15, }]}
+                                                onPress={() => {
+                                                    setSelectedDestinationFolder(folder);
+                                                    moveSelectedNotes();
+                                                    setShowSelectingFolderModal(false);
+                                                }}
+                                            >
+                                                <Text style={[styles.modalButtonText, { paddingVertical: 5, }]}>{folder.folderName}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </ScrollView>
+                                </View>
+                            </View>
+                        </Modal>
+
+
+                        {/* Buttons for Moving Mode */}
+                        {isMovingMode && (
+                            <View style={styles.editModeButtonsContainer}>
+                                <TouchableOpacity onPress={closeEditModeModal} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                                    <Text style={styles.editModeButtonText}>Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={confirmMovingNotes} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
+                                    <Text style={styles.editModeButtonText}>Move to...</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        {/* Buttons for Delete Mode */}
+                        {isDeleteMode && (
+                            <View style={styles.editModeButtonsContainer}>
+                                <TouchableOpacity onPress={closeEditModeModal} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                                    <Text style={styles.editModeButtonText}>Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={deleteSelectedNotes} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
+                                    <Text style={styles.editModeButtonText}>Confirm Delete</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                    </View >
+                    {/* Add Note Button */}
+                    {
+                        !isDeleteMode && !isMovingMode && (
+                            <TouchableOpacity style={styles.addNoteButton} onPress={handleAddingNote}>
+                                <Ionicons name="add-circle" size={70} color='rgba(242, 100, 25, 0.7)' />
+                            </TouchableOpacity>
+                        )
+                    }
+                </View >
+            )
+            }
+            {
+                currentScreen === 'AddNote' && (
+                    <AddNoteScreen
+                        fetchNotes={fetchNotes}
+                        closeAddNote={onClose}
+                    />
+                )
+            }
+
+            {
+                currentScreen === 'NoteDetails' && selectedNote && (
+                    <NoteDetailsScreen
+                        note={selectedNote}
+                        closeNoteDetails={onClose}
+                    />
+                )
+            }
+
+            {
+                currentScreen === 'ManageFolders' && (
+                    <ManageFoldersScreen
+                        closeManageFolders={onClose}
+                    />
+                )
+            }
 
             {/* Navigation Bar */}
             <NavigationBar
@@ -235,13 +461,6 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 handleManageFolders={openManageFoldersScreen}
                 currentViewMode={viewMode}
             />
-
-            {/* Add Note Button */}
-            {currentScreen !== 'AddNote' && (
-                <TouchableOpacity style={styles.addNoteButton} onPress={handleAddingNote}>
-                    <Ionicons name="add-circle" size={70} color='rgba(242, 100, 25, 0.7)' />
-                </TouchableOpacity>
-            )}
         </>
     );
 };
@@ -270,10 +489,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         width: '100%',
-        marginBottom: 10,
     },
     toggleMenuButton: {
         marginRight: 10,
+        alignSelf: 'center',
+    },
+    toggleEditModeButton: {
         alignSelf: 'center',
     },
     headerButton: {
@@ -291,6 +512,10 @@ const styles = StyleSheet.create({
     },
     activeButton: {
         backgroundColor: '#F26419',
+    },
+    text: {
+        fontSize: 14,
+        padding: 5,
     },
     notesContainer: {
         marginTop: 10,
@@ -325,21 +550,90 @@ const styles = StyleSheet.create({
         marginTop: 2,
         marginBottom: 10,
     },
-    folderImage: {
-        width: ITEM_WIDTH,
-        height: ITEM_WIDTH,
+    foldersContainer: {
+        height: 45,
+        borderColor: '#000000',
+    },
+    folderItem: {
+        width: 120,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#000000',
+        borderRadius: 17,
+        marginRight: 10,
+        padding: 3,
     },
     folderName: {
         fontSize: 16,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginTop: '-5%',
+        paddingHorizontal: 10,
+        paddingVertical: 7,
     },
     addNoteButton: {
         position: 'absolute',
-        bottom: 68,
-        right: 16,
+        bottom: 0,
+        right: 0,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    editButtonContainer: {
+        alignSelf: 'center',
+    },
+    modalContent: {
+        alignSelf: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 17,
+        width: '80%',
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginVertical: 20,
+    },
+    modalButtonContainer: {
+        flexDirection: 'column',
+        justifyContent: 'center',
+        width: '100%',
+    },
+    modalButton: {
+        padding: 10,
+        alignItems: 'center',
+    },
+    modalButtonText: {
+        fontSize: 16,
+    },
+    separatorLine: {
+        borderColor: '#CCCCCC',
+        borderTopWidth: 1,
+    },
+    editModeButtonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginTop: 16,
+    },
+    editModeButton: {
+        flex: 1,
+        height: 45,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 17,
+        marginHorizontal: 3,
+    },
+    editModeButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+    },
+    loadingContainer: {
+        justifyContent: 'center',
+        flex: 1,
+    },
+    checkboxContainer: {
+        position: 'absolute',
+        top: 5,
+        right: 5,
     },
 });

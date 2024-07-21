@@ -21,6 +21,13 @@ const AuthScreen = ({
   // image
   const imageSize = height * 0.2;
 
+  const formatDate = (date) => {
+    const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Ensure two digits
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   const handleAuthentication = async () => {
     try {
       if (isLogin) {
@@ -57,22 +64,22 @@ const AuthScreen = ({
           birthDate: '',
           age: '',
           gender: '',
-          adoptedDate: new Date().toLocaleDateString(),
+          adoptedDate: formatDate(new Date()),
         });
 
         const notesCollectionRef = collection(db, 'users', user.uid, 'notes');
         const defaultNoteRef = await addDoc(notesCollectionRef, {
           title: 'About Default Pets',
-          createdAt: new Date().toLocaleDateString(),
+          createdAt: formatDate(new Date()),
           text: 'I love my pet!',
           folderId: '', // optional
+          petId: '', // optional
         });
 
         const foldersCollectionRef = collection(db, 'users', user.uid, 'folders');
         const defaultFolderRef = await addDoc(foldersCollectionRef, {
           folderName: 'My Pets (Default)',
-          createdAt: new Date().toLocaleDateString(),
-          noteIds: [defaultNoteRef.id], //Array to hold note IDs (for reference)
+          createdAt: formatDate(new Date()),
         });
 
         // Update the note to include the folderId (the first note gets assigned to the default folder)
