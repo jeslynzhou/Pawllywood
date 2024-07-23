@@ -11,6 +11,8 @@ import MapScreen from './mapScr';
 import DeleteModal from './deleteModal';
 import FilterMenu from './filterMenu';
 import EmergencyModal from './emergencyModal';
+import * as Notifications from 'expo-notifications';
+
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
@@ -47,6 +49,33 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     });
     const [pinnedPosts, setPinnedPosts] = useState([]);
     const [showModal, setShowModal] = useState(false);
+
+    const sendNotification = async (expoPushToken, title, body) => {
+        const message = {
+            to: expoPushToken,
+            sound: 'default',
+            title: title,
+            body: body,
+            data: { extraData: 'Some data if needed' }, // Optional
+        };
+    
+        try {
+            const response = await fetch('https://exp.host/--/api/v2/push/send', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Accept-Encoding': 'gzip, deflate',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(message),
+            });
+            const responseData = await response.json();
+            console.log('Notification Response:', responseData);
+        } catch (error) {
+            console.error('Error sending notification:', error.message);
+        }
+    };
+    
 
     const handleToggleFilterMenu = () => {
         setFilterMenuVisible(!isFilterMenuVisible);
@@ -360,7 +389,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
     const handleComment = async (postId, commentText) => {
         if (!commentText.trim() || !userData) return;
-
+    
         const newComment = {
             username: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
@@ -369,13 +398,13 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
             text: commentText
         };
-
+    
         try {
             const postRef = doc(db, 'posts', postId);
             await updateDoc(postRef, {
                 comments: arrayUnion(newComment)
             });
-
+    
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, comments: [...post.comments, newComment] } : post
@@ -385,93 +414,129 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 ...prevState,
                 [postId]: ''
             }));
-
+    
+            // Send notification to post author
+            const postDoc = await getDoc(postRef);
+            const postData = postDoc.data();
+            if (postData) {
+                const userRef = doc(db, 'users', postData.userId);
+                const userDoc = await getDoc(userRef);
+                const userExpoToken = userDoc.data().expoPushToken;
+    
+                if (userExpoToken) {
+                    await sendNotification(userExpoToken, 'New Comment', `${userData.username} commented on your post.`);
+                } else {
+                    console.log('No expoPushToken found for user:', postData.userId);
+                }
+            }
+    
         } catch (error) {
             console.error('Error adding comment to Firestore:', error.message);
         }
     };
-
-    const handleUpvote = async (postId) => {
+    
+      
+      const handleUpvote = async (postId) => {
         if (!userData || !userData.email) {
-            console.log('User data not available or missing UID.');
-            return;
+          console.log('User data not available or missing UID.');
+          return;
         }
-
+      
         try {
-            const postRef = doc(db, 'posts', postId);
-            const postDoc = await getDoc(postRef);
-            const postData = postDoc.data();
-
-            if (!postData) {
-                console.log('Post not found.');
-                return;
-            }
-
-            if (postData.upvotes.includes(userData.email)) {
-                // User already upvoted, remove upvote
-                await updateDoc(postRef, {
-                    upvotes: arrayRemove(userData.email)
-                });
-            } else {
-                // User hasn't upvoted, add upvote and remove downvote if exists
-                await updateDoc(postRef, {
-                    upvotes: arrayUnion(userData.email),
-                    downvotes: arrayRemove(userData.email)
-                });
-            }
-
-            // Update local state with updated upvotes
-            setPosts(prevPosts =>
-                prevPosts.map(post =>
-                    post.id === postId ? { ...post, upvotes: postData.upvotes.includes(userData.email) ? postData.upvotes.filter(id => id !== userData.email) : [...postData.upvotes, userData.email] } : post
-                )
-            );
-
+          const postRef = doc(db, 'posts', postId);
+          const postDoc = await getDoc(postRef);
+          const postData = postDoc.data();
+      
+          if (!postData) {
+            console.log('Post not found.');
+            return;
+          }
+      
+          if (postData.upvotes.includes(userData.email)) {
+            // User already upvoted, remove upvote
+            await updateDoc(postRef, {
+              upvotes: arrayRemove(userData.email)
+            });
+          } else {
+            // User hasn't upvoted, add upvote and remove downvote if exists
+            await updateDoc(postRef, {
+              upvotes: arrayUnion(userData.email),
+              downvotes: arrayRemove(userData.email)
+            });
+      
+            // Send notification to post author
+            const userRef = doc(db, 'users', postData.userId);
+            const userDoc = await getDoc(userRef);
+            const userExpoToken = userDoc.data().expoPushToken; // Assume expoPushToken is stored in user document
+      
+            await sendNotification(userExpoToken, 'New Upvote', `${userData.username} upvoted your post.`);
+          }
+      
+          // Update local state with updated upvotes
+          setPosts(prevPosts =>
+            prevPosts.map(post =>
+              post.id === postId ? { ...post, upvotes: postData.upvotes.includes(userData.email) ? postData.upvotes.filter(id => id !== userData.email) : [...postData.upvotes, userData.email] } : post
+            )
+          );
+      
         } catch (error) {
-            console.error('Error updating upvotes:', error.message);
+          console.error('Error updating upvotes:', error.message);
         }
-    };
-
+      };
+      
     const handleDownvote = async (postId) => {
         if (!userData || !userData.email) {
-            console.log('User data not available or missing UID.');
-            return;
+          console.log('User data not available or missing UID.');
+          return;
         }
-
+      
         try {
-            const postRef = doc(db, 'posts', postId);
-            const postDoc = await getDoc(postRef);
-            const postData = postDoc.data();
-
-            if (!postData) {
-                console.log('Post not found.');
-                return;
+          const postRef = doc(db, 'posts', postId);
+          const postDoc = await getDoc(postRef);
+          const postData = postDoc.data();
+      
+          if (!postData) {
+            console.log('Post not found.');
+            return;
+          }
+      
+          if (postData.downvotes.includes(userData.email)) {
+            // User already downvoted, remove downvote
+            await updateDoc(postRef, {
+              downvotes: arrayRemove(userData.email)
+            });
+          } else {
+            // User hasn't downvoted, add downvote and remove upvote if exists
+            await updateDoc(postRef, {
+              downvotes: arrayUnion(userData.email),
+              upvotes: arrayRemove(userData.email)
+            });
+      
+            // Send notification to post author
+            const userRef = doc(db, 'users', postData.userId);
+            const userDoc = await getDoc(userRef);
+            const userExpoToken = userDoc.data()?.expoPushToken; // Ensure `expoPushToken` is present
+      
+            if (!userExpoToken) {
+              console.error('User Expo Push Token is missing.');
+              return;
             }
-
-            if (postData.downvotes.includes(userData.email)) {
-                // User already downvoted, remove downvote
-                await updateDoc(postRef, {
-                    downvotes: arrayRemove(userData.email)
-                });
-            } else {
-                // User hasn't downvoted, add downvote and remove upvote if exists
-                await updateDoc(postRef, {
-                    downvotes: arrayUnion(userData.email),
-                    upvotes: arrayRemove(userData.email)
-                });
-            }
-
-            // Update local state with updated downvotes
-            setPosts(prevPosts =>
-                prevPosts.map(post =>
-                    post.id === postId ? { ...post, downvotes: postData.downvotes.includes(userData.email) ? postData.downvotes.filter(id => id !== userData.email) : [...postData.downvotes, userData.email] } : post
-                )
-            );
-
+      
+            await sendNotification(userExpoToken, 'New Downvote', `${userData.username} downvoted your post.`);
+          }
+      
+          // Update local state with updated downvotes
+          setPosts(prevPosts =>
+            prevPosts.map(post =>
+              post.id === postId ? { ...post, downvotes: postData.downvotes.includes(userData.email) ? postData.downvotes.filter(id => id !== userData.email) : [...postData.downvotes, userData.email] } : post
+            )
+          );
+      
         } catch (error) {
-            console.error('Error updating downvotes:', error.message);
+          console.error('Error updating downvotes:', error.message);
         }
     };
+      
 
     const onShare = async (post) => {
         try {
@@ -622,13 +687,20 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                         <TouchableOpacity onPress={() => handleDeletePress(post.id)}>
                                             <Ionicons name="trash-outline" size={22} color='#000000' />
                                         </TouchableOpacity>
-                                        {/* pin posts */}
                                         <TouchableOpacity onPress={() => togglePinPost(post.id, post.isPinned)}>
-                                            <Ionicons name={userData.pinnedPosts.includes(post.id) ? "pin" : "pin-outline"} size={22} color='#000000' />
+                                            <Ionicons 
+                                                name={(userData.pinnedPosts && Array.isArray(userData.pinnedPosts) && userData.pinnedPosts.includes(post.id)) ? "pin" : "pin-outline"} 
+                                                size={22} 
+                                                color='#000000' 
+                                            />
                                         </TouchableOpacity>
-                                        {/* save posts */}
+
                                         <TouchableOpacity onPress={() => toggleSavePost(post.id, post.isSaved)}>
-                                            <Ionicons name={userData.savedPosts.includes(post.id) ? "star" : "star-outline"} size={22} color='#000000' />
+                                            <Ionicons 
+                                                name={(userData.savedPosts && Array.isArray(userData.savedPosts) && userData.savedPosts.includes(post.id)) ? "star" : "star-outline"} 
+                                                size={22} 
+                                                color='#000000' 
+                                            />
                                         </TouchableOpacity>
                                     </View>
                                     <TouchableOpacity onPress={() => handlePress(post)} key={post.id}>
