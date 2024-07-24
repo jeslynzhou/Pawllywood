@@ -89,7 +89,8 @@ const AuthScreen = ({
         console.log('You have created an account successfully!');
       }
     } catch (error) {
-      Alert.alert('Authentication error', 'Please check your email and(/or) your password again.');
+      console.error('Authentication error:', error.message);
+      Alert.alert('Authentication error', 'Please try again.');
     }
   };
 

@@ -26,7 +26,6 @@ export default function AddPetScreen({ fetchPetData, closeAddPet }) {
         birthDate: '',
         age: '',
         gender: '',
-        notes: '',
         adoptedDate: '',
         picture: null,
     });

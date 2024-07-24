@@ -34,6 +34,7 @@ export default function AddNoteScreen({ fetchNotes, closeAddNote }) {
                 text: text.trim(),
                 createdAt: formatDate(new Date()),
                 folderId: folderId.trim() || '', // Optionally assign a folder ID
+                petId: '',
             });
 
             // Fetch updated notes data

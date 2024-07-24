@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, Modal, ActivityIndicator } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
@@ -152,22 +153,20 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
                 animationType='fade'
                 onRequestClose={() => setShowConfirmationModal(false)}
             >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Do you want to edit your posts list?</Text>
-                        <View style={styles.modalButtonContainer}>
-                            <View style={styles.separatorLine} />
+                <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>Do you want to edit your posts list?</Text>
+                    <View style={styles.modalButtonContainer}>
+                        <View style={styles.separatorLine} />
 
-                            <TouchableOpacity onPress={confirmEditPostsList} style={styles.modalButton}>
-                                <Text style={[styles.modalButtonText, { fontWeight: 'bold', color: '#F26419' }]}>Yes</Text>
-                            </TouchableOpacity>
+                        <TouchableOpacity onPress={confirmEditPostsList} style={styles.modalButton}>
+                            <Text style={[styles.modalButtonText, { fontWeight: 'bold', color: '#F26419' }]}>Yes</Text>
+                        </TouchableOpacity>
 
-                            <View style={styles.separatorLine} />
+                        <View style={styles.separatorLine} />
 
-                            <TouchableOpacity onPress={() => { setShowConfirmationModal(false), setIsEditMode(false) }} style={styles.modalButton}>
-                                <Text style={styles.modalButtonText}>No</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity onPress={() => { setShowConfirmationModal(false), setIsEditMode(false) }} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>No</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal >
@@ -240,17 +239,12 @@ const styles = StyleSheet.create({
         borderColor: '#CCCCCC',
         borderTopWidth: 1,
     },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
     modalContent: {
         backgroundColor: '#FFFFFF',
         borderRadius: 17,
-        width: '80%',
+        width: '90%',
         alignItems: 'center',
+        alignSelf: 'center',
     },
     modalTitle: {
         fontSize: 18,

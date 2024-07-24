@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, ScrollView, Touchable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-swiper';
 
@@ -9,18 +9,28 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import NavigationBar from '../../../components/navigationBar';
 import EditPetProfileScreen from './editPetProfileScr';
 import AddPetScreen from './addPetScr';
+import NoteDetailsScreen from '../../notebook/screens/noteDetailsScr';
 
 export default function HomeScreen({ directToProfile, directToNotebook, directToLibrary, directToForum }) {
     const [currentScreen, setCurrentScreen] = useState('Home');
     const [petProfilesData, setPetProfilesData] = useState([]);
     const [activePetIndex, setActivePetIndex] = useState(0);
+    const [petNotes, setPetNotes] = useState([]);
+    const [selectedNote, setSelectedNote] = useState(null);
     const { width, height } = Dimensions.get('window');
     const logoHeightSize = height * 0.1;
     const logoWidthSize = width * 0.5;
 
     useEffect(() => {
         fetchPetData();
-    }, []);
+    }, [activePetIndex]);
+
+    useEffect(() => {
+        if (petProfilesData.length > 0) {
+            fetchNotesForPet();
+        }
+    }, [petProfilesData]);
+
 
     const fetchPetData = async () => {
         try {
@@ -53,12 +63,42 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
         }
     };
 
-    const handleEditPetProfile = () => {
-        setCurrentScreen('EditPetProfile');
+    const fetchNotesForPet = async () => {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                console.log('User not authenticated.');
+                return;
+            }
+
+            if (petProfilesData.length === 0) {
+                console.log('Pet profiles data is empty.');
+                return;
+            }
+
+            const petId = petProfilesData[activePetIndex].id;
+            const notesCollectionRef = collection(db, 'users', user.uid, 'notes');
+            const querySnapShot = await getDocs(notesCollectionRef);
+            const fetchedNotes = querySnapShot.docs
+                .filter(doc => doc.data().petId === petId)
+                .map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+            setPetNotes(fetchedNotes);
+        } catch (error) {
+            console.error('Error fetching pet notes:', error.message);
+        }
     };
 
-    const closeEditPetProfile = () => {
+    const onClose = () => {
         setCurrentScreen('Home');
+        fetchPetData();
+        fetchNotesForPet();
+    };
+
+    const handleEditPetProfile = () => {
+        setCurrentScreen('EditPetProfile');
     };
 
     const updatePetProfile = async (updatedPetProfile) => {
@@ -87,8 +127,10 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
         setCurrentScreen('AddPet');
     };
 
-    const closeAddPet = () => {
-        setCurrentScreen('Home');
+    { /* Note Details Screen */ }
+    const handleNoteDetails = (note) => {
+        setSelectedNote(note);
+        setCurrentScreen('NoteDetails');
     };
 
     return (
@@ -164,11 +206,19 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                                         {/* Notes Box */}
                                         <View style={styles.notesContainer}>
                                             <Text style={[styles.labels, { fontSize: 23 }]}>Notes</Text>
-                                            <View style={styles.notesBox}>
-                                                <View style={styles.notesInfoContainer}>
-                                                    <Text style={styles.input}>Click here to take notes!</Text>
-                                                </View>
-                                            </View>
+                                            <ScrollView style={styles.notesScrollViewContainer}>
+                                                {petNotes.length > 0 ? (
+                                                    petNotes.map(note => (
+                                                        <TouchableOpacity key={note.id} onPress={() => handleNoteDetails(note)} style={styles.notesBox}>
+                                                            <View style={styles.notesInfoContainer}>
+                                                                <Text style={styles.input}>{note.text}</Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    ))
+                                                ) : (
+                                                    <Text style={styles.input}>No notes available for this pet.</Text>
+                                                )}
+                                            </ScrollView>
                                         </View>
                                     </View>
                                 </View>
@@ -196,13 +246,19 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                     petProfile={petProfilesData[activePetIndex]}
                     updatePetProfile={updatePetProfile}
                     setPetProfile={setPetProfilesData}
-                    closeEditPetProfile={closeEditPetProfile}
+                    closeEditPetProfile={onClose}
                 />
             )}
             {currentScreen === 'AddPet' && (
                 <AddPetScreen
                     fetchPetData={fetchPetData}
-                    closeAddPet={closeAddPet}
+                    closeAddPet={onClose}
+                />
+            )}
+            {currentScreen === 'NoteDetails' && selectedNote && (
+                <NoteDetailsScreen
+                    note={selectedNote}
+                    closeNoteDetails={onClose}
                 />
             )}
         </>
@@ -303,6 +359,8 @@ const styles = StyleSheet.create({
     notesContainer: {
         flex: 1,
     },
+    notesScrollViewContainer: {
+    },
     notesBox: {
         flex: 1,
         backgroundColor: '#FFFFFF',
@@ -310,9 +368,8 @@ const styles = StyleSheet.create({
         borderColor: '#000000',
         borderRadius: 17,
         padding: 12,
-    },
-    notesInfoContainer: {
-        flex: 1,
+        marginBottom: 10,
+        height: 170,
     },
     inputContainer: {
         flexDirection: 'row',

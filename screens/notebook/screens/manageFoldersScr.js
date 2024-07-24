@@ -14,6 +14,7 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [newFolderName, setNewFolderName] = useState('')
     const [isAddingFolder, setIsAddingFolder] = useState(false);
+    const [folderNameCount, setFolderNameCount] = useState(0);
 
     useEffect(() => {
         fetchFolderData();
@@ -43,6 +44,8 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
 
     const onClose = () => {
         setIsModalVisible(false);
+        setNewFolderName('');
+        setFolderNameCount(0);
     };
 
     const toggleEditMode = () => {
@@ -134,6 +137,13 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
         }
     };
 
+    const handleFolderNameChange = (text) => {
+        if (text.length <= 80) {
+            setNewFolderName(text);
+            setFolderNameCount(text.length);
+        }
+    };
+
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -215,12 +225,17 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
             >
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Create folder</Text>
+                        <View style={styles.modalHeaderContainer}>
+                            <Text style={styles.modalTitle}>Create folder</Text>
+                            <View style={styles.characterCountTextContainer}>
+                                <Text style={{ color: '#808080' }}>{folderNameCount}/80</Text>
+                            </View>
+                        </View>
                         <TextInput
                             style={styles.folderNameInput}
                             placeholder="Folder Name"
                             value={newFolderName}
-                            onChangeText={setNewFolderName}
+                            onChangeText={handleFolderNameChange}
                         />
                         <View style={styles.modalButtonContainer}>
                             <TouchableOpacity onPress={toggleAddNewFolderModal} style={[styles.modalButton, styles.cancelButton]}>
@@ -312,6 +327,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 10,
     },
+    modalHeaderContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    characterCountTextContainer: {
+        justifyContent: 'center',
+    },
     modalContent: {
         flex: 1,
         justifyContent: 'space-evenly',
@@ -319,6 +341,7 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 18,
         fontWeight: 'bold',
+        flex: 1,
     },
     modalButtonContainer: {
         flexDirection: 'row',
