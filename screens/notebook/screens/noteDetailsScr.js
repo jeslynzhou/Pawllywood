@@ -78,7 +78,7 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
         closeEditBackgroundColorModal();
     };
 
-    const colorOptions = ['#000000', '#FFFFFF', '#FCF9D9', '#33658A', '#86BBD8', '#758E4F', '#F6AE2D', '#F26419']
+    const colorOptions = ['#FFFFFF', '#33658A', '#86BBD8', '#758E4F', '#F6AE2D', '#F26419']
 
     { /* Handle Delete Note */ }
     const openDeleteConfirmationModal = () => {
@@ -121,7 +121,7 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                     numberOfLines={1}
                 />
                 <TouchableOpacity onPress={openEditNoteModal} style={styles.editButton}>
-                    <Ionicons name="create-outline" size={24} color='#000000' />
+                    <Ionicons name="ellipsis-horizontal" size={24} color='#000000' />
                 </TouchableOpacity>
             </View>
 
@@ -158,6 +158,13 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
 
                         <View style={styles.separatorLine} />
 
+                        <TouchableOpacity onPress={{}} style={styles.modalButton}>
+                            <Ionicons name="enter-outline" size={24} color='#000000' />
+                            <Text style={styles.modalButtonText}>Move to folder</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.separatorLine} />
+
                         <TouchableOpacity onPress={openDeleteConfirmationModal} style={styles.modalButton}>
                             <Ionicons name="trash-outline" size={24} color='#000000' />
                             <Text style={styles.modalButtonText}>Delete Note</Text>
@@ -180,27 +187,27 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                         <Text style={styles.editModalTitle}>Background color</Text>
                         <View style={styles.colorsContainer}>
                             <View style={styles.colorRow}>
-                                {colorOptions.slice(0, 4).map((color, index) => (
+                                {colorOptions.slice(0, 3).map((color, index) => (
                                     <TouchableOpacity
                                         key={index}
                                         style={[styles.colorOption, { backgroundColor: color }]}
                                         onPress={() => handleBackgroundColorSelection(color)}
                                     >
                                         {selectedBackgroundColor === color && (
-                                            <Ionicons name="checkmark-circle" size={38} color="rgba(0, 0, 0, 0.5)" style={styles.checkmark} />
+                                            <Ionicons name="checkmark-circle" size={60} color="rgba(0, 0, 0, 0.5)" style={styles.checkmark} />
                                         )}
                                     </TouchableOpacity>
                                 ))}
                             </View>
                             <View style={styles.colorRow}>
-                                {colorOptions.slice(4, 8).map((color, index) => (
+                                {colorOptions.slice(3, 6).map((color, index) => (
                                     <TouchableOpacity
                                         key={index}
                                         style={[styles.colorOption, { backgroundColor: color }]}
                                         onPress={() => handleBackgroundColorSelection(color)}
                                     >
                                         {selectedBackgroundColor === color && (
-                                            <Ionicons name="checkmark-circle" size={38} color="rgba(0, 0, 0, 0.5)" style={styles.checkmark} />
+                                            <Ionicons name="checkmark-circle" size={60} color="rgba(0, 0, 0, 0.5)" style={styles.checkmark} />
                                         )}
                                     </TouchableOpacity>
                                 ))}
@@ -209,6 +216,7 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                     </View>
                 </View>
             </Modal >
+
 
             { /* Delete Note Confirmation Modal */}
             < Modal
@@ -287,7 +295,6 @@ const styles = StyleSheet.create({
     modalContent: {
         backgroundColor: '#FFFFFF',
         width: screenWidth * (2 / 3),
-        height: screenWidth * (1 / 2.3),
         justifyContent: 'flex-start',
         borderRadius: 17,
     },
@@ -309,18 +316,18 @@ const styles = StyleSheet.create({
     modalButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 10,
+        padding: 7,
         margin: 5,
     },
     modalButtonText: {
         fontSize: 16,
         marginLeft: 10,
-        padding: 2,
+        padding: 1,
     },
     separatorLine: {
         height: 1,
         backgroundColor: '#CCCCCC',
-        width: '100%',
+        marginVertical: 1,
     },
     editModalContainer: {
         alignSelf: 'center',
@@ -341,6 +348,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         width: '100%',
+        marginTop: 20,
     },
     editModalButton: {
         flex: 1,
@@ -368,24 +376,24 @@ const styles = StyleSheet.create({
     },
     colorRow: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'space-between',
         width: '100%',
         marginTop: 5,
     },
     colorOption: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        margin: 5,
+        width: 50,
+        height: 50,
+        borderRadius: 40,
+        margin: 10,
         justifyContent: 'center',
         alignItems: 'center',
+        borderWidth: 1,
     },
     checkmark: {
         position: 'absolute',
         alignSelf: 'center',
-        top: -4,
+        top: -6,
         right: -6,
-        width: 40,
-        height: 40,
+        width: 60,
     },
 });
