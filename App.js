@@ -1,5 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef} from 'react';
+import { Text, View, Button, Platform, ScrollView } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import * as Permissions from 'expo-permissions';
+import { getExpoPushTokenAsync, setNotificationChannelAsync } from 'expo-notifications';
+import { doc, updateDoc } from 'firebase/firestore';
+
 
 import AuthScreen from './screens/auth/AuthScreen/authScr.js';
 import AuthenticatedScreen from './screens/auth/AuthenticatedScreen/authenticatedScr.js';
@@ -11,9 +16,17 @@ import LibraryScreen from './screens/library/libraryScr.js';
 import ForumScreen from './screens/forum/forumScr.js';
 
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from './initializeFB.js'; // Use the configured auth
+import { auth, db } from './initializeFB.js'; // Use the configured auth
 import { styles } from './components/styles.js';
 import MyPostsScreen from './screens/profile/screens/myPostsScr.js';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const App = () => {
   const [username, setUsername] = useState('');
@@ -24,6 +37,71 @@ const App = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(true); // State to manage splash screen
   const [currentScreen, setCurrentScreen] = useState('Auth'); // Track current screen
+
+  useEffect(() => {
+    // Request notification permissions
+    const requestPermissions = async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        alert('You need to enable permissions for notifications.');
+        return;
+      }
+    };
+
+    requestPermissions();
+
+    // Configure notification handlers
+    const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+      console.log('Notification received:', notification);
+    });
+
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification response:', response);
+    });
+
+    // Cleanup listeners on unmount
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener);
+      Notifications.removeNotificationSubscription(responseListener);
+    };
+  }, []);
+  
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  const registerForPushNotificationsAsync = async () => {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+  
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+  
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+  
+    const token = (await getExpoPushTokenAsync()).data;
+    console.log('Generated Expo push token:', token);
+  
+    try {
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      await updateDoc(userRef, {
+        expoPushToken: token,
+      });
+      console.log('Expo push token updated successfully');
+    } catch (error) {
+      console.error('Error updating expoPushToken:', error);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
