@@ -92,11 +92,6 @@ const App = () => {
     const token = (await getExpoPushTokenAsync()).data;
     console.log('Generated Expo push token:', token);
   
-    if (!auth.currentUser) {
-      console.error('No authenticated user found');
-      return;
-    }
-  
     try {
       const userRef = doc(db, 'users', auth.currentUser.uid);
       await updateDoc(userRef, {

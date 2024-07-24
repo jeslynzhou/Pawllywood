@@ -11,8 +11,6 @@ import MapScreen from './mapScr';
 import DeleteModal from './deleteModal';
 import FilterMenu from './filterMenu';
 import EmergencyModal from './emergencyModal';
-import * as Notifications from 'expo-notifications';
-
 
 export default function ForumScreen({ directToProfile, directToNotebook, directToHome, directToLibrary }) {
     const [currentScreen, setCurrentScreen] = useState('Forum');
@@ -1156,29 +1154,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#F26419'
     },
-    modalOverlay: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)'
-    },
-    modalContainer: {
-        width: '80%',
-        padding: 20,
-        backgroundColor: 'white',
-        borderRadius: 10,
-        alignItems: 'center'
-    },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 15
-    },
-    hotlineButton: {
-        marginVertical: 5
-    },
-    hotlineText: {
-        fontSize: 16,
-        color: '#007BFF'
-    }
 });
