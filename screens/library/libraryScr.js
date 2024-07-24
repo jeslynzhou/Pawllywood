@@ -18,7 +18,7 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
   const [buttonContainerHeight, setButtonContainerHeight] = useState(0);
   const [searchContainerHeight, setSearchContainerHeight] = useState(0);
   const [marginTopContentContainer, setMarginTopContentContainer] = useState(0);
-  const [highlightedContent, setHighlightedContent] = useState({});
+  const [highlightedContent, setHighlightedContent] = useState([]);
 
   useEffect(() => {
     const fetchBreeds = async () => {
@@ -61,12 +61,6 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
     calculateMarginTop();
   }, [buttonContainerHeight, searchContainerHeight]);
 
-
-  const calculateMarginTop = (buttonContainerHeight, searchContainerHeight) => {
-    const marginTop = buttonContainerHeight + searchContainerHeight + height * 0.1;
-    setMarginTopContentContainer(marginTop);
-  };
-
   const { height, width } = Dimensions.get('window');
   const imageL = width * 0.25;
 
@@ -76,54 +70,49 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
       (selectedType ? breed.type === selectedType : true)
   );
 
-  const handleHighlightContent = async (contentId) => {
-    const updatedHighlight = !highlightedContent[contentId];
-    setHighlightedContent(prev => ({
-        ...prev,
-        [contentId]: updatedHighlight
-    }));
+  const handleHighlightContent = async (content) => {
+    const isHighlighted = highlightedContent.includes(content);
+    const updatedContent = isHighlighted
+      ? highlightedContent.filter(item => item !== content)
+      : [...highlightedContent, content];
+
+    setHighlightedContent(updatedContent);
 
     try {
-        const user = auth.currentUser;
-        if (!user) {
-            console.error('No user is currently signed in.');
-            return;
-        }
+      const user = auth.currentUser;
+      if (!user) {
+        console.error('No user is currently signed in.');
+        return;
+      }
 
-        const userRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userRef);
-        const userHighlights = userDoc.data().highlights || {};
-
-        userHighlights[contentId] = updatedHighlight;
-
-        await updateDoc(userRef, { highlights: userHighlights });
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { highlights: updatedContent });
     } catch (error) {
-        console.error('Error updating highlighted content:', error.message);
+      console.error('Error updating highlighted content:', error.message);
     }
   };
 
   useEffect(() => {
     const fetchHighlightedContent = async () => {
-        try {
-            const user = auth.currentUser;
-            if (!user) {
-                console.error('No user is currently signed in.');
-                return;
-            }
-
-            const userRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userRef);
-            const highlights = userDoc.data().highlights || {};
-
-            setHighlightedContent(highlights);
-        } catch (error) {
-            console.error('Error fetching highlighted content:', error.message);
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          console.error('No user is currently signed in.');
+          return;
         }
+
+        const userRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userRef);
+        const highlights = userDoc.data().highlights || [];
+
+        setHighlightedContent(highlights);
+      } catch (error) {
+        console.error('Error fetching highlighted content:', error.message);
+      }
     };
 
     fetchHighlightedContent();
   }, []);
-
 
   const handleBreedSelect = breed => {
     setSelectedBreed(breed);
@@ -213,6 +202,8 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
       },
     });
 
+    const content = contentMap[selectedAspect];
+
     return (
       <View style={[styles.contentContainer, { marginTop: marginTopContentContainer }]} {...panResponder.panHandlers}>
         <View style={styles.headerContainer}>
@@ -239,13 +230,13 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
           ))}
         </ScrollView>
         <Text
-            style={[
-                styles.contentText,
-                highlightedContent[selectedAspect] && styles.highlightedContent
-            ]}
-            onPress={() => handleHighlightContent(selectedAspect)}
+          style={[
+            styles.contentText,
+            highlightedContent.includes(content) && styles.highlightedContent
+          ]}
+          onPress={() => handleHighlightContent(content)}
         >
-            {contentMap[selectedAspect]}
+          {content}
         </Text>
       </View>
     );
