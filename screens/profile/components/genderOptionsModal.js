@@ -6,7 +6,7 @@ const GenderOptionsModal = ({ visible, onSelectedGender, onClose }) => {
         <Modal
             visible={visible}
             transparent={true}
-            animationType="slide"
+            animationType="fade"
             onRequestClose={onClose}
         >
             <View style={styles.modalContainer}>

@@ -35,7 +35,7 @@ export default function BirthDateModal({ initialDate, visible, onDateSelect, dat
     };
 
     return (
-        <Modal visible={visible} transparent={true} animationType="slide">
+        <Modal visible={visible} transparent={true} animationType="fade">
             <View style={styles.modalContainer}>
                 <DatePicker
                     mode='calendar'

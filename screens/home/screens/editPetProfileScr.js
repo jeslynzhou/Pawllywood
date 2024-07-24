@@ -199,12 +199,13 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
 
                 {/* Age */}
                 <Text style={styles.labels}>Age</Text>
-                <TextInput
-                    style={styles.input}
-                    value={editedPetProfile.age}
-                    onChangeText={(text) => setEditedPetProfile({ ...editedPetProfile, age: text })}
-                    placeholder="Type your pet's age here"
-                />
+                <View style={styles.input}>
+                    <View style={styles.inputTextContainer}>
+                        <Text style={[{ color: editedPetProfile.age ? '#000000' : '#6E6E6E' }]}>
+                            {editedPetProfile.age || "Age will be automatically display"}
+                        </Text>
+                    </View>
+                </View>
 
                 {/* Gender */}
                 <Text style={styles.labels}>Gender</Text>

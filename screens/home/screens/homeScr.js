@@ -9,6 +9,7 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import NavigationBar from '../../../components/navigationBar';
 import EditPetProfileScreen from './editPetProfileScr';
 import AddPetScreen from './addPetScr';
+import AddNoteScreen from '../../notebook/screens/addNoteScr';
 import NoteDetailsScreen from '../../notebook/screens/noteDetailsScr';
 
 export default function HomeScreen({ directToProfile, directToNotebook, directToLibrary, directToForum }) {
@@ -127,6 +128,11 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
         setCurrentScreen('AddPet');
     };
 
+    { /* Add Note Screen */ }
+    const handleAddingNote = () => {
+        setCurrentScreen('AddNote')
+    }
+
     { /* Note Details Screen */ }
     const handleNoteDetails = (note) => {
         setSelectedNote(note);
@@ -210,13 +216,13 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                                                 {petNotes.length > 0 ? (
                                                     petNotes.map(note => (
                                                         <TouchableOpacity key={note.id} onPress={() => handleNoteDetails(note)} style={styles.notesBox}>
-                                                            <View style={styles.notesInfoContainer}>
-                                                                <Text style={styles.input}>{note.text}</Text>
-                                                            </View>
+                                                            <Text style={styles.input}>{note.text}</Text>
                                                         </TouchableOpacity>
                                                     ))
                                                 ) : (
-                                                    <Text style={styles.input}>No notes available for this pet.</Text>
+                                                    <TouchableOpacity onPress={handleAddingNote} style={styles.noNotesContainer}>
+                                                        <Text style={styles.input}>No notes available for this pet. Click here to add new note now!</Text>
+                                                    </TouchableOpacity>
                                                 )}
                                             </ScrollView>
                                         </View>
@@ -253,6 +259,13 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                 <AddPetScreen
                     fetchPetData={fetchPetData}
                     closeAddPet={onClose}
+                />
+            )}
+            {currentScreen === 'AddNote' && (
+                <AddNoteScreen
+                    fetchNotes={fetchNotesForPet}
+                    closeAddNote={onClose}
+                    petId={petProfilesData[activePetIndex].id}
                 />
             )}
             {currentScreen === 'NoteDetails' && selectedNote && (
@@ -359,17 +372,21 @@ const styles = StyleSheet.create({
     notesContainer: {
         flex: 1,
     },
-    notesScrollViewContainer: {
-    },
     notesBox: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
         borderWidth: 1,
         borderColor: '#000000',
         borderRadius: 17,
         padding: 12,
         marginBottom: 10,
-        height: 170,
+        maxHeight: 170,
+    },
+    noNotesContainer: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: '#000000',
+        borderRadius: 17,
+        padding: 12,
     },
     inputContainer: {
         flexDirection: 'row',

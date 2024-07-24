@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { db, auth } from '../../../initializeFB';
 import { addDoc, collection } from 'firebase/firestore';
 
-export default function AddNoteScreen({ fetchNotes, closeAddNote }) {
+export default function AddNoteScreen({ fetchNotes, closeAddNote, petId }) {
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
     const [folderId, setFolderId] = useState(''); // Optional folder ID
@@ -34,7 +34,7 @@ export default function AddNoteScreen({ fetchNotes, closeAddNote }) {
                 text: text.trim(),
                 createdAt: formatDate(new Date()),
                 folderId: folderId.trim() || '', // Optionally assign a folder ID
-                petId: '',
+                petId: petId || '',
             });
 
             // Fetch updated notes data
