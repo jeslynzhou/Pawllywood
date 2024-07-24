@@ -74,6 +74,7 @@ const AuthScreen = ({
           text: 'I love my pet!',
           folderId: '', // optional
           petId: '', // optional
+          backgroundColor: '#FFFFFF',
         });
 
         const foldersCollectionRef = collection(db, 'users', user.uid, 'folders');

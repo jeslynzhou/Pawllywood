@@ -1,13 +1,21 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import Modal from 'react-native-modal';
 
 export default function LogoutModal({ visible, onClose, onLogout }) {
     return (
-        <Modal visible={visible} transparent={true} animationType="fade">
+        <Modal
+            isVisible={visible}
+            transparent={true}
+            animationIn="fadeIn"
+            animationOut="fadeOut"
+            onBackdropPress={onClose}
+        >
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Log out of your account?</Text>
                     <View style={styles.modalButtonContainer}>
+
                         <View style={styles.separatorLine} />
 
                         <TouchableOpacity onPress={onLogout} style={styles.modalButton}>
@@ -31,7 +39,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
         backgroundColor: '#FFFFFF',
@@ -55,6 +62,7 @@ const styles = StyleSheet.create({
     },
     modalButtonText: {
         fontSize: 16,
+        fontWeight: 'bold',
     },
     separatorLine: {
         height: 1,

@@ -8,6 +8,7 @@ import { collection, deleteDoc, getDocs, doc, updateDoc } from 'firebase/firesto
 
 import NavigationBar from '../../../components/navigationBar.js';
 import AddNoteScreen from './addNoteScr.js';
+import AddFolderModal from '../components/addFolderModal.js';
 import ManageFoldersScreen from './manageFoldersScr.js';
 import NoteDetailsScreen from './noteDetailsScr.js';
 import MenuModal from '../components/menuModal.js';
@@ -26,7 +27,9 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     const [searchQuery, setSearchQuery] = useState('');
     const [showMenuModal, setShowMenuModal] = useState(false);
 
-    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showAddFolderModal, setShowAddFolderModal] = useState(false);
+    const [showEditNotesModal, setShowEditNotesModal] = useState(false);
     const [isMovingMode, setIsMovingMode] = useState(false);
     const [isPinningMode, setIsPinningMode] = useState(false);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
@@ -105,13 +108,23 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         setShowMenuModal(false);
     };
 
-    { /* Edit Mode */ }
-    const openEditModeModal = () => {
-        setShowConfirmationModal(true);
+    { /* Edit Modal */ }
+    const openEditModal = () => {
+        setShowEditModal(true);
     };
 
-    const closeEditModeModal = () => {
-        setShowConfirmationModal(false);
+    const closeEditModal = () => {
+        setShowEditModal(false);
+    };
+
+    { /* Edit Notes Mode */ }
+    const openEditNotesModal = () => {
+        setShowEditNotesModal(true);
+        setShowEditModal(false);
+    };
+
+    const closeEditNotesModal = () => {
+        setShowEditNotesModal(false);
         setSelectedNotes([]);
         setIsMovingMode(false);
         setIsPinningMode(false);
@@ -121,14 +134,14 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     { /* Moving Mode */ }
     const onMovingNotes = () => {
         setIsMovingMode(true);
-        setShowConfirmationModal(false);
+        setShowEditNotesModal(false);
         setSelectedDestinationFolder(selectedFolder);
     };
 
     const confirmMovingNotes = () => {
         if (selectedNotes.length > 0) {
             setShowSelectingFolderModal(true);
-            setShowConfirmationModal(false);
+            setShowEditNotesModal(false);
         }
     };
 
@@ -157,13 +170,13 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
     const onPinToPetProfile = () => {
         setIsPinningMode(true);
-        setShowConfirmationModal(false);
+        setShowEditNotesModal(false);
     };
 
     const confirmPinToPetProfile = () => {
         if (selectedNotes.length > 0) {
             setShowSelectingPetProfileModal(true);
-            setShowConfirmationModal(false);
+            setShowEditNotesModal(false);
         }
     };
 
@@ -194,7 +207,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     { /* Delete Mode */ }
     const confirmDeleteNotes = () => {
         setIsDeleteMode(true);
-        setShowConfirmationModal(false);
+        setShowEditNotesModal(false);
     };
 
     const toggleSelectNotesForEdit = (noteId) => {
@@ -226,6 +239,20 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         } catch (error) {
             console.error('Error deleting notes:', error.message);
         }
+    };
+
+    { /* Add Folder Modal */ }
+    const openAddFolderModal = () => {
+        setShowAddFolderModal(true);
+        setShowEditModal(false);
+    };
+
+    const closeAddFolderModal = () => {
+        setShowAddFolderModal(false);
+    };
+
+    const addNewFolder = async (newFolder) => {
+        setFolders(prevFolders => [...prevFolders, newFolder]);
     };
 
     { /* Handle View */ }
@@ -267,7 +294,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                     handleNoteDetails(note);
                 }
             }}
-                style={styles.noteItem}>
+                style={[styles.noteItem, { backgroundColor: note.backgroundColor }]}>
                 <Text>{note.text}</Text>
                 {(isDeleteMode || isMovingMode || isPinningMode) && (
                     <View style={styles.checkboxContainer}>
@@ -277,7 +304,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
             </TouchableOpacity>
             <Text style={styles.noteTitle}>{note.title}</Text>
             <Text style={styles.noteDate}>{note.createdAt}</Text>
-        </View>
+        </View >
     );
 
     const renderNoteRows = () => {
@@ -334,7 +361,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                             value={searchQuery}
                             onChangeText={handleSearch}
                         />
-                        <TouchableOpacity onPress={notes.length > 0 ? openEditModeModal : closeEditModeModal} style={styles.editButtonContainer}>
+                        <TouchableOpacity onPress={notes.length > 0 ? openEditModal : closeEditModal} style={styles.editButtonContainer}>
                             <Ionicons name='ellipsis-vertical' size={20} color='#000000' />
                         </TouchableOpacity>
                     </View>
@@ -376,13 +403,41 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                             )
                         )}
 
-                        {/* Confirmation Modal */}
+                        {/* Edit Mode Modal */}
                         <Modal
-                            isVisible={showConfirmationModal}
+                            isVisible={showEditModal}
                             transparent={true}
                             animationIn='fadeIn'
                             animationOut='fadeOut'
-                            onBackdropPress={() => setShowConfirmationModal(false)}
+                            onBackdropPress={() => setShowEditModal(false)}
+                        >
+                            <View style={styles.modalContent}>
+                                <Text style={styles.modalTitle}>Edit</Text>
+                                <View style={styles.modalButtonContainer}>
+                                    <View style={styles.separatorLine} />
+
+                                    <TouchableOpacity onPress={openEditNotesModal} style={styles.modalButton}>
+                                        <Text style={styles.modalButtonText}>Edit Notes</Text>
+                                    </TouchableOpacity>
+
+                                    <View style={styles.separatorLine} />
+
+                                    {viewMode === 'folders' && (
+                                        <TouchableOpacity onPress={openAddFolderModal} style={styles.modalButton}>
+                                            <Text style={styles.modalButtonText}>Create folder</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            </View>
+                        </Modal>
+
+                        {/* Edit Notes Modal */}
+                        <Modal
+                            isVisible={showEditNotesModal}
+                            transparent={true}
+                            animationIn='fadeIn'
+                            animationOut='fadeOut'
+                            onBackdropPress={() => setShowEditNotesModal(false)}
                         >
                             <View style={styles.modalContent}>
                                 <Text style={styles.modalTitle}>Edit notes</Text>
@@ -476,11 +531,17 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                             </View>
                         </Modal>
 
+                        {/* Add New Folder Modal */}
+                        <AddFolderModal
+                            isVisible={showAddFolderModal}
+                            onClose={closeAddFolderModal}
+                            onFolderAdded={addNewFolder}
+                        />
 
                         {/* Buttons for Moving Mode */}
                         {isMovingMode && (
                             <View style={styles.editModeButtonsContainer}>
-                                <TouchableOpacity onPress={closeEditModeModal} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                                <TouchableOpacity onPress={closeEditNotesModal} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
                                     <Text style={styles.editModeButtonText}>Cancel</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={confirmMovingNotes} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
@@ -492,7 +553,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                         {/* Buttons for Moving Mode */}
                         {isPinningMode && (
                             <View style={styles.editModeButtonsContainer}>
-                                <TouchableOpacity onPress={closeEditModeModal} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                                <TouchableOpacity onPress={closeEditNotesModal} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
                                     <Text style={styles.editModeButtonText}>Cancel</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={confirmPinToPetProfile} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
@@ -504,7 +565,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                         {/* Buttons for Delete Mode */}
                         {isDeleteMode && (
                             <View style={styles.editModeButtonsContainer}>
-                                <TouchableOpacity onPress={closeEditModeModal} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                                <TouchableOpacity onPress={closeEditNotesModal} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
                                     <Text style={styles.editModeButtonText}>Cancel</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={deleteSelectedNotes} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
@@ -515,13 +576,11 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
                     </View >
                     {/* Add Note Button */}
-                    {
-                        !isDeleteMode && !isMovingMode && !isPinningMode && (
-                            <TouchableOpacity style={styles.addNoteButton} onPress={handleAddingNote}>
-                                <Ionicons name="add-circle" size={70} color='rgba(242, 100, 25, 0.7)' />
-                            </TouchableOpacity>
-                        )
-                    }
+                    {!isDeleteMode && !isMovingMode && !isPinningMode && (
+                        <TouchableOpacity style={styles.addNoteButton} onPress={handleAddingNote}>
+                            <Ionicons name="add-circle" size={70} color='rgba(242, 100, 25, 0.7)' />
+                        </TouchableOpacity>
+                    )}
                 </View >
             )}
 
@@ -632,10 +691,9 @@ const styles = StyleSheet.create({
     noteItem: {
         width: ITEM_WIDTH,
         height: 200,
-        backgroundColor: '#FFFFFF',
         borderWidth: 1,
         borderRadius: 17,
-        borderColor: '#CCCCCC',
+        borderColor: '#000000',
         padding: 10,
     },
     noteTitle: {
@@ -692,6 +750,7 @@ const styles = StyleSheet.create({
         borderRadius: 17,
         width: '80%',
         alignItems: 'center',
+        overflow: 'hidden',
     },
     modalTitle: {
         fontSize: 18,

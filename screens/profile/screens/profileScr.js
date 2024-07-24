@@ -243,15 +243,6 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
               </TouchableOpacity>
             </View>
           </View >
-
-          {/* Navigation Bar */}
-          <NavigationBar
-            activeScreen={currentScreen}
-            directToNotebook={directToNotebook}
-            directToHome={directToHome}
-            directToLibrary={directToLibrary}
-            directToForum={directToForum}
-          />
         </View>
       )}
       {currentScreen === 'EditProfile' && (
@@ -289,6 +280,14 @@ export default function ProfileScreen({ handleSignOut, directToNotebook, directT
         visible={showLogoutModal}
         onClose={closeLogoutModal}
         onLogout={handleLogout}
+      />
+      {/* Navigation Bar */}
+      <NavigationBar
+        activeScreen={currentScreen}
+        directToNotebook={directToNotebook}
+        directToHome={directToHome}
+        directToLibrary={directToLibrary}
+        directToForum={directToForum}
       />
     </>
   );

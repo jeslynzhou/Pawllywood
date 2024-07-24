@@ -215,7 +215,7 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                                             <ScrollView style={styles.notesScrollViewContainer}>
                                                 {petNotes.length > 0 ? (
                                                     petNotes.map(note => (
-                                                        <TouchableOpacity key={note.id} onPress={() => handleNoteDetails(note)} style={styles.notesBox}>
+                                                        <TouchableOpacity key={note.id} onPress={() => handleNoteDetails(note)} style={[styles.notesBox, { backgroundColor: note.backgroundColor }]}>
                                                             <Text style={styles.input}>{note.text}</Text>
                                                         </TouchableOpacity>
                                                     ))

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Dimensions } from 'react-native';
-import Modal from 'react-native-modal';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { auth, db } from '../../../initializeFB';
-import { collection, getDocs, deleteDoc, doc, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+
+import AddFolderModal from '../components/addFolderModal';
 
 export default function ManageFoldersScreen({ closeManageFolders }) {
     const [foldersData, setFoldersData] = useState([]);
@@ -12,9 +13,6 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
     const [selectedFoldersForDelete, setSelectedFoldersForDelete] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [newFolderName, setNewFolderName] = useState('')
-    const [isAddingFolder, setIsAddingFolder] = useState(false);
-    const [folderNameCount, setFolderNameCount] = useState(0);
 
     useEffect(() => {
         fetchFolderData();
@@ -44,8 +42,6 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
 
     const onClose = () => {
         setIsModalVisible(false);
-        setNewFolderName('');
-        setFolderNameCount(0);
     };
 
     const toggleEditMode = () => {
@@ -68,51 +64,8 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
         setIsModalVisible(!isModalVisible);
     };
 
-    const addNewFolder = async () => {
-        if (!newFolderName.trim()) {
-            Alert.alert('Error', 'Folder name cannot be empty');
-            return;
-        }
-
-        setIsAddingFolder(true);
-        try {
-            const user = auth.currentUser;
-            if (user) {
-                const foldersCollectionRef = collection(db, 'users', user.uid, 'folders');
-
-                // Check if the folder name already exists
-                const querySnapShot = await getDocs(foldersCollectionRef);
-                const existingFolders = querySnapShot.docs.map(doc => doc.data().folderName);
-
-                if (existingFolders.includes(newFolderName.trim())) {
-                    Alert.alert('Error', "There's already a folder with that name.");
-                    setIsAddingFolder(false);
-                    return;
-                }
-
-                const newFolderRef = await addDoc(foldersCollectionRef, {
-                    folderName: newFolderName.trim(),
-                    createdAt: Timestamp.fromDate(new Date()),
-                    noteIds: [],
-                });
-
-                const newFolder = {
-                    id: newFolderRef.id,
-                    folderName: newFolderName.trim(),
-                    createdAt: Timestamp.fromDate(new Date()),
-                    noteIds: [],
-                };
-
-                setFoldersData(prevFolders => [...prevFolders, newFolder]);
-                setNewFolderName('');
-                setIsAddingFolder(false);
-                toggleAddNewFolderModal();
-            }
-        } catch (error) {
-            console.error('Error adding folder:', error.message);
-            Alert.alert('Error', 'Failed to add folder');
-            setIsAddingFolder(false);
-        }
+    const addNewFolder = async (newFolder) => {
+        setFoldersData(prevFolders => [...prevFolders, newFolder]);
     };
 
     const deleteSelectedFolders = async () => {
@@ -134,13 +87,6 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
             }
         } catch (error) {
             console.error('Error deleting folders:', error.message);
-        }
-    };
-
-    const handleFolderNameChange = (text) => {
-        if (text.length <= 80) {
-            setNewFolderName(text);
-            setFolderNameCount(text.length);
         }
     };
 
@@ -173,10 +119,7 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
                     ) : (
                         foldersData.map((folder) => (
                             <View key={folder.id}>
-                                <TouchableOpacity
-                                    onPress={() => { }}
-                                    style={styles.folderContainer}
-                                >
+                                <View style={styles.folderContainer}>
                                     <View style={styles.folderInfo}>
                                         <Ionicons name="folder-outline" size={24} color='#000000' />
                                         <Text style={styles.folderName}>{folder.folderName}</Text>
@@ -188,7 +131,7 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
                                             </TouchableOpacity>
                                         </View>
                                     )}
-                                </TouchableOpacity>
+                                </View>
 
                                 <View style={styles.separatorLine} />
                             </View>
@@ -215,49 +158,15 @@ export default function ManageFoldersScreen({ closeManageFolders }) {
                 </View>
             )}
 
-            { /* Adding New Folder Modal */}
-            <Modal
+            {/* Adding New Folder Modal */}
+            <AddFolderModal
                 isVisible={isModalVisible}
-                transparent={true}
-                animationIn='fadeIn'
-                animationOut='fadeOut'
-                onBackdropPress={onClose}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalHeaderContainer}>
-                            <Text style={styles.modalTitle}>Create folder</Text>
-                            <View style={styles.characterCountTextContainer}>
-                                <Text style={{ color: '#808080' }}>{folderNameCount}/80</Text>
-                            </View>
-                        </View>
-                        <TextInput
-                            style={styles.folderNameInput}
-                            placeholder="Folder Name"
-                            value={newFolderName}
-                            onChangeText={handleFolderNameChange}
-                        />
-                        <View style={styles.modalButtonContainer}>
-                            <TouchableOpacity onPress={toggleAddNewFolderModal} style={[styles.modalButton, styles.cancelButton]}>
-                                <Text style={styles.modalButtonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <View style={styles.verticalLine} />
-                            <TouchableOpacity onPress={addNewFolder} style={[styles.modalButton, styles.addButton]} disabled={isAddingFolder}>
-                                {isAddingFolder ? (
-                                    <ActivityIndicator size='small' color='#F26419' />
-                                ) : (
-                                    <Text style={styles.modalButtonText}>Add</Text>
-                                )}
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+                onClose={onClose}
+                onFolderAdded={addNewFolder}
+            />
         </View>
     );
-};
-
-const screenHeight = Dimensions.get('window').height;
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -316,60 +225,6 @@ const styles = StyleSheet.create({
     separatorLine: {
         height: 1,
         backgroundColor: '#CCCCCC',
-    },
-    modalContainer: {
-        backgroundColor: '#FFFFFF',
-        height: screenHeight * (1 / 3.5),
-        width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 17,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-    },
-    modalHeaderContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    characterCountTextContainer: {
-        justifyContent: 'center',
-    },
-    modalContent: {
-        flex: 1,
-        justifyContent: 'space-evenly',
-    },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        flex: 1,
-    },
-    modalButtonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: '100%',
-    },
-    modalButton: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        margin: 5,
-        justifyContent: 'center',
-    },
-    folderNameInput: {
-        borderColor: '#000000',
-        borderWidth: 1,
-        borderRadius: 17,
-        padding: 10,
-    },
-    modalButtonText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#000000',
-    },
-    verticalLine: {
-        borderRightColor: '#CCCCCC',
-        borderRightWidth: 1,
-        marginVertical: 5,
     },
     editModeButtonsContainer: {
         flexDirection: 'row',
