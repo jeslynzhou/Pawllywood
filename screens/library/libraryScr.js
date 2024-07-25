@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { auth, db } from '../../initializeFB';
 import { doc, getDoc, getDocs, collection, updateDoc } from 'firebase/firestore';
 import NavigationBar from '../../components/navigationBar';
+import { Platform } from 'react-native';
 
 export default function LibraryScreen({ directToProfile, directToNotebook, directToLibrary, directToForum, directToHome }) {
   const [currentScreen, setCurrentScreen] = useState('Library');
@@ -229,15 +230,18 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
             </TouchableOpacity>
           ))}
         </ScrollView>
-        <Text
-          style={[
-            styles.contentText,
-            highlightedContent.includes(content) && styles.highlightedContent
-          ]}
-          onPress={() => handleHighlightContent(content)}
-        >
-          {content}
-        </Text>
+        {Platform.OS === 'ios' ? (
+          // iOS requires a textinput for word selections
+          <TextInput
+            value={content}
+            editable={false}
+            multiline
+            style={[styles.contentText]}
+          />
+        ) : (
+          // Android can do word selections just with <Text>
+          <Text selectable>{content}</Text>
+        )}
       </View>
     );
   };
