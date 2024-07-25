@@ -484,8 +484,8 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             username: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
             userProfilePicture: userData.picture,
-            date: new Date().toLocaleDateString(),
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+            date: formatDate(new Date()),
+            time: new Date().toISOString(),
             text: commentText
         };
 
@@ -675,7 +675,9 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
     if (selectedPost) {
         return <PostDetailsScr post={selectedPost} onBack={() => setSelectedPost(null)}
             openImageViewer={openImageViewer} imageViewerVisible={imageViewerVisible}
-            currentImages={currentImages} currentImageIndex={currentImageIndex} closeImageViewer={closeImageViewer} />;
+            currentImages={currentImages} currentImageIndex={currentImageIndex} closeImageViewer={closeImageViewer} 
+            convertToLocalTime = {convertToLocalTime}
+            userData = {userData} handleComment = {handleComment}/>;
     }
 
     if (mapVisible && selectedLocation) {
@@ -934,7 +936,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                                         <Text style={styles.commentText}>{comment.text}</Text>
                                                     </View>
                                                     <View style={styles.commentDateTimeContainer}>
-                                                        <Text style={styles.commentDateTime}>{comment.date} • {comment.time}</Text>
+                                                        <Text style={styles.commentDateTime}>{comment.date} • {convertToLocalTime(comment.time)}</Text>
                                                     </View>
                                                 </View>
                                             </View>
@@ -945,7 +947,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                             </View>
                         ))}
 
-                        <Modal isVisible={imageViewerVisible} transparent={true}>
+                        <Modal isVisible={imageViewerVisible} backdropOpacity={0.7} onBackdropPress={closeImageViewer}>
                             <View style={styles.modalContainer}>
                                 <ScrollView
                                     horizontal
@@ -1231,19 +1233,18 @@ const styles = StyleSheet.create({
     },
     modalContainer: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
         justifyContent: 'center',
         alignItems: 'center',
     },
     fullscreenImageScroll: {
-        flexDirection: 'row',
+        width: Dimensions.get('window').width,
     },
     fullscreenImageContainer: {
         width: Dimensions.get('window').width,
-        height: Dimensions.get('window').height,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     fullscreenImage: {
-        flex: 1,
         width: '100%',
         height: '100%',
     },
