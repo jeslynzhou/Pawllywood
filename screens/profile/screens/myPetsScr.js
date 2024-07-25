@@ -4,13 +4,15 @@ import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, query, where, updateDoc } from 'firebase/firestore';
 
 export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, directToHome }) {
     const [petProfilesData, setPetProfilesData] = useState([]);
-    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [selectedPetsForDelete, setSelectedPetsForDelete] = useState([]);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [viewMode, setViewMode] = useState('currentPets');
+    const [isDeleteMode, setIsDeleteMode] = useState(false);
+    const [isArchivedMode, setIsArchivedMode] = useState(false);
+    const [selectedPetsForEdit, setSelectedPetsForEdit] = useState([]);
     const [loading, setLoading] = useState(true);
 
     async function fetchPetData() {
@@ -18,7 +20,13 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
             const user = auth.currentUser;
             if (user) {
                 const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
-                const querySnapShot = await getDocs(petsCollectionRef);
+
+                if (viewMode === 'currentPets') {
+                    q = query(petsCollectionRef, where('isArchived', '==', false));
+                } else if (viewMode === 'archivedPets') {
+                    q = query(petsCollectionRef, where('isArchived', '==', true));
+                }
+                const querySnapShot = await getDocs(q);
                 const fetchedPetProfiles = querySnapShot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
@@ -36,31 +44,69 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
 
     useEffect(() => {
         fetchPetData();
-    }, []);
+    }, [viewMode]);
 
-    const openEditMyPetsList = () => {
-        setShowConfirmationModal(true);
+    { /* Edit Modal */ }
+    const openEditModal = () => {
+        setShowEditModal(true);
     };
 
-    const closeEditMyPetsList = () => {
-        setShowConfirmationModal(false);
-        setSelectedPetsForDelete([]);
-        setIsEditMode(false);
+    const closeEditModal = () => {
+        setShowEditModal(false);
     };
 
-    const confirmEditPetsList = () => {
-        setIsEditMode(true);
-        setShowConfirmationModal(false);
+    { /* Archive pets */ }
+    const handleArchivedPetsList = () => {
+        setIsArchivedMode(true);
+        setShowEditModal(false);
+    };
+
+    const closeArchivedPetsList = () => {
+        setSelectedPetsForEdit([]);
+        setIsArchivedMode(false);
+    };
+
+    const archiveSelectedPets = async () => {
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const archivePromises = selectedPetsForEdit.map(async (petId) => {
+                    const petDocRef = doc(db, 'users', user.uid, 'pets', petId);
+                    await updateDoc(petDocRef, {
+                        isArchived: true,
+                    });
+                });
+                await Promise.all(archivePromises);
+
+                fetchPetData();
+                setSelectedPetsForEdit([]);
+                setIsArchivedMode(false);
+            }
+        } catch (error) {
+            console.error('Error archiving pets:', error.message);
+            Alert.alert('Error archiving pets.', 'Please try again later.');
+        }
+    };
+
+    { /* Delete pets */ }
+    const handleDeletePetsList = () => {
+        setIsDeleteMode(true);
+        setShowEditModal(false);
+    };
+
+    const closeDeleteMyPetsList = () => {
+        setSelectedPetsForEdit([]);
+        setIsDeleteMode(false);
     };
 
     const toggleSelectPet = (petId) => {
-        const index = selectedPetsForDelete.indexOf(petId);
+        const index = selectedPetsForEdit.indexOf(petId);
         if (index === -1) {
-            setSelectedPetsForDelete([...selectedPetsForDelete, petId]);
+            setSelectedPetsForEdit([...selectedPetsForEdit, petId]);
         } else {
-            const updatedSelectedPetsForDelete = [...selectedPetsForDelete];
+            const updatedSelectedPetsForDelete = [...selectedPetsForEdit];
             updatedSelectedPetsForDelete.splice(index, 1);
-            setSelectedPetsForDelete(updatedSelectedPetsForDelete);
+            setSelectedPetsForEdit(updatedSelectedPetsForDelete);
         }
     };
 
@@ -68,7 +114,7 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
         try {
             const user = auth.currentUser;
             if (user) {
-                const deletionPromises = selectedPetsForDelete.map(async (petId) => {
+                const deletionPromises = selectedPetsForEdit.map(async (petId) => {
                     const petDocRef = doc(db, 'users', user.uid, 'pets', petId);
                     await deleteDoc(petDocRef);
                 });
@@ -77,12 +123,20 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
 
                 // Refresh after deletion
                 fetchPetData();
-                setSelectedPetsForDelete([]);
-                setIsEditMode(false); // Exit edit mode after deletion
+                setSelectedPetsForEdit([]);
+                setIsDeleteMode(false); // Exit edit mode after deletion
             }
         } catch (error) {
             console.error('Error deleting pets:', error.message);
         }
+    };
+
+    const handleCurrentPetsView = () => {
+        setViewMode('currentPets');
+    };
+
+    const handleArchivedPetsView = () => {
+        setViewMode('archivedPets');
     };
 
     return (
@@ -93,8 +147,17 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>My Pets</Text>
-                <TouchableOpacity onPress={petProfilesData.length > 0 ? openEditMyPetsList : closeEditMyPetsList} style={styles.editContainer}>
+                <TouchableOpacity onPress={petProfilesData.length > 0 ? openEditModal : closeEditModal} style={styles.editContainer}>
                     <Text style={styles.editText}>Edit</Text>
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.viewModeContainer}>
+                <TouchableOpacity style={[styles.viewModeButton, viewMode === 'currentPets' ? styles.viewModeActiveButton : null]} onPress={handleCurrentPetsView}>
+                    <Text style={styles.viewModeButtonText}>Current</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.viewModeButton, viewMode === 'archivedPets' ? styles.viewModeActiveButton : null]} onPress={handleArchivedPetsView}>
+                    <Text style={styles.viewModeButtonText}>Archive</Text>
                 </TouchableOpacity>
             </View>
 
@@ -106,18 +169,30 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                 <View style={styles.contentContainer}>
                     {/* My Pets List */}
                     {petProfilesData.length === 0 ? (
-                        <TouchableOpacity onPress={handleAddingPet} style={styles.petInfoContainer}>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.text}>You don't have any pets. Click here to add your first pet now!</Text>
-                            </View>
-                            <View style={styles.navigateButtonContainer}>
-                                <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
-                            </View>
-                        </TouchableOpacity>
+                        <>
+                            {viewMode === 'currentPets' && (
+                                <TouchableOpacity onPress={handleAddingPet} style={styles.petInfoContainer}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.text}>You don't have any pets. Click here to add your first pet now!</Text>
+                                    </View>
+                                    <View style={styles.navigateButtonContainer}>
+                                        <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                            {viewMode === 'archivedPets' && (
+                                <View style={styles.petInfoContainer}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.text}>You don't have any pets in archive.</Text>
+                                    </View>
+                                </View>
+                            )}
+
+                        </>
                     ) : (
                         petProfilesData.map((petProfile) => (
                             <View key={petProfile.id}>
-                                <TouchableOpacity onPress={directToHome} key={petProfile.id} style={[styles.petInfoContainer]}>
+                                <TouchableOpacity onPress={directToHome} key={petProfile.id} style={[styles.petInfoContainer]} disabled={isDeleteMode || isArchivedMode}>
                                     <View style={styles.profileImageContainer}>
                                         <Image
                                             source={{ uri: petProfile.picture }}
@@ -129,12 +204,12 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                                         <Text style={[styles.text, { fontWeight: 'bold' }]}>{petProfile.name}</Text>
                                         <Text style={styles.text}>Adopted Date: {petProfile.adoptedDate}</Text>
                                     </View>
-                                    {isEditMode && (
+                                    {(isDeleteMode || isArchivedMode) && (
                                         <TouchableOpacity style={styles.checkboxContainer} onPress={() => toggleSelectPet(petProfile.id)}>
-                                            <Ionicons name={selectedPetsForDelete.includes(petProfile.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
+                                            <Ionicons name={selectedPetsForEdit.includes(petProfile.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
                                         </TouchableOpacity>
                                     )}
-                                    {!isEditMode && (
+                                    {!isDeleteMode && !isArchivedMode && (
                                         <View style={styles.navigateButtonContainer}>
                                             <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
                                         </View>
@@ -148,36 +223,49 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                 </View>
             )}
 
-            {/* Confirmation Modal */}
+            {/* Edit Modal */}
             <Modal
-                isVisible={showConfirmationModal}
+                isVisible={showEditModal}
                 transparent={true}
                 animationIn='fadeIn'
                 animationOut='fadeOut'
-                onBackdropPress={() => setShowConfirmationModal(false)}
+                onBackdropPress={closeEditModal}
             >
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Do you want to edit your pets list?</Text>
                     <View style={styles.modalButtonContainer}>
                         <View style={styles.separatorLine} />
 
-                        <TouchableOpacity onPress={confirmEditPetsList} style={styles.modalButton}>
-                            <Text style={[styles.modalButtonText, { fontWeight: 'bold', color: '#F26419' }]}>Yes</Text>
+                        <TouchableOpacity onPress={handleArchivedPetsList} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>Archive</Text>
                         </TouchableOpacity>
 
                         <View style={styles.separatorLine} />
 
-                        <TouchableOpacity onPress={() => setShowConfirmationModal(false)} style={styles.modalButton}>
-                            <Text style={styles.modalButtonText}>No</Text>
+                        <TouchableOpacity onPress={handleDeletePetsList} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>Delete</Text>
                         </TouchableOpacity>
+
                     </View>
                 </View>
             </Modal >
 
-            {/* Buttons for Edit Mode */}
-            {isEditMode && (
+            {/* Buttons for Archived Mode */}
+            {isArchivedMode && (
                 <View style={styles.editModeButtonsContainer}>
-                    <TouchableOpacity onPress={closeEditMyPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                    <TouchableOpacity onPress={closeArchivedPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                        <Text style={styles.editModeButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={archiveSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
+                        <Text style={styles.editModeButtonText}>Confirm Archive</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {/* Buttons for Delete Mode */}
+            {isDeleteMode && (
+                <View style={styles.editModeButtonsContainer}>
+                    <TouchableOpacity onPress={closeDeleteMyPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
                         <Text style={styles.editModeButtonText}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={deleteSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
@@ -200,7 +288,6 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         justifyContent: 'space-between',
         paddingLeft: 40,
-        marginBottom: 21,
     },
     backButton: {
         position: 'absolute',
@@ -217,6 +304,30 @@ const styles = StyleSheet.create({
     editText: {
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    viewModeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        width: '100%',
+        marginTop: 20,
+        marginBottom: 10,
+    },
+    viewModeButton: {
+        backgroundColor: '#FFFFFF',
+        borderColor: '#000000',
+        borderWidth: 1,
+        borderRadius: 9,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        marginRight: 10,
+    },
+    viewModeButtonText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    viewModeActiveButton: {
+        backgroundColor: '#F26419',
     },
     contentContainer: {
         borderRadius: 17,

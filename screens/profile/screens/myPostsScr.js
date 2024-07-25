@@ -8,7 +8,6 @@ import { collection, getDocs, deleteDoc, doc, query, where } from 'firebase/fire
 
 export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
     const [postsData, setPostsData] = useState([]);
-    const [viewMode, setViewMode] = useState('myPosts');
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedPostsForDelete, setSelectedPostsForDelete] = useState([]);
@@ -21,12 +20,7 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
                 const userId = user.uid;
                 const postsCollectionRef = collection(db, 'posts');
 
-                if (viewMode === 'myPosts') {
-                    q = query(postsCollectionRef, where('userId', '==', userId));
-                } else if (viewMode === 'savedPosts') {
-                    q = query(postsCollectionRef, where('isSaved', '==', true));
-                }
-
+                const q = query(postsCollectionRef, where('userId', '==', userId));
                 const querySnapShot = await getDocs(q);
                 const fetchedPostsInfo = querySnapShot.docs.map(doc => ({
                     id: doc.id,
@@ -46,16 +40,7 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
     useEffect(() => {
         setLoading(true);
         fetchPostData();
-    }, [viewMode]);
-
-    { /* Handle View */ }
-    const handleMyPostsView = () => {
-        setViewMode('myPosts');
-    };
-
-    const handleSavedPostsView = () => {
-        setViewMode('savedPosts');
-    };
+    }, []);
 
     { /* Edit My Posts List */ }
     const openEditMyPostsList = () => {
@@ -105,11 +90,6 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
         }
     };
 
-    { /* Post Details Modal */ }
-    const openPostDetailsModal = () => {
-        setShowPostDetailsModal(true);
-    };
-
     return (
         <View style={styles.myPostsContainer}>
             {/* Header */}
@@ -118,18 +98,8 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>My Posts</Text>
-                {viewMode === 'myPosts' && (
-                    <TouchableOpacity onPress={postsData.length > 0 ? openEditMyPostsList : closeEditMyPostsList} style={styles.editContainer}>
-                        <Text style={styles.editText}>Edit</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
-            <View style={styles.viewModeContainer}>
-                <TouchableOpacity style={[styles.viewModeButton, viewMode === 'myPosts' ? styles.viewModeActiveButton : null]} onPress={handleMyPostsView}>
-                    <Text style={styles.viewModeButtonText}>My posts</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.viewModeButton, viewMode === 'savedPosts' ? styles.viewModeActiveButton : null]} onPress={handleSavedPostsView}>
-                    <Text style={styles.viewModeButtonText}>Saved posts</Text>
+                <TouchableOpacity onPress={postsData.length > 0 ? openEditMyPostsList : closeEditMyPostsList} style={styles.editContainer}>
+                    <Text style={styles.editText}>Edit</Text>
                 </TouchableOpacity>
             </View>
 
@@ -152,17 +122,12 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
                     ) : (
                         postsData.map((post) => (
                             <View key={post.id}>
-                                <View key={post.id} style={[styles.postInfoContainer]}>
-                                    <TouchableOpacity onPress={openPostDetailsModal} style={styles.postInfo}>
-                                        {viewMode === 'savedPosts' && (
-                                            <View style={{ paddingBottom: 5, }}>
-                                                <Text>{post.username}</Text>
-                                            </View>
-                                        )}
+                                <TouchableOpacity onPress={() => console.log('View post details')} key={post.id} style={[styles.postInfoContainer]} disabled={isEditMode}>
+                                    <View style={styles.postInfo}>
                                         <Text numberOfLines={1} ellipsizeMode='tail' style={styles.postTitle}>
                                             {post.title.length > 80 ? `${post.title.substring(0, 50)}...` : `${post.title}`}
                                         </Text>
-                                    </TouchableOpacity>
+                                    </View>
                                     {isEditMode && (
                                         <View style={{ paddingLeft: 17, paddingRight: 5, }}>
                                             <TouchableOpacity style={{ alignSelf: 'center' }} onPress={() => toggleSelectPost(post.id)}>
@@ -175,7 +140,7 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
                                             <Text style={[styles.text, { color: '#CCCCCC' }]}>{post.date}</Text>
                                         </View>
                                     )}
-                                </View>
+                                </TouchableOpacity>
                                 <View style={styles.separatorLine} />
                             </View>
                         ))
@@ -236,6 +201,7 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         justifyContent: 'space-between',
         paddingLeft: 40,
+        marginBottom: 15,
     },
     backButton: {
         position: 'absolute',
@@ -251,30 +217,6 @@ const styles = StyleSheet.create({
     },
     editText: {
         fontSize: 16,
-        fontWeight: 'bold',
-    },
-    viewModeContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        width: '100%',
-        marginTop: 15,
-        marginBottom: 10,
-    },
-    viewModeButton: {
-        backgroundColor: '#FFFFFF',
-        borderColor: '#000000',
-        borderWidth: 1,
-        borderRadius: 9,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        marginRight: 10,
-    },
-    viewModeActiveButton: {
-        backgroundColor: '#F26419',
-    },
-    viewModeButtonText: {
-        fontSize: 12,
         fontWeight: 'bold',
     },
     contentContainer: {

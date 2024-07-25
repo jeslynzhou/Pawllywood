@@ -29,6 +29,7 @@ export default function AddPetScreen({ directToHome, closeAddPet }) {
         notes: '',
         adoptedDate: '',
         picture: null,
+        isArchived: false,
     });
 
     useEffect(() => {

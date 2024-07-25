@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share, RefreshControl } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share, RefreshControl, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { auth, db, storage } from '../../initializeFB';
@@ -186,7 +186,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
     const handlePostSubmit = async (title, content, imageUrls, isCrowdAlert, location) => {
         if (!title.trim() || !content.trim()) {
-            console.log('Title or content is empty.');
+            Alert.alert('Title and content cannot be empty.');
             return;
         }
 
@@ -675,9 +675,9 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
     if (selectedPost) {
         return <PostDetailsScr post={selectedPost} onBack={() => setSelectedPost(null)}
             openImageViewer={openImageViewer} imageViewerVisible={imageViewerVisible}
-            currentImages={currentImages} currentImageIndex={currentImageIndex} closeImageViewer={closeImageViewer} 
-            convertToLocalTime = {convertToLocalTime}
-            userData = {userData} handleComment = {handleComment}/>;
+            currentImages={currentImages} currentImageIndex={currentImageIndex} closeImageViewer={closeImageViewer}
+            convertToLocalTime={convertToLocalTime}
+            userData={userData} handleComment={handleComment} />;
     }
 
     if (mapVisible && selectedLocation) {

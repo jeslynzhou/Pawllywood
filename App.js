@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Text, View, Button, Platform, ScrollView } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Permissions from 'expo-permissions';
@@ -65,7 +65,7 @@ const App = () => {
       Notifications.removeNotificationSubscription(responseListener);
     };
   }, []);
-  
+
   useEffect(() => {
     registerForPushNotificationsAsync();
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
@@ -78,20 +78,20 @@ const App = () => {
   const registerForPushNotificationsAsync = async () => {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
-  
+
     if (existingStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
-  
+
     if (finalStatus !== 'granted') {
       alert('Failed to get push token for push notification!');
       return;
     }
-  
+
     const token = (await getExpoPushTokenAsync()).data;
     console.log('Generated Expo push token:', token);
-  
+
     try {
       const userRef = doc(db, 'users', auth.currentUser.uid);
       await updateDoc(userRef, {

@@ -135,41 +135,41 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
                 />
             </View>
             <View style={styles.contentContainer}>
+                <ScrollView
+                    contentContainerStyle={styles.contentScrollContainer}
+                    style={styles.contentScroll}
+                >
+                    <TextInput
+                        style={styles.contentInput}
+                        placeholder="Content"
+                        value={content}
+                        onChangeText={setContent}
+                        multiline
+                    />
+                </ScrollView>
+            </View>
             <ScrollView
-                contentContainerStyle={styles.contentScrollContainer}
-                style={styles.contentScroll}
+                horizontal
+                contentContainerStyle={styles.imageContainer}
             >
-                <TextInput
-                    style={styles.contentInput}
-                    placeholder="Content"
-                    value={content}
-                    onChangeText={setContent}
-                    multiline
-                />
+                <TouchableOpacity
+                    style={styles.addPictureButton}
+                    onPress={() => setShowUploadModal(true)}
+                >
+                    <Ionicons name="add-circle-outline" size={40} color="#808080" />
+                </TouchableOpacity>
+                {imageUris.map((uri, index) => (
+                    <View key={index} style={styles.imageWrapper}>
+                        <Image source={{ uri }} style={styles.image} />
+                        <TouchableOpacity
+                            style={styles.deleteButton}
+                            onPress={() => handleDeleteImage(uri)}
+                        >
+                            <Ionicons name="close-circle" size={24} color="#D3D3D3" />
+                        </TouchableOpacity>
+                    </View>
+                ))}
             </ScrollView>
-        </View>
-        <ScrollView
-            horizontal
-            contentContainerStyle={styles.imageContainer}
-        >
-            <TouchableOpacity
-                style={styles.addPictureButton}
-                onPress={() => setShowUploadModal(true)}
-            >
-                <Ionicons name="add-circle-outline" size={50} color="black" />
-            </TouchableOpacity>
-            {imageUris.map((uri, index) => (
-                <View key={index} style={styles.imageWrapper}>
-                    <Image source={{ uri }} style={styles.image} />
-                    <TouchableOpacity
-                        style={styles.deleteButton}
-                        onPress={() => handleDeleteImage(uri)}
-                    >
-                        <Ionicons name="close-circle" size={24} color="#D3D3D3"/>
-                    </TouchableOpacity>
-                </View>
-            ))}
-        </ScrollView>
             <UploadImageModal
                 visible={showUploadModal}
                 onClose={() => setShowUploadModal(false)}
@@ -187,24 +187,25 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
                 </TouchableOpacity>
             </View>
             <View style={styles.locationContainer}>
-                <Text style={styles.locationLabel}>Location</Text>
                 <TouchableOpacity
                     onPress={handleGetLocation}
+                    style={{ flexDirection: 'row', alignContent: 'center' }}
                 >
                     <Ionicons name="location-outline" size={22} color="black" />
+                    <Text style={styles.locationLabel}>Location</Text>
                 </TouchableOpacity>
                 {location && (
-                    <>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                         <Text style={styles.locationText}>
                             {`Lat: ${location.latitude}, Lon: ${location.longitude}`}
                         </Text>
                         <TouchableOpacity onPress={() => setShowMap(true)} style={styles.viewButton}>
                             <Text style={styles.viewMapText}>View</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={handleDeleteLocation} style={styles.deleteLocationButton}>
-                            <Ionicons name="trash-outline" size={22} color="red" />
+                        <TouchableOpacity onPress={handleDeleteLocation}>
+                            <Ionicons name="trash-outline" size={22} color="#F26419" />
                         </TouchableOpacity>
-                    </>
+                    </View>
                 )}
             </View>
             <TouchableOpacity
@@ -267,10 +268,11 @@ const styles = StyleSheet.create({
         padding: 8,
         fontSize: 16,
         height: 230,
+        textAlignVertical: 'top',
     },
     contentContainer: {
         padding: 5,
-        borderBottomStartRadius:17,
+        borderBottomStartRadius: 17,
         borderBottomEndRadius: 17,
         backgroundColor: 'white',
         marginBottom: '3%',
@@ -289,21 +291,25 @@ const styles = StyleSheet.create({
     },
     imageWrapper: {
         marginHorizontal: 4,
+        alignSelf: 'center',
+        borderRadius: 10,
+        overflow: 'hidden',
     },
     image: {
         width: 100,
         height: 100,
     },
     addPictureButton: {
-        width: 100,
-        height: 100,
+        width: 105,
+        height: 105,
         borderRadius: 10,
-        borderWidth: 2,
+        borderWidth: 1,
         borderColor: '#DDDDDD',
         backgroundColor: '#FAFAFA',
         justifyContent: 'center',
         alignItems: 'center',
         marginHorizontal: 8,
+        alignSelf: 'center',
     },
     deleteButton: {
         position: 'absolute',
@@ -341,7 +347,7 @@ const styles = StyleSheet.create({
         padding: 3,
     },
     switchOn: {
-        backgroundColor: '#4cd137',
+        backgroundColor: '#4CD137',
     },
     switchOff: {
         backgroundColor: '#dcdde1',
@@ -352,11 +358,11 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     toggleOn: {
-        backgroundColor: '#fff',
+        backgroundColor: '#FFFFFF',
         alignSelf: 'flex-end',
     },
     toggleOff: {
-        backgroundColor: '#fff',
+        backgroundColor: '#FFFFFF',
         alignSelf: 'flex-start',
     },
     locationContainer: {
@@ -368,20 +374,22 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
         marginRight: '4%',
+        alignSelf: 'center',
+        paddingLeft: 5,
     },
     locationText: {
-        marginLeft: 10,
+        marginLeft: 1,
     },
     viewMapText: {
         fontSize: 14,
-        color: 'blue',
-        textDecorationLine: 'underline',
-        marginLeft: 8,
+        fontWeight: 'bold',
     },
     viewButton: {
-        marginRight: 15,
-    },
-    deleteLocationButton: {
-        marginRight: '4%',
+        marginHorizontal: 15,
+        borderWidth: 1,
+        borderRadius: 10,
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        backgroundColor: '#FFFFFF',
     },
 });

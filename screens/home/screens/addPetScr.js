@@ -28,6 +28,7 @@ export default function AddPetScreen({ fetchPetData, closeAddPet }) {
         gender: '',
         adoptedDate: '',
         picture: null,
+        isArchived: false,
     });
 
     useEffect(() => {

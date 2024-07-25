@@ -35,11 +35,12 @@ const styles = StyleSheet.create({
     },
     backButton: {
         position: 'absolute',
-        top: 50,
+        top: 30,
         left: 20,
         backgroundColor: 'white',
         padding: 10,
-        borderRadius: 5,
+        borderRadius: 10,
+        borderWidth: 1,
     },
     backButtonText: {
         fontSize: 16,

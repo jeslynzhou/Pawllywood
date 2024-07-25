@@ -1,41 +1,41 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 
 const UploadImageModal = ({ visible, onClose, onUploadFromCamera, onUploadFromLibrary }) => {
 
     return (
         <Modal
-            visible={visible}
+            isVisible={visible}
             transparent={true}
-            animationType="slide"
-            onRequestClose={onClose}
+            animationIn="fadeIn"
+            animationOut="fadeOut"
+            onBackdropPress={onClose}
         >
-            <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                    <Text style={styles.modalTitle}>Upload Profile Picture</Text>
-                    <View style={styles.modalButtonContainer}>
-                        <View style={styles.separatorLine} />
+            <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Upload Profile Picture</Text>
+                <View style={styles.modalButtonContainer}>
+                    <View style={styles.separatorLine} />
 
-                        <TouchableOpacity style={styles.modalButton} onPress={onUploadFromCamera}>
-                            <Ionicons name="camera-outline" size={24} color='#000000' />
-                            <Text style={styles.modalButtonText}>Upload from Camera</Text>
-                        </TouchableOpacity>
+                    <TouchableOpacity style={styles.modalButton} onPress={onUploadFromCamera}>
+                        <Ionicons name="camera-outline" size={24} color='#000000' />
+                        <Text style={styles.modalButtonText}>Upload from Camera</Text>
+                    </TouchableOpacity>
 
-                        <View style={styles.separatorLine} />
+                    <View style={styles.separatorLine} />
 
-                        <TouchableOpacity style={styles.modalButton} onPress={onUploadFromLibrary}>
-                            <Ionicons name="image-outline" size={24} color='#000000' />
-                            <Text style={styles.modalButtonText}>Upload from Library</Text>
-                        </TouchableOpacity>
+                    <TouchableOpacity style={styles.modalButton} onPress={onUploadFromLibrary}>
+                        <Ionicons name="image-outline" size={24} color='#000000' />
+                        <Text style={styles.modalButtonText}>Upload from Library</Text>
+                    </TouchableOpacity>
 
-                        <View style={styles.separatorLine} />
+                    <View style={styles.separatorLine} />
 
-                        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                            <Text style={[styles.modalButtonText, { color: '#CCCCCC' }]}>Cancel</Text>
-                        </TouchableOpacity>
+                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                        <Text style={[styles.modalButtonText, { color: '#CCCCCC' }]}>Cancel</Text>
+                    </TouchableOpacity>
 
-                    </View>
                 </View>
             </View>
         </Modal>
@@ -43,17 +43,12 @@ const UploadImageModal = ({ visible, onClose, onUploadFromCamera, onUploadFromLi
 };
 
 const styles = StyleSheet.create({
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
     modalContent: {
         backgroundColor: '#FFFFFF',
         borderRadius: 17,
         width: '80%',
         alignItems: 'center',
+        alignSelf: 'center',
     },
     modalTitle: {
         fontSize: 18,

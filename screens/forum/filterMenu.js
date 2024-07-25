@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Switch, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Switch, TouchableWithoutFeedback } from 'react-native';
+import Modal from 'react-native-modal';
 
 const FilterMenu = ({ isVisible, onClose, onApply, onClear, selectedFilters, onChangeFilter }) => {
     // Handle mutually exclusive selection for crowd alert filters
@@ -25,13 +26,11 @@ const FilterMenu = ({ isVisible, onClose, onApply, onClear, selectedFilters, onC
     return (
         <Modal
             transparent={true}
-            visible={isVisible}
-            animationType="fade"
-            onRequestClose={onClose}
+            isVisible={isVisible}
+            animationIn="fadeIn"
+            animationOut="fadeOut"
+            onBackdropPress={onClose}
         >
-            <TouchableWithoutFeedback onPress={onClose}>
-                <View style={styles.overlay} />
-            </TouchableWithoutFeedback>
             <View style={styles.menu}>
                 <Text style={styles.title}>Filter Options</Text>
                 <View style={styles.filterItem}>
@@ -87,18 +86,12 @@ const FilterMenu = ({ isVisible, onClose, onApply, onClear, selectedFilters, onC
 };
 
 const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
     menu: {
-        position: 'absolute',
-        top: '30%', // Center vertically
-        right: 30,
-        left: 30,
-        backgroundColor: '#fff',
+        backgroundColor: '#FFFFFF',
         padding: 20,
         borderRadius: 17,
+        alignSelf: 'center',
+        width: '90%',
     },
     title: {
         fontSize: 18,
