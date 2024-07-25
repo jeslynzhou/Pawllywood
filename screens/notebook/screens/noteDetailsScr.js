@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, ScrollView, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
-import { updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { updateDoc, doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 
 export default function NoteDetailsScreen({ note, closeNoteDetails }) {
     const [noteTitle, setNoteTitle] = useState('');
@@ -12,16 +12,42 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
     const [noteFolderId, setNoteFolderId] = useState('');
     const [showEditNoteModal, setShowEditNoteModal] = useState(false);
     const [showBackgroundColorModal, setShowBackgroundColorModal] = useState(false);
+    const [showFolderSelectionModal, setShowFolderSelectionModal] = useState(false);
     const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false);
     const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
     const [selectedBackgroundColor, setSelectedBackgroundColor] = useState('');
+    const [folders, setFolders] = useState([]);
+    const [selectedFolderId, setSelectedFolderId] = useState('');
 
     useEffect(() => {
         setNoteTitle(note.title);
         setNoteText(note.text);
         setNoteFolderId(note.folderId);
         setBackgroundColor(note.backgroundColor);
+        fetchFolders();
     }, [note]);
+
+    const fetchFolders = async () => {
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                const foldersCollectionRef = collection(db, 'users', user.uid, 'folders');
+                const foldersSnapshot = await getDocs(foldersCollectionRef);
+                const fetchedFolders = foldersSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+                // Sort folders by name
+                fetchedFolders.sort((a, b) => a.folderName.localeCompare(b.folderName));
+                setFolders(fetchedFolders);
+            } catch (error) {
+                console.error('Error fetching folders:', error.message);
+                Alert.alert('Error fetching folders', 'Failed to fetch folders data. Please try again later.');
+            }
+        } else {
+            Alert.alert('User not authenticated');
+        }
+    };
 
     const handleSaveNote = async () => {
         const user = auth.currentUser;
@@ -79,6 +105,38 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
     };
 
     const colorOptions = ['#FFFFFF', '#33658A', '#86BBD8', '#758E4F', '#F6AE2D', '#F26419']
+
+    { /* Move to folder */ }
+    const openFolderSelectionModal = () => {
+        setShowFolderSelectionModal(true);
+        setShowEditNoteModal(false);
+    };
+
+    const closeFolderSelectionModal = () => {
+        setShowFolderSelectionModal(false);
+    };
+
+    const handleFolderSelection = async (folderId) => {
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                setNoteFolderId(folderId);
+
+                const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
+                await updateDoc(noteRef, {
+                    folderId: folderId,
+                });
+
+                closeFolderSelectionModal();
+                Alert.alert('Note successfully moved to new folder!');
+            } catch (error) {
+                console.error('Error mobing note to folder:', error.message);
+                Alert.alert('Error moving note', 'Failed to move note to folder. Please try again later.');
+            }
+        } else {
+            Alert.alert('User note authenticated');
+        }
+    };
 
     { /* Handle Delete Note */ }
     const openDeleteConfirmationModal = () => {
@@ -158,7 +216,7 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
 
                         <View style={styles.separatorLine} />
 
-                        <TouchableOpacity onPress={{}} style={styles.modalButton}>
+                        <TouchableOpacity onPress={openFolderSelectionModal} style={styles.modalButton}>
                             <Ionicons name="enter-outline" size={24} color='#000000' />
                             <Text style={styles.modalButtonText}>Move to folder</Text>
                         </TouchableOpacity>
@@ -184,7 +242,10 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
             >
                 <View style={styles.editModalContainer}>
                     <View style={styles.editModalContent}>
-                        <Text style={styles.editModalTitle}>Background color</Text>
+                        <View style={{ width: '100%' }}>
+                            <Text style={styles.editModalTitle}>Background color</Text>
+                            <View style={styles.separatorLine} />
+                        </View>
                         <View style={styles.colorsContainer}>
                             <View style={styles.colorRow}>
                                 {colorOptions.slice(0, 3).map((color, index) => (
@@ -217,6 +278,35 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                 </View>
             </Modal >
 
+            {/* Folder Selection Modal */}
+            <Modal
+                isVisible={showFolderSelectionModal}
+                transparent={true}
+                animationIn="fadeIn"
+                animationOut="fadeOut"
+                onBackdropPress={closeFolderSelectionModal}
+            >
+                <View style={styles.editModalContainer}>
+                    <View style={styles.editModalContent}>
+                        <View style={{ width: '100%' }}>
+                            <Text style={styles.editModalTitle}>Move to Folder</Text>
+                            <View style={styles.separatorLine} />
+                        </View>
+                        {/* Adjusted ScrollView style to use contentContainerStyle */}
+                        <ScrollView style={styles.folderScrollView}>
+                            {folders.map((folder) => (
+                                <TouchableOpacity
+                                    key={folder.id}
+                                    style={styles.folderOptions}
+                                    onPress={() => handleFolderSelection(folder.id)}
+                                >
+                                    <Text style={styles.folderName}>{folder.folderName}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
 
             { /* Delete Note Confirmation Modal */}
             < Modal
@@ -246,7 +336,6 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
 };
 
 const screenWidth = Dimensions.get('window').width;
-const screenHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
     container: {
@@ -322,12 +411,11 @@ const styles = StyleSheet.create({
     modalButtonText: {
         fontSize: 16,
         marginLeft: 10,
-        padding: 1,
+        padding: 2,
     },
     separatorLine: {
         height: 1,
         backgroundColor: '#CCCCCC',
-        marginVertical: 1,
     },
     editModalContainer: {
         alignSelf: 'center',
@@ -338,17 +426,18 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         borderRadius: 17,
-        padding: 20,
     },
     editModalTitle: {
         fontSize: 18,
         fontWeight: 'bold',
+        padding: 20,
+        alignSelf: 'center',
     },
     editModalButtonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
         width: '100%',
-        marginTop: 20,
+        margin: 15,
     },
     editModalButton: {
         flex: 1,
@@ -371,14 +460,13 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 10,
         padding: 10,
+        marginBottom: 5,
     },
     colorRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
-        marginTop: 5,
     },
     colorOption: {
         width: 50,
@@ -396,4 +484,18 @@ const styles = StyleSheet.create({
         right: -6,
         width: 60,
     },
+
+    folderScrollView: {
+        alignSelf: 'flex-start',
+        width: '100%',
+        maxHeight: 170,
+    },
+    folderOptions: {
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+    },
+    folderName: {
+        alignSelf: 'flex-start',
+        fontSize: 16,
+    }
 });

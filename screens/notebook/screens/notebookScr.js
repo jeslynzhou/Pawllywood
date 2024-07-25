@@ -63,6 +63,9 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 id: doc.id,
                 ...doc.data(),
             }));
+
+            // Sort folders by name
+            fetchedFolders.sort((a, b) => a.folderName.localeCompare(b.folderName));
             setFolders(fetchedFolders);
 
             // Fetch pets
@@ -72,6 +75,9 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 id: doc.id,
                 ...doc.data(),
             }));
+
+            // Sort pets by name
+            fetchedPets.sort((a, b) => a.name.localeCompare(b.name));
             setPets(fetchedPets);
         } catch (error) {
             console.error('Error fetching data:', error.message);
