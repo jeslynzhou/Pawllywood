@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as Location from 'expo-location';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth } from '../../initializeFB';
 import { Ionicons } from '@expo/vector-icons';
+import UploadImageModal from './uploadImageModal';
 import MapScreen from './mapScr';
+import * as Location from 'expo-location';
+
 
 export default function PostScreen({ handlePostSubmit, handleCancel, }) {
     const [title, setTitle] = useState('');
@@ -14,6 +16,18 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
     const [isCrowdAlert, setIsCrowdAlert] = useState(false);
     const [location, setLocation] = useState(null);
     const [showMap, setShowMap] = useState(false);
+    const [showUploadModal, setShowUploadModal] = useState(false); // State for modal visibility
+
+    const handleTitleChange = (text) => {
+        // Split the text by spaces and check the word count
+        const words = text.trim().split(/\s+/);
+        if (words.length <= 20) {
+            setTitle(text);
+        } else {
+            // Optionally, you could alert the user here
+            Alert.alert('Word Limit Exceeded', `Title can only be up to 20 words.`);
+        }
+    };
 
     const handleUploadFromCamera = async () => {
         try {
@@ -34,6 +48,8 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
             }
         } catch (error) {
             console.log('Error uploading image from camera:', error);
+        } finally {
+            setShowUploadModal(false);
         }
     };
 
@@ -57,6 +73,8 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
             }
         } catch (error) {
             console.log('Error uploading image from library:', error);
+        } finally {
+            setShowUploadModal(false);
         }
     };
 
@@ -92,6 +110,10 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
         setLocation(roundedLocation);
     };
 
+    const handleDeleteLocation = () => {
+        setLocation(null);
+    };
+
     if (showMap && location) {
         return <MapScreen latitude={location.latitude} longitude={location.longitude} onBack={() => setShowMap(false)} />;
     }
@@ -104,41 +126,57 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
                 </TouchableOpacity>
                 <Text style={styles.headerText}>New post</Text>
             </View>
-            <View style={styles.contentContainer}>
+            <View style={styles.titleContainer}>
                 <TextInput
                     style={styles.titleInput}
                     placeholder="Title"
                     value={title}
-                    onChangeText={setTitle}
-                    multiline
-                    numberOfLines={2}
+                    onChangeText={handleTitleChange}
                 />
-                <ScrollView>
-                    <TextInput
-                        style={styles.contentInput}
-                        placeholder="Content"
-                        value={content}
-                        onChangeText={setContent}
-                        multiline
-                    />
-                </ScrollView>
             </View>
+            <View style={styles.contentContainer}>
             <ScrollView
-                horizontal
-                contentContainerStyle={styles.imageContainer}
+                contentContainerStyle={styles.contentScrollContainer}
+                style={styles.contentScroll}
             >
-                {imageUris.map((uri, index) => (
-                    <View key={index} style={styles.imageWrapper}>
-                        <Image source={{ uri }} style={styles.image} />
-                        <TouchableOpacity
-                            style={styles.deleteButton}
-                            onPress={() => handleDeleteImage(uri)}
-                        >
-                            <Ionicons name="close-circle" size={24} color="rgba(0, 0, 0, 0.5)" />
-                        </TouchableOpacity>
-                    </View>
-                ))}
+                <TextInput
+                    style={styles.contentInput}
+                    placeholder="Content"
+                    value={content}
+                    onChangeText={setContent}
+                    multiline
+                />
             </ScrollView>
+        </View>
+        <ScrollView
+            horizontal
+            contentContainerStyle={styles.imageContainer}
+        >
+            <TouchableOpacity
+                style={styles.addPictureButton}
+                onPress={() => setShowUploadModal(true)}
+            >
+                <Ionicons name="add-circle-outline" size={50} color="black" />
+            </TouchableOpacity>
+            {imageUris.map((uri, index) => (
+                <View key={index} style={styles.imageWrapper}>
+                    <Image source={{ uri }} style={styles.image} />
+                    <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => handleDeleteImage(uri)}
+                    >
+                        <Ionicons name="close-circle" size={24} color="#D3D3D3"/>
+                    </TouchableOpacity>
+                </View>
+            ))}
+        </ScrollView>
+            <UploadImageModal
+                visible={showUploadModal}
+                onClose={() => setShowUploadModal(false)}
+                onUploadFromCamera={handleUploadFromCamera}
+                onUploadFromLibrary={handleUploadFromLibrary}
+            />
+
             <View style={styles.switchContainer}>
                 <Text style={styles.switchLabel}>Crowd Alert</Text>
                 <TouchableOpacity
@@ -151,34 +189,24 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
             <View style={styles.locationContainer}>
                 <Text style={styles.locationLabel}>Location</Text>
                 <TouchableOpacity
-                    style={styles.locationButton}
                     onPress={handleGetLocation}
                 >
-                    <Ionicons name="location-outline" size={24} color="black" />
+                    <Ionicons name="location-outline" size={22} color="black" />
                 </TouchableOpacity>
                 {location && (
                     <>
                         <Text style={styles.locationText}>
                             {`Lat: ${location.latitude}, Lon: ${location.longitude}`}
                         </Text>
-                        <TouchableOpacity onPress={() => setShowMap(true)}>
-                            <Text style={styles.viewMapText}>View on Map</Text>
+                        <TouchableOpacity onPress={() => setShowMap(true)} style={styles.viewButton}>
+                            <Text style={styles.viewMapText}>View</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleDeleteLocation} style={styles.deleteLocationButton}>
+                            <Ionicons name="trash-outline" size={22} color="red" />
                         </TouchableOpacity>
                     </>
                 )}
             </View>
-            <TouchableOpacity
-                style={styles.button}
-                onPress={handleUploadFromLibrary}
-            >
-                <Text style={styles.buttonText}>Upload from Gallery</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={styles.button}
-                onPress={handleUploadFromCamera}
-            >
-                <Text style={styles.buttonText}>Take Photo</Text>
-            </TouchableOpacity>
             <TouchableOpacity
                 style={styles.button}
                 onPress={async () => {
@@ -190,7 +218,7 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
                     handlePostSubmit(title, content, uploadedImageUrls, isCrowdAlert, location);
                 }}
             >
-                <Text style={styles.buttonText}>Submit</Text>
+                <Text style={styles.buttonText}>Post</Text>
             </TouchableOpacity>
         </View>
     );
@@ -200,6 +228,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 16,
+        position: 'absolute',
+        height: '100%',
+        width: '100%',
     },
     headerContainer: {
         flexDirection: 'row',
@@ -216,6 +247,15 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
     },
+    titleContainer: {
+        padding: 5,
+        borderTopStartRadius: 17,
+        borderTopEndRadius: 17,
+        backgroundColor: 'white',
+        marginTop: '3%',
+        borderBottomWidth: 1,
+        borderColor: 'rgba(204, 204, 204, 0.5)',
+    },
     titleInput: {
         borderColor: '#CCCCCC',
         padding: 8,
@@ -230,10 +270,17 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         padding: 5,
-        borderRadius: 17,
-        height: '40%',
+        borderBottomStartRadius:17,
+        borderBottomEndRadius: 17,
         backgroundColor: 'white',
-        marginVertical: '3%',
+        marginBottom: '3%',
+        height: 280,
+    },
+    contentScroll: {
+        flex: 1,
+    },
+    contentScrollContainer: {
+        flexGrow: 1,
     },
     imageContainer: {
         flexDirection: 'row',
@@ -241,12 +288,22 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
     },
     imageWrapper: {
-        position: 'relative',
         marginHorizontal: 4,
     },
     image: {
         width: 100,
         height: 100,
+    },
+    addPictureButton: {
+        width: 100,
+        height: 100,
+        borderRadius: 10,
+        borderWidth: 2,
+        borderColor: '#DDDDDD',
+        backgroundColor: '#FAFAFA',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginHorizontal: 8,
     },
     deleteButton: {
         position: 'absolute',
@@ -258,8 +315,9 @@ const styles = StyleSheet.create({
     button: {
         backgroundColor: '#F26419',
         padding: 16,
-        marginVertical: 8,
+        marginVertical: 16,
         alignItems: 'center',
+        borderRadius: 17,
     },
     buttonText: {
         color: '#FFFFFF',
@@ -271,7 +329,9 @@ const styles = StyleSheet.create({
         marginVertical: 8,
     },
     switchLabel: {
-        marginRight: 8,
+        fontSize: 14,
+        marginRight: '4%',
+        fontWeight: 'bold',
     },
     switch: {
         width: 50,
@@ -305,12 +365,9 @@ const styles = StyleSheet.create({
         marginVertical: 8,
     },
     locationLabel: {
-        marginRight: 8,
-    },
-    locationButton: {
-        backgroundColor: '#CCCCCC',
-        padding: 10,
-        borderRadius: 10,
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginRight: '4%',
     },
     locationText: {
         marginLeft: 10,
@@ -320,5 +377,11 @@ const styles = StyleSheet.create({
         color: 'blue',
         textDecorationLine: 'underline',
         marginLeft: 8,
+    },
+    viewButton: {
+        marginRight: 15,
+    },
+    deleteLocationButton: {
+        marginRight: '4%',
     },
 });
