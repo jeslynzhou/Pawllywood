@@ -7,7 +7,7 @@ const PostDetailsScr = ({ post, onBack, openImageViewer, imageViewerVisible, cur
         const date = new Date(isoString);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
     };
-    
+
     return (
         <View style={styles.postDetailsContainer}>
             <View style={styles.headerContainer}>
@@ -29,9 +29,13 @@ const PostDetailsScr = ({ post, onBack, openImageViewer, imageViewerVisible, cur
                 </View>
             </View>
             {/* Title */}
-            <Text style={styles.postTitle}>{post.title}</Text>
+            <View>
+                <Text style={styles.postTitle}>{post.title}</Text>
+            </View>
             {/* Content */}
-            <Text style={styles.postText}>{post.content}</Text>
+            <View>
+                <Text style={styles.postText}>{post.content}</Text>
+            </View>
             {/* Images */}
             <ScrollView horizontal style={styles.imageScrollContainer}>
                 {post.images && post.images.map((imageUri, index) => (
