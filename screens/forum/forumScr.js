@@ -1043,14 +1043,6 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
-    postInput: {
-        flex: 1,
-        padding: 10,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 17,
-        marginRight: 10,
-    },
     postButton: {
         flex: 1,
         paddingHorizontal: 10,

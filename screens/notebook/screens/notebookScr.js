@@ -382,10 +382,10 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                         </TouchableOpacity>
                     </View>
                     <View style={styles.header}>
-                        <TouchableOpacity style={[styles.headerButton, viewMode === 'allNotes' ? styles.activeButton : null]} onPress={() => setViewMode('allNotes')}>
+                        <TouchableOpacity style={[styles.headerButton, viewMode === 'allNotes' ? styles.activeButton : null]} onPress={handleAllNotesView}>
                             <Text style={styles.headerButtonText}>All notes</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.headerButton, viewMode === 'folders' ? styles.activeButton : null]} onPress={() => setViewMode('folders')}>
+                        <TouchableOpacity style={[styles.headerButton, viewMode === 'folders' ? styles.activeButton : null]} onPress={handleFoldersView}>
                             <Text style={styles.headerButtonText}>Folders</Text>
                         </TouchableOpacity>
                     </View>
@@ -763,7 +763,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#000000',
         borderRadius: 17,
-        marginRight: 10,
+        marginRight: 9,
         padding: 3,
     },
     folderName: {

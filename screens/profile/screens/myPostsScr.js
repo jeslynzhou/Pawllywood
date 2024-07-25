@@ -8,6 +8,7 @@ import { collection, getDocs, deleteDoc, doc, query, where } from 'firebase/fire
 
 export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
     const [postsData, setPostsData] = useState([]);
+    const [viewMode, setViewMode] = useState('myPosts');
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedPostsForDelete, setSelectedPostsForDelete] = useState([]);
@@ -19,7 +20,13 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
             if (user) {
                 const userId = user.uid;
                 const postsCollectionRef = collection(db, 'posts');
-                const q = query(postsCollectionRef, where('userId', '==', userId));
+
+                if (viewMode === 'myPosts') {
+                    q = query(postsCollectionRef, where('userId', '==', userId));
+                } else if (viewMode === 'savedPosts') {
+                    q = query(postsCollectionRef, where('isSaved', '==', true));
+                }
+
                 const querySnapShot = await getDocs(q);
                 const fetchedPostsInfo = querySnapShot.docs.map(doc => ({
                     id: doc.id,
@@ -37,9 +44,20 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
     };
 
     useEffect(() => {
+        setLoading(true);
         fetchPostData();
-    }, []);
+    }, [viewMode]);
 
+    { /* Handle View */ }
+    const handleMyPostsView = () => {
+        setViewMode('myPosts');
+    };
+
+    const handleSavedPostsView = () => {
+        setViewMode('savedPosts');
+    };
+
+    { /* Edit My Posts List */ }
     const openEditMyPostsList = () => {
         setShowConfirmationModal(true);
     };
@@ -87,6 +105,11 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
         }
     };
 
+    { /* Post Details Modal */ }
+    const openPostDetailsModal = () => {
+        setShowPostDetailsModal(true);
+    };
+
     return (
         <View style={styles.myPostsContainer}>
             {/* Header */}
@@ -95,8 +118,18 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>My Posts</Text>
-                <TouchableOpacity onPress={postsData.length > 0 ? openEditMyPostsList : closeEditMyPostsList} style={styles.editContainer}>
-                    <Text style={styles.editText}>Edit</Text>
+                {viewMode === 'myPosts' && (
+                    <TouchableOpacity onPress={postsData.length > 0 ? openEditMyPostsList : closeEditMyPostsList} style={styles.editContainer}>
+                        <Text style={styles.editText}>Edit</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
+            <View style={styles.viewModeContainer}>
+                <TouchableOpacity style={[styles.viewModeButton, viewMode === 'myPosts' ? styles.viewModeActiveButton : null]} onPress={handleMyPostsView}>
+                    <Text style={styles.viewModeButtonText}>My posts</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.viewModeButton, viewMode === 'savedPosts' ? styles.viewModeActiveButton : null]} onPress={handleSavedPostsView}>
+                    <Text style={styles.viewModeButtonText}>Saved posts</Text>
                 </TouchableOpacity>
             </View>
 
@@ -120,13 +153,18 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
                         postsData.map((post) => (
                             <View key={post.id}>
                                 <View key={post.id} style={[styles.postInfoContainer]}>
-                                    <View style={styles.postInfo}>
+                                    <TouchableOpacity onPress={openPostDetailsModal} style={styles.postInfo}>
+                                        {viewMode === 'savedPosts' && (
+                                            <View style={{ paddingBottom: 5, }}>
+                                                <Text>{post.username}</Text>
+                                            </View>
+                                        )}
                                         <Text numberOfLines={1} ellipsizeMode='tail' style={styles.postTitle}>
                                             {post.title.length > 80 ? `${post.title.substring(0, 50)}...` : `${post.title}`}
                                         </Text>
-                                    </View>
+                                    </TouchableOpacity>
                                     {isEditMode && (
-                                        <View style={{ paddingHorizontal: 17 }}>
+                                        <View style={{ paddingLeft: 17, paddingRight: 5, }}>
                                             <TouchableOpacity style={{ alignSelf: 'center' }} onPress={() => toggleSelectPost(post.id)}>
                                                 <Ionicons name={selectedPostsForDelete.includes(post.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
                                             </TouchableOpacity>
@@ -134,7 +172,7 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
                                     )}
                                     {!isEditMode && (
                                         <View style={{ paddingVertical: 2.7 }}>
-                                            <Text style={[styles.text, { color: '#CCCCCC' }]}>{post.time}</Text>
+                                            <Text style={[styles.text, { color: '#CCCCCC' }]}>{post.date}</Text>
                                         </View>
                                     )}
                                 </View>
@@ -148,10 +186,11 @@ export default function MyPostsScreen({ closeMyPostsScreen, directToForum }) {
 
             {/* Confirmation Modal */}
             <Modal
-                visible={showConfirmationModal}
+                isVisible={showConfirmationModal}
                 transparent={true}
-                animationType='fade'
-                onRequestClose={() => setShowConfirmationModal(false)}
+                animationIn='fadeIn'
+                animationOut='fadeOut'
+                onBackdropPress={() => setShowConfirmationModal(false)}
             >
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Do you want to edit your posts list?</Text>
@@ -197,7 +236,6 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         justifyContent: 'space-between',
         paddingLeft: 40,
-        marginBottom: 21,
     },
     backButton: {
         position: 'absolute',
@@ -213,6 +251,30 @@ const styles = StyleSheet.create({
     },
     editText: {
         fontSize: 16,
+        fontWeight: 'bold',
+    },
+    viewModeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        width: '100%',
+        marginTop: 15,
+        marginBottom: 10,
+    },
+    viewModeButton: {
+        backgroundColor: '#FFFFFF',
+        borderColor: '#000000',
+        borderWidth: 1,
+        borderRadius: 9,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        marginRight: 10,
+    },
+    viewModeActiveButton: {
+        backgroundColor: '#F26419',
+    },
+    viewModeButtonText: {
+        fontSize: 12,
         fontWeight: 'bold',
     },
     contentContainer: {
