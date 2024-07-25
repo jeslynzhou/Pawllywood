@@ -65,6 +65,7 @@ const AuthScreen = ({
           age: '',
           gender: '',
           adoptedDate: formatDate(new Date()),
+          isArchived: false,
         });
 
         const notesCollectionRef = collection(db, 'users', user.uid, 'notes');

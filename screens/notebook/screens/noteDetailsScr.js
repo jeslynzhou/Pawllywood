@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: 16,
         paddingBottom: 25,
-        height: 665,
+        height: 676,
     },
     input: {
         fontSize: 16,
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     verticalLine: {
         borderRightColor: '#808080',
         borderRightWidth: 1,
-        marginVertical: 5,
+        marginVertical: 4,
     },
     colorsContainer: {
         flexDirection: 'column',

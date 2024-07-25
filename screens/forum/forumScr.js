@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share, Modal, RefreshControl } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Dimensions, ActivityIndicator, Share, RefreshControl } from 'react-native';
+import Modal from 'react-native-modal';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { auth, db, storage } from '../../initializeFB';
 import { doc, getDocs, addDoc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, deleteDoc } from 'firebase/firestore';
@@ -47,6 +48,8 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     });
     const [pinnedPosts, setPinnedPosts] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [showPostActionsModal, setShowPostActionsModal] = useState(false);
+    const [postInAction, setPostInAction] = useState(null);
 
     const sendNotification = async (expoPushToken, title, body) => {
         const message = {
@@ -56,7 +59,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             body: body,
             data: { extraData: 'Some data if needed' }, // Optional
         };
-    
+
         try {
             const response = await fetch('https://exp.host/--/api/v2/push/send', {
                 method: 'POST',
@@ -73,7 +76,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             console.error('Error sending notification:', error.message);
         }
     };
-    
+
 
     const handleToggleFilterMenu = () => {
         setFilterMenuVisible(!isFilterMenuVisible);
@@ -155,12 +158,12 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             console.error('Error fetching posts:', error.message);
         }
     };
-    
-    
+
+
     useEffect(() => {
         fetchPosts();
     }, []);
-    
+
 
     useEffect(() => {
         fetchPosts();
@@ -249,7 +252,85 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const closeImageViewer = () => {
         setImageViewerVisible(false);
     };
-    
+
+    { /* Handle Post Action */ }
+    const openPostActionsModal = (post) => {
+        setPostInAction(post);
+        setShowPostActionsModal(true);
+    };
+
+    const closePostActionsModal = () => {
+        setShowPostActionsModal(false);
+        setPostInAction(null);
+    };
+
+    const renderPostActionsModal = () => {
+        if (!postInAction) {
+            return null;
+        }
+
+        const handlePinPost = () => {
+            togglePinPost(postInAction.id, postInAction.isPinned);
+            closePostActionsModal();
+        };
+
+        const handleSavePost = () => {
+            toggleSavePost(postInAction.id, postInAction.isSaved);
+            closePostActionsModal();
+        };
+
+        const handleDeletePost = () => {
+            handleDeletePress(postInAction.id);
+            closePostActionsModal();
+        };
+
+        return (
+            <Modal
+                isVisible={showPostActionsModal}
+                transparent={true}
+                animationIn="fadeIn"
+                animationOut="fadeOut"
+                onRequestClose={closePostActionsModal}
+                onBackdropPress={closePostActionsModal}
+            >
+                <View style={styles.postActionsModalContainer}>
+                    {/* pin posts */}
+                    <TouchableOpacity onPress={handlePinPost} style={styles.postActionsButton}>
+                        <Ionicons
+                            name={(userData.pinnedPosts && Array.isArray(userData.pinnedPosts) && userData.pinnedPosts.includes(postInAction.id)) ? "pin" : "pin-outline"}
+                            size={20}
+                            color='#000000'
+                            style={{ alignSelf: 'center' }}
+                        />
+                        <Text style={styles.postActionsButtonText}>Pin this post</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.separatorLine} />
+                    {/* save posts */}
+                    <TouchableOpacity onPress={handleSavePost} style={styles.postActionsButton}>
+                        <Ionicons
+                            name={(userData.savedPosts && Array.isArray(userData.savedPosts) && userData.savedPosts.includes(postInAction.id)) ? "star" : "star-outline"}
+                            size={20}
+                            color='#000000'
+                            style={{ alignSelf: 'center' }}
+                        />
+                        <Text style={styles.postActionsButtonText}>Save this post</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.separatorLine} />
+
+                    {/* delete posts */}
+                    {postInAction.userId === auth.currentUser.uid && (
+                        <TouchableOpacity onPress={handleDeletePost} style={styles.postActionsButton}>
+                            <Ionicons name="trash-outline" size={20} color='#000000' style={{ alignSelf: 'center' }} />
+                            <Text style={styles.postActionsButtonText}>Delete your post</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+            </Modal>
+        )
+    };
+
     const togglePinPost = async (postId) => {
         try {
             const user = auth.currentUser;
@@ -257,14 +338,14 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 console.error('No user is currently signed in.');
                 return;
             }
-    
+
             const userRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userRef);
             let pinnedPosts = userDoc.data().pinnedPosts || [];
-    
+
             // Check if the post is already pinned
             const isCurrentlyPinned = pinnedPosts.includes(postId);
-    
+
             if (isCurrentlyPinned) {
                 // Remove the post ID from the pinnedPosts array
                 pinnedPosts = pinnedPosts.filter(id => id !== postId);
@@ -272,28 +353,28 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 // Add the post ID to the pinnedPosts array
                 pinnedPosts.push(postId);
             }
-    
+
             await updateDoc(userRef, { pinnedPosts });
-    
+
             // Update the local state to reflect the change
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, isPinned: !isCurrentlyPinned } : post
                 )
             );
-    
+
             // Update userData state to reflect the pin change
             setUserData(prevUserData => ({
                 ...prevUserData,
                 pinnedPosts: pinnedPosts
             }));
-    
+
             console.log(`Post ${postId} pin status toggled successfully! New status: ${!isCurrentlyPinned}`);
         } catch (error) {
             console.error('Error updating pinned posts:', error.message);
         }
     };
-    
+
 
     const toggleSavePost = async (postId) => {
         try {
@@ -302,14 +383,14 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 console.error('No user is currently signed in.');
                 return;
             }
-    
+
             const userRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userRef);
             let savedPosts = userDoc.data().savedPosts || [];
-    
+
             // Check if the post is already saved
             const isCurrentlySaved = savedPosts.includes(postId);
-    
+
             if (isCurrentlySaved) {
                 // Remove the post ID from the savedPosts array
                 savedPosts = savedPosts.filter(id => id !== postId);
@@ -317,30 +398,29 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 // Add the post ID to the savedPosts array
                 savedPosts.push(postId);
             }
-    
+
             await updateDoc(userRef, { savedPosts });
-    
+
             // Update the local state to reflect the change
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, isSaved: !isCurrentlySaved } : post
                 )
             );
-    
+
             // Update userData state to reflect the save change
             setUserData(prevUserData => ({
                 ...prevUserData,
                 savedPosts: savedPosts
             }));
-    
+
             console.log(`Post ${postId} save status toggled successfully! New status: ${!isCurrentlySaved}`);
         } catch (error) {
             console.error('Error toggling save post:', error.message);
         }
     };
-    
-    
-    
+
+
     const filterAndSortPosts = (posts, searchQuery, pinnedPosts) => {
         const filteredPosts = posts.filter(post => {
             if (post.content) {
@@ -349,14 +429,14 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             }
             return false;
         });
-    
+
         return filteredPosts.sort((a, b) => {
             const aIsPinned = pinnedPosts.includes(a.id);
             const bIsPinned = pinnedPosts.includes(b.id);
             return bIsPinned - aIsPinned || new Date(b.date) - new Date(a.date);
         });
     };
-    
+
 
     useEffect(() => {
         setSortedPosts(filterAndSortPosts(posts, searchQuery, pinnedPosts));
@@ -399,7 +479,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
     const handleComment = async (postId, commentText) => {
         if (!commentText.trim() || !userData) return;
-    
+
         const newComment = {
             username: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
@@ -408,13 +488,13 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
             text: commentText
         };
-    
+
         try {
             const postRef = doc(db, 'posts', postId);
             await updateDoc(postRef, {
                 comments: arrayUnion(newComment)
             });
-    
+
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, comments: [...post.comments, newComment] } : post
@@ -424,7 +504,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 ...prevState,
                 [postId]: ''
             }));
-    
+
             // Send notification to post author
             const postDoc = await getDoc(postRef);
             const postData = postDoc.data();
@@ -432,121 +512,121 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 const userRef = doc(db, 'users', postData.userId);
                 const userDoc = await getDoc(userRef);
                 const userExpoToken = userDoc.data().expoPushToken;
-    
+
                 if (userExpoToken) {
                     await sendNotification(userExpoToken, 'New Comment', `${userData.username} commented on your post.`);
                 } else {
                     console.log('No expoPushToken found for user:', postData.userId);
                 }
             }
-    
+
         } catch (error) {
             console.error('Error adding comment to Firestore:', error.message);
         }
     };
-    
-      
-      const handleUpvote = async (postId) => {
+
+
+    const handleUpvote = async (postId) => {
         if (!userData || !userData.email) {
-          console.log('User data not available or missing UID.');
-          return;
-        }
-      
-        try {
-          const postRef = doc(db, 'posts', postId);
-          const postDoc = await getDoc(postRef);
-          const postData = postDoc.data();
-      
-          if (!postData) {
-            console.log('Post not found.');
+            console.log('User data not available or missing UID.');
             return;
-          }
-      
-          if (postData.upvotes.includes(userData.email)) {
-            // User already upvoted, remove upvote
-            await updateDoc(postRef, {
-              upvotes: arrayRemove(userData.email)
-            });
-          } else {
-            // User hasn't upvoted, add upvote and remove downvote if exists
-            await updateDoc(postRef, {
-              upvotes: arrayUnion(userData.email),
-              downvotes: arrayRemove(userData.email)
-            });
-      
-            // Send notification to post author
-            const userRef = doc(db, 'users', postData.userId);
-            const userDoc = await getDoc(userRef);
-            const userExpoToken = userDoc.data().expoPushToken; // Assume expoPushToken is stored in user document
-      
-            await sendNotification(userExpoToken, 'New Upvote', `${userData.username} upvoted your post.`);
-          }
-      
-          // Update local state with updated upvotes
-          setPosts(prevPosts =>
-            prevPosts.map(post =>
-              post.id === postId ? { ...post, upvotes: postData.upvotes.includes(userData.email) ? postData.upvotes.filter(id => id !== userData.email) : [...postData.upvotes, userData.email] } : post
-            )
-          );
-      
-        } catch (error) {
-          console.error('Error updating upvotes:', error.message);
         }
-      };
-      
-    const handleDownvote = async (postId) => {
-        if (!userData || !userData.email) {
-          console.log('User data not available or missing UID.');
-          return;
-        }
-      
+
         try {
-          const postRef = doc(db, 'posts', postId);
-          const postDoc = await getDoc(postRef);
-          const postData = postDoc.data();
-      
-          if (!postData) {
-            console.log('Post not found.');
-            return;
-          }
-      
-          if (postData.downvotes.includes(userData.email)) {
-            // User already downvoted, remove downvote
-            await updateDoc(postRef, {
-              downvotes: arrayRemove(userData.email)
-            });
-          } else {
-            // User hasn't downvoted, add downvote and remove upvote if exists
-            await updateDoc(postRef, {
-              downvotes: arrayUnion(userData.email),
-              upvotes: arrayRemove(userData.email)
-            });
-      
-            // Send notification to post author
-            const userRef = doc(db, 'users', postData.userId);
-            const userDoc = await getDoc(userRef);
-            const userExpoToken = userDoc.data()?.expoPushToken; // Ensure `expoPushToken` is present
-      
-            if (!userExpoToken) {
-              console.error('User Expo Push Token is missing.');
-              return;
+            const postRef = doc(db, 'posts', postId);
+            const postDoc = await getDoc(postRef);
+            const postData = postDoc.data();
+
+            if (!postData) {
+                console.log('Post not found.');
+                return;
             }
-      
-            await sendNotification(userExpoToken, 'New Downvote', `${userData.username} downvoted your post.`);
-          }
-      
-          // Update local state with updated downvotes
-          setPosts(prevPosts =>
-            prevPosts.map(post =>
-              post.id === postId ? { ...post, downvotes: postData.downvotes.includes(userData.email) ? postData.downvotes.filter(id => id !== userData.email) : [...postData.downvotes, userData.email] } : post
-            )
-          );
-      
+
+            if (postData.upvotes.includes(userData.email)) {
+                // User already upvoted, remove upvote
+                await updateDoc(postRef, {
+                    upvotes: arrayRemove(userData.email)
+                });
+            } else {
+                // User hasn't upvoted, add upvote and remove downvote if exists
+                await updateDoc(postRef, {
+                    upvotes: arrayUnion(userData.email),
+                    downvotes: arrayRemove(userData.email)
+                });
+
+                // Send notification to post author
+                const userRef = doc(db, 'users', postData.userId);
+                const userDoc = await getDoc(userRef);
+                const userExpoToken = userDoc.data().expoPushToken; // Assume expoPushToken is stored in user document
+
+                await sendNotification(userExpoToken, 'New Upvote', `${userData.username} upvoted your post.`);
+            }
+
+            // Update local state with updated upvotes
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId ? { ...post, upvotes: postData.upvotes.includes(userData.email) ? postData.upvotes.filter(id => id !== userData.email) : [...postData.upvotes, userData.email] } : post
+                )
+            );
+
         } catch (error) {
-          console.error('Error updating downvotes:', error.message);
+            console.error('Error updating upvotes:', error.message);
         }
     };
-      
+
+    const handleDownvote = async (postId) => {
+        if (!userData || !userData.email) {
+            console.log('User data not available or missing UID.');
+            return;
+        }
+
+        try {
+            const postRef = doc(db, 'posts', postId);
+            const postDoc = await getDoc(postRef);
+            const postData = postDoc.data();
+
+            if (!postData) {
+                console.log('Post not found.');
+                return;
+            }
+
+            if (postData.downvotes.includes(userData.email)) {
+                // User already downvoted, remove downvote
+                await updateDoc(postRef, {
+                    downvotes: arrayRemove(userData.email)
+                });
+            } else {
+                // User hasn't downvoted, add downvote and remove upvote if exists
+                await updateDoc(postRef, {
+                    downvotes: arrayUnion(userData.email),
+                    upvotes: arrayRemove(userData.email)
+                });
+
+                // Send notification to post author
+                const userRef = doc(db, 'users', postData.userId);
+                const userDoc = await getDoc(userRef);
+                const userExpoToken = userDoc.data()?.expoPushToken; // Ensure `expoPushToken` is present
+
+                if (!userExpoToken) {
+                    console.error('User Expo Push Token is missing.');
+                    return;
+                }
+
+                await sendNotification(userExpoToken, 'New Downvote', `${userData.username} downvoted your post.`);
+            }
+
+            // Update local state with updated downvotes
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId ? { ...post, downvotes: postData.downvotes.includes(userData.email) ? postData.downvotes.filter(id => id !== userData.email) : [...postData.downvotes, userData.email] } : post
+                )
+            );
+
+        } catch (error) {
+            console.error('Error updating downvotes:', error.message);
+        }
+    };
+
 
     const onShare = async (post) => {
         try {
@@ -593,11 +673,11 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
     const marginTop = searchHeight + profileHeight + emergencyHeight * 0.43 + height * 0.04;
 
     if (selectedPost) {
-        return <PostDetailsScr post={selectedPost} onBack={() => setSelectedPost(null)} 
-            openImageViewer={openImageViewer} imageViewerVisible={imageViewerVisible} 
-            currentImages={currentImages} currentImageIndex={currentImageIndex} closeImageViewer={closeImageViewer}/>;
+        return <PostDetailsScr post={selectedPost} onBack={() => setSelectedPost(null)}
+            openImageViewer={openImageViewer} imageViewerVisible={imageViewerVisible}
+            currentImages={currentImages} currentImageIndex={currentImageIndex} closeImageViewer={closeImageViewer} />;
     }
-    
+
     if (mapVisible && selectedLocation) {
         return <MapScreen latitude={selectedLocation.latitude} longitude={selectedLocation.longitude} onBack={() => setMapVisible(false)} />;
     }
@@ -641,51 +721,49 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                     style={styles.profilePicture}
                                 />
                             </View>
-                                <TouchableOpacity
-                                    style={styles.button}
-                                    onPress={handlePost}
-                                >
-                                    <View style={styles.buttonContent}>
-                                        <Text style={styles.buttonText}>Post</Text>
-                                        <Ionicons name="create" size={27} color='#F26419' />
-                                    </View>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={styles.button}
-                                    onPress={handleToggleFilterMenu} // Toggle filter menu visibility
-                                >
-                                    <View style={styles.buttonContent}>
-                                        <Text style={styles.buttonText}>Filter</Text>
-                                        <Ionicons name="funnel" size={25} color='#F26419' />
-                                    </View>
-                                </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.postButton}
+                                onPress={handlePost}
+                            >
+                                <View style={styles.buttonContent}>
+                                    <Text style={{ color: '#808080', alignSelf: 'center' }}>What's on your mind?</Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.button}
+                                onPress={handleToggleFilterMenu} // Toggle filter menu visibility
+                            >
+                                <Ionicons name="funnel" size={25} color='#000000' />
+                            </TouchableOpacity>
                         </View>
                     ) : (
                         <Text>User not logged in.</Text>
                     )}
 
-                    {/* Emergency Section */}
-                    <View 
-                        style={styles.emergencySection}
-                        onLayout={(event) => {
-                            const { height } = event.nativeEvent.layout;
-                            setEmergencyHeight(height);}}
-                    >
-                        <TouchableOpacity onPress={() => setShowModal(true)}>
-                            <Text style={styles.emergencyText}>Emergencies? Call now!</Text>
-                        </TouchableOpacity>
-                    </View>
 
                     {/* Posts List */}
                     <ScrollView
-                        style={[styles.postsContainer, { marginTop }]}
+                        style={styles.postsContainer}
                         refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                         }
                     >
+                        {/* Emergency Section */}
+                        <View
+                            style={styles.emergencySection}
+                            onLayout={(event) => {
+                                const { height } = event.nativeEvent.layout;
+                                setEmergencyHeight(height);
+                            }}
+                        >
+                            <TouchableOpacity onPress={() => setShowModal(true)}>
+                                <Text style={styles.emergencyText}>Emergencies? Call now!</Text>
+                            </TouchableOpacity>
+                        </View>
+
                         {sortedPosts.map(post => (
                             <View key={post.id} style={styles.postContainer}>
-                                <View style={[styles.eachPostContainer, post.isCrowdAlert ? styles.crowdAlertBackground : styles.normalBackground]}>
+                                <View style={[post.isCrowdAlert ? styles.crowdAlertPostContainer : styles.eachPostContainer]}>
                                     <View style={styles.postUserContainer}>
                                         <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
                                             <Image
@@ -697,26 +775,13 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                             <Text style={styles.postUser}>{post.username}</Text>
                                             <Text style={styles.postDate}>{post.date} • {convertToLocalTime(post.time)}</Text>
                                         </View>
-                                        <View style={styles.actionButtons}>
-                                            {/* pin posts */}
-                                            <TouchableOpacity onPress={() => togglePinPost(post.id, post.isPinned)} style={styles.iconButton}>
-                                                <Ionicons 
-                                                    name={(userData.pinnedPosts && Array.isArray(userData.pinnedPosts) && userData.pinnedPosts.includes(post.id)) ? "pin" : "pin-outline"} 
-                                                    size={20} 
-                                                    color='#000000' 
+                                        <View style={styles.actionButton}>
+                                            <TouchableOpacity onPress={() => openPostActionsModal(post)}>
+                                                <Ionicons
+                                                    name="ellipsis-horizontal"
+                                                    size={20}
+                                                    color='#000000'
                                                 />
-                                            </TouchableOpacity>
-                                            {/* save posts */}
-                                            <TouchableOpacity onPress={() => toggleSavePost(post.id, post.isSaved)} style={styles.iconButton}>
-                                                <Ionicons 
-                                                    name={(userData.savedPosts && Array.isArray(userData.savedPosts) && userData.savedPosts.includes(post.id)) ? "star" : "star-outline"} 
-                                                    size={20} 
-                                                    color='#000000' 
-                                                />
-                                            </TouchableOpacity>
-                                            {/* delete posts */}
-                                            <TouchableOpacity onPress={() => handleDeletePress(post.id)} style={styles.iconButton}>
-                                                <Ionicons name="trash-outline" size={20} color='#000000' />
                                             </TouchableOpacity>
                                         </View>
                                     </View>
@@ -878,7 +943,8 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                 </View>
                             </View>
                         ))}
-                        <Modal visible={imageViewerVisible} transparent={true}>
+
+                        <Modal isVisible={imageViewerVisible} transparent={true}>
                             <View style={styles.modalContainer}>
                                 <ScrollView
                                     horizontal
@@ -898,6 +964,9 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                 </ScrollView>
                             </View>
                         </Modal>
+
+                        {renderPostActionsModal()}
+
                         <DeleteModal
                             isVisible={isModalVisible}
                             onConfirm={confirmDelete}
@@ -912,9 +981,9 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                             onChangeFilter={handleChangeFilter}
                         />
                         {/* Emergency Modal */}
-                        <EmergencyModal 
-                            visible={showModal} 
-                            onClose={() => setShowModal(false)} 
+                        <EmergencyModal
+                            visible={showModal}
+                            onClose={() => setShowModal(false)}
                         />
                     </ScrollView>
                     {/* Navigation Bar */}
@@ -929,7 +998,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
             ) : (
                 <PostScreen handlePostSubmit={handlePostSubmit} handleCancel={handleCancelPost} />
             )}
-        </View>          
+        </View>
     );
 }
 
@@ -965,9 +1034,7 @@ const styles = StyleSheet.create({
     profilePictureContainer: {
         width: 53,
         height: 53,
-        borderWidth: 1,
         borderRadius: 30,
-        borderColor: '#CCCCCC',
         overflow: 'hidden',
         marginRight: 10,
     },
@@ -983,23 +1050,22 @@ const styles = StyleSheet.create({
         borderRadius: 17,
         marginRight: 10,
     },
-    postButtons: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between'
+    postButton: {
+        flex: 1,
+        paddingHorizontal: 10,
+        paddingVertical: 15,
+        borderColor: '#F0F0F0',
+        backgroundColor: '#F0F0F0',
+        borderRadius: 17,
     },
     buttonContent: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     button: {
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 17,
-        marginHorizontal: 10,
+        padding: 10,
     },
     buttonText: {
-        color: "#F26419",
         marginHorizontal: 5,
         fontSize: 16,
         textAlign: 'center',
@@ -1014,10 +1080,9 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         height: '75.2%',
         position: 'absolute',
-        marginTop: 16,
+        marginTop: '32%',
     },
     postContainer: {
-        paddingHorizontal: 16,
         paddingVertical: 10,
         borderBottomColor: '#CCCCCC',
         borderBottomWidth: 1,
@@ -1035,13 +1100,33 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#808080',
     },
-    actionButtons: {
+    postActionsModalContainer: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 17,
+        justifyContent: 'center',
+        width: '80%',
+        alignSelf: 'center',
+        overflow: 'hidden',
+    },
+    separatorLine: {
+        height: 1,
+        backgroundColor: '#CCCCCC',
+    },
+    actionButton: {
         flex: 1,
         flexDirection: 'row',
-        justifyContent: 'flex-end'
+        justifyContent: 'flex-end',
+        paddingRight: 5,
+        paddingBottom: 20,
     },
-    iconButton: {
-        marginHorizontal: 5,
+    postActionsButton: {
+        margin: 15,
+        flexDirection: 'row',
+    },
+    postActionsButtonText: {
+        paddingLeft: 10,
+        alignSelf: 'center',
+        fontSize: 16,
     },
     postTitle: {
         fontSize: 18,
@@ -1162,14 +1247,15 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     eachPostContainer: {
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 5,
         borderRadius: 17,
     },
-    normalBackground: {
-        backgroundColor: 'white',
-    },
-    crowdAlertBackground: {
+    crowdAlertPostContainer: {
         backgroundColor: '#FFE5B4',
+        marginHorizontal: 8,
+        padding: 8,
+        borderRadius: 17,
     },
     locationContainer: {
         flexDirection: 'row',
@@ -1179,9 +1265,9 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     emergencySection: {
-        backgroundColor: '#F8F8F8',
+        backgroundColor: '#F0F0F0',
         alignItems: 'center',
-        borderBottomColor: '#E0E0E0',
+        padding: 5,
     },
     emergencyText: {
         fontSize: 16,

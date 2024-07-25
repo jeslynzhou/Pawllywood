@@ -153,14 +153,14 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                     </View>
                     {/* Pet Profile Label */}
                     <View style={styles.petProfileLabelContainer}>
-                        <Text style={styles.labels}>Pet Profile ({petProfilesData.length > 0 ? `${activePetIndex + 1}/${petProfilesData.length}` : ''})</Text>
-
+                        <View >
+                            <Text style={styles.labels}>Pet Profile ({petProfilesData.length > 0 ? `${activePetIndex + 1}/${petProfilesData.length}` : ''})</Text>
+                        </View>
                         <View style={styles.editButtonContainer}>
                             <TouchableOpacity onPress={handleEditPetProfile} style={styles.editButton}>
                                 <Text style={styles.editButtonText}>Edit Pet Profile</Text>
                             </TouchableOpacity>
                         </View>
-
                     </View>
 
                     <View style={styles.contentContainer}>
@@ -301,11 +301,10 @@ const styles = StyleSheet.create({
     },
     petProfileLabelContainer: {
         flexDirection: 'row',
-        position: 'absolute',
-        top: 80,
-        left: 16,
-        zIndex: 1,
-        marginTop: 27,
+        width: '90%',
+        alignSelf: 'center',
+        justifyContent: 'space-between',
+        marginTop: '25%',
     },
     labels: {
         fontSize: 25,
@@ -315,7 +314,6 @@ const styles = StyleSheet.create({
     },
     editButtonContainer: {
         margin: 11,
-        left: '120%',
     },
     editButton: {
         backgroundColor: '#FFFFFF',

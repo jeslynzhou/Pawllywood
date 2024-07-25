@@ -1,62 +1,77 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import Modal from 'react-native-modal';
 
 const deleteModal = ({ isVisible, onConfirm, onCancel }) => {
     return (
         <Modal
-            animationType="slide"
+            animationIn="fadeIn"
+            animationOut="fadeOut"
             transparent={true}
-            visible={isVisible}
+            isVisible={isVisible}
             onRequestClose={onCancel}
+            onBackdropPress={onCancel}
         >
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
-                    <Text style={styles.modalText}>Are you sure you want to delete this post?</Text>
-                    <View style={styles.modalButtons}>
-                        <TouchableOpacity style={styles.modalButton} onPress={onConfirm}>
-                            <Text style={styles.modalButtonText}>Yes</Text>
-                        </TouchableOpacity>
+                    <Text style={styles.modalText}>Delete this post?</Text>
+                    <View style={styles.modalButtonsContainer}>
+
                         <TouchableOpacity style={styles.modalButton} onPress={onCancel}>
                             <Text style={styles.modalButtonText}>No</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.verticalLine} />
+
+                        <TouchableOpacity style={styles.modalButton} onPress={onConfirm}>
+                            <Text style={styles.modalButtonText}>Yes</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             </View>
         </Modal>
     );
-}
+};
 
 const styles = StyleSheet.create({
     modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        alignSelf: 'center',
     },
     modalContent: {
-        width: 300,
-        padding: 20,
-        backgroundColor: 'white',
-        borderRadius: 17,
+        backgroundColor: '#FFFFFF',
+        width: '80%',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        borderRadius: 17,
     },
     modalText: {
         fontSize: 18,
-        marginBottom: 20,
+        fontWeight: 'bold',
+        padding: 20,
+        alignSelf: 'center',
     },
-    modalButtons: {
+    modalButtonsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
+        margin: 15,
     },
     modalButton: {
         flex: 1,
+        flexDirection: 'row',
         alignItems: 'center',
-        padding: 10,
+        justifyContent: 'center',
     },
     modalButtonText: {
         fontSize: 16,
-        color: '#007BFF',
+        fontWeight: 'bold',
+        color: '#000000',
+        padding: 2,
+    },
+    verticalLine: {
+        borderRightColor: '#808080',
+        borderRightWidth: 1,
+        marginVertical: 4,
     },
 });
 

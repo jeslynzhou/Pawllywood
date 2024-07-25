@@ -741,7 +741,7 @@ const styles = StyleSheet.create({
     },
     addNoteButton: {
         position: 'absolute',
-        bottom: 0,
+        bottom: -27,
         right: 0,
         alignItems: 'center',
         justifyContent: 'center',

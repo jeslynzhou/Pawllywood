@@ -7,7 +7,7 @@ import { auth } from '../../initializeFB';
 import { Ionicons } from '@expo/vector-icons';
 import MapScreen from './mapScr';
 
-export default function PostScreen({ handlePostSubmit, handleCancel }) {
+export default function PostScreen({ handlePostSubmit, handleCancel, }) {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [imageUris, setImageUris] = useState([]);
@@ -98,22 +98,30 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
 
     return (
         <View style={styles.container}>
-            <View style={styles.titleContainer}>
+            <View style={styles.headerContainer}>
+                <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
+                    <Ionicons name="arrow-back-outline" size={24} color='#000000' />
+                </TouchableOpacity>
+                <Text style={styles.headerText}>New post</Text>
+            </View>
+            <View style={styles.contentContainer}>
                 <TextInput
                     style={styles.titleInput}
                     placeholder="Title"
                     value={title}
                     onChangeText={setTitle}
-                />
-            </View>
-            <View style={styles.contentContainer}>
-                <TextInput
-                    style={styles.contentInput}
-                    placeholder="Content"
-                    value={content}
-                    onChangeText={setContent}
                     multiline
+                    numberOfLines={2}
                 />
+                <ScrollView>
+                    <TextInput
+                        style={styles.contentInput}
+                        placeholder="Content"
+                        value={content}
+                        onChangeText={setContent}
+                        multiline
+                    />
+                </ScrollView>
             </View>
             <ScrollView
                 horizontal
@@ -126,7 +134,7 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
                             style={styles.deleteButton}
                             onPress={() => handleDeleteImage(uri)}
                         >
-                            <Ionicons name="close-circle-outline" size={24} color="red" />
+                            <Ionicons name="close-circle" size={24} color="rgba(0, 0, 0, 0.5)" />
                         </TouchableOpacity>
                     </View>
                 ))}
@@ -184,12 +192,6 @@ export default function PostScreen({ handlePostSubmit, handleCancel }) {
             >
                 <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={handleCancel}
-            >
-                <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
         </View>
     );
 }
@@ -199,29 +201,37 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 16,
     },
-    titleContainer: {
-        padding: 5,
-        borderRadius: 17,
-        backgroundColor: 'white',
-        marginVertical: '3%',
+    headerContainer: {
+        flexDirection: 'row',
+        alignContent: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 40,
+    },
+    backButton: {
+        position: 'absolute',
+        zIndex: 1,
+        alignSelf: 'center',
+    },
+    headerText: {
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     titleInput: {
         borderColor: '#CCCCCC',
         padding: 8,
-        marginVertical: 8,
         fontWeight: 'bold',
         fontSize: 20,
     },
     contentInput: {
         borderColor: '#CCCCCC',
         padding: 8,
-        marginVertical: 8,
-        fontSize: 15,
+        fontSize: 16,
+        height: 230,
     },
     contentContainer: {
         padding: 5,
         borderRadius: 17,
-        height: '30%',
+        height: '40%',
         backgroundColor: 'white',
         marginVertical: '3%',
     },
@@ -250,9 +260,6 @@ const styles = StyleSheet.create({
         padding: 16,
         marginVertical: 8,
         alignItems: 'center',
-    },
-    cancelButton: {
-        backgroundColor: '#CCCCCC',
     },
     buttonText: {
         color: '#FFFFFF',
