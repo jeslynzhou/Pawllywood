@@ -18,7 +18,7 @@ const EmergencyModal = ({ visible, onClose }) => {
             transparent={true}
             visible={visible}
             onRequestClose={onClose}
-            animationType="slide"
+            animationType="fade"
         >
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContainer}>
