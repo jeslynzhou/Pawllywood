@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
 
 const deleteModal = ({ isVisible, onConfirm, onCancel }) => {
@@ -24,7 +24,7 @@ const deleteModal = ({ isVisible, onConfirm, onCancel }) => {
                         <View style={styles.verticalLine} />
 
                         <TouchableOpacity style={styles.modalButton} onPress={onConfirm}>
-                            <Text style={styles.modalButtonText}>Yes</Text>
+                            <Text style={[styles.modalButtonText, { color: '#F26419' }]}>Yes</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

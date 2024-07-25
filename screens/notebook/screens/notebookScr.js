@@ -36,6 +36,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     const [selectedNotes, setSelectedNotes] = useState([]);
     const [showSelectingFolderModal, setShowSelectingFolderModal] = useState(false);
     const [showSelectingPetProfileModal, setShowSelectingPetProfileModal] = useState(false);
+    const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false);
     const [selectedDestinationFolder, setSelectedDestinationFolder] = useState(null);
     const [selectedDestinationPetProfile, setSelectedDestinationPetProfile] = useState(null);
 
@@ -241,10 +242,19 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 fetchNotes();
                 setSelectedNotes([]);
                 setIsDeleteMode(false);
+                closeDeleteConfirmationModal();
             }
         } catch (error) {
             console.error('Error deleting notes:', error.message);
         }
+    };
+
+    const openDeleteConfirmationModal = () => {
+        setShowDeleteConfirmationModal(true);
+    };
+
+    const closeDeleteConfirmationModal = () => {
+        setShowDeleteConfirmationModal(false);
     };
 
     { /* Add Folder Modal */ }
@@ -544,6 +554,33 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                             onFolderAdded={addNewFolder}
                         />
 
+                        { /* Delete post confirmation Modal */}
+                        <Modal
+                            isVisible={showDeleteConfirmationModal}
+                            transparent={true}
+                            animationIn="fadeIn"
+                            animationOut="fadeOut"
+                            onBackdropPress={closeDeleteConfirmationModal}
+                        >
+                            <View style={styles.deleteConfirmationModalContainer}>
+                                <View style={styles.deleteConfirmationModalContent}>
+                                    <Text style={styles.deleteConfirmationModalTitle}>Delete this post?</Text>
+                                    <View style={styles.deleteConfirmationModalButtonsContainer}>
+
+                                        <TouchableOpacity style={styles.deleteConfirmationModalButton} onPress={closeDeleteConfirmationModal}>
+                                            <Text style={styles.deleteConfirmationModalButtonText}>No</Text>
+                                        </TouchableOpacity>
+
+                                        <View style={styles.verticalLine} />
+
+                                        <TouchableOpacity style={styles.deleteConfirmationModalButton} onPress={deleteSelectedNotes}>
+                                            <Text style={[styles.deleteConfirmationModalButtonText, { color: '#F26419' }]}>Yes</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                        </Modal>
+
                         {/* Buttons for Moving Mode */}
                         {isMovingMode && (
                             <View style={styles.editModeButtonsContainer}>
@@ -574,7 +611,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                                 <TouchableOpacity onPress={closeEditNotesModal} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
                                     <Text style={styles.editModeButtonText}>Cancel</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={deleteSelectedNotes} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
+                                <TouchableOpacity onPress={openDeleteConfirmationModal} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
                                     <Text style={styles.editModeButtonText}>Confirm Delete</Text>
                                 </TouchableOpacity>
                             </View>
@@ -806,4 +843,45 @@ const styles = StyleSheet.create({
         top: 5,
         right: 5,
     },
+
+    deleteConfirmationModalContainer: {
+        alignSelf: 'center',
+    },
+    deleteConfirmationModalContent: {
+        backgroundColor: '#FFFFFF',
+        width: '80%',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderRadius: 17,
+    },
+    deleteConfirmationModalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        padding: 20,
+        alignSelf: 'center',
+    },
+    deleteConfirmationModalButtonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
+        margin: 15,
+    },
+    deleteConfirmationModalButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    deleteConfirmationModalButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#000000',
+        padding: 2,
+    },
+    verticalLine: {
+        borderRightColor: '#808080',
+        borderRightWidth: 1,
+        marginVertical: 4,
+    },
+
 });

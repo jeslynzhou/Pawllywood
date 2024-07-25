@@ -63,8 +63,8 @@ const FilterMenu = ({ isVisible, onClose, onApply, onClear, selectedFilters, onC
                     <Text>Not Crowd Alert Posts</Text>
                 </View>
                 {/* Add more filter options as needed */}
-                <TouchableOpacity 
-                    style={styles.applyButton} 
+                <TouchableOpacity
+                    style={styles.applyButton}
                     onPress={() => {
                         onApply();
                         onClose(); // Close the modal after applying filters
@@ -72,8 +72,8 @@ const FilterMenu = ({ isVisible, onClose, onApply, onClear, selectedFilters, onC
                 >
                     <Text style={styles.applyButtonText}>Apply Filters</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                    style={styles.clearButton} 
+                <TouchableOpacity
+                    style={styles.clearButton}
                     onPress={() => {
                         handleClearFilters();
                         onClose(); // Close the modal after clearing filters
@@ -98,8 +98,7 @@ const styles = StyleSheet.create({
         left: 30,
         backgroundColor: '#fff',
         padding: 20,
-        borderRadius: 10,
-        elevation: 5, // Adds a shadow effect on Android
+        borderRadius: 17,
     },
     title: {
         fontSize: 18,
@@ -115,7 +114,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
         backgroundColor: '#F26419',
         paddingVertical: 10,
-        borderRadius: 5,
+        borderRadius: 17,
         alignItems: 'center',
     },
     applyButtonText: {
@@ -126,7 +125,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         backgroundColor: '#ddd',
         paddingVertical: 10,
-        borderRadius: 5,
+        borderRadius: 17,
         alignItems: 'center',
     },
     clearButtonText: {

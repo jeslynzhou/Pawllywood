@@ -733,7 +733,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                 style={styles.button}
                                 onPress={handleToggleFilterMenu} // Toggle filter menu visibility
                             >
-                                <Ionicons name="funnel" size={25} color='#000000' />
+                                <Ionicons name="funnel-outline" size={25} color='#000000' />
                             </TouchableOpacity>
                         </View>
                     ) : (
@@ -749,17 +749,18 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                         }
                     >
                         {/* Emergency Section */}
-                        <View
-                            style={styles.emergencySection}
-                            onLayout={(event) => {
-                                const { height } = event.nativeEvent.layout;
-                                setEmergencyHeight(height);
-                            }}
-                        >
-                            <TouchableOpacity onPress={() => setShowModal(true)}>
+                        <TouchableOpacity onPress={() => setShowModal(true)}>
+                            <View
+                                style={styles.emergencySection}
+                                onLayout={(event) => {
+                                    const { height } = event.nativeEvent.layout;
+                                    setEmergencyHeight(height);
+                                }}
+                            >
+
                                 <Text style={styles.emergencyText}>Emergencies? Call now!</Text>
-                            </TouchableOpacity>
-                        </View>
+                            </View>
+                        </TouchableOpacity>
 
                         {sortedPosts.map(post => (
                             <View key={post.id} style={styles.postContainer}>

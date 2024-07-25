@@ -325,7 +325,7 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                             </TouchableOpacity>
                             <View style={styles.verticalLine} />
                             <TouchableOpacity onPress={handleDeleteNote} style={styles.editModalButton}>
-                                <Text style={styles.editModalButtonText}>Delete</Text>
+                                <Text style={[styles.editModalButtonText, { color: '#F26419' }]}>Delete</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
