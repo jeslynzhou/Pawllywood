@@ -176,11 +176,23 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         setCurrentScreen('Post');
     };
 
+    const convertToLocalTime = (isoString) => {
+        const date = new Date(isoString);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    };
+
     const handlePostSubmit = async (title, content, imageUrls, isCrowdAlert, location) => {
         if (!title.trim() || !content.trim()) {
             console.log('Title or content is empty.');
             return;
         }
+
+        const formatDate = (date) => {
+            const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Ensure two digits
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        };
 
         const newPost = {
             title: title,
@@ -188,8 +200,8 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             username: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
             userProfilePicture: userData.picture,
-            date: new Date().toLocaleDateString(),
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+            date: formatDate(new Date()),
+            time: new Date().toISOString(),
             comments: [],
             upvotes: [],
             downvotes: [],
@@ -578,7 +590,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
     };
 
     const { height } = Dimensions.get('window');
-    const marginTop = searchHeight + profileHeight + emergencyHeight * 0.4 + height * 0.04;
+    const marginTop = searchHeight + profileHeight + emergencyHeight * 0.43 + height * 0.04;
 
     if (selectedPost) {
         return <PostDetailsScr post={selectedPost} onBack={() => setSelectedPost(null)} 
@@ -629,20 +641,24 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                     style={styles.profilePicture}
                                 />
                             </View>
-                            <View style={styles.postButtons}>
-                                <TouchableOpacity
-                                    style={styles.button}
-                                    onPress={handleToggleFilterMenu} // Toggle filter menu visibility
-                                >
-                                    <Text style={styles.buttonText}>Filter</Text>
-                                </TouchableOpacity>
                                 <TouchableOpacity
                                     style={styles.button}
                                     onPress={handlePost}
                                 >
-                                    <Text style={styles.buttonText}>Post</Text>
+                                    <View style={styles.buttonContent}>
+                                        <Text style={styles.buttonText}>Post</Text>
+                                        <Ionicons name="create" size={27} color='#F26419' />
+                                    </View>
                                 </TouchableOpacity>
-                            </View>
+                                <TouchableOpacity
+                                    style={styles.button}
+                                    onPress={handleToggleFilterMenu} // Toggle filter menu visibility
+                                >
+                                    <View style={styles.buttonContent}>
+                                        <Text style={styles.buttonText}>Filter</Text>
+                                        <Ionicons name="funnel" size={25} color='#F26419' />
+                                    </View>
+                                </TouchableOpacity>
                         </View>
                     ) : (
                         <Text>User not logged in.</Text>
@@ -679,27 +695,30 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                         </View>
                                         <View>
                                             <Text style={styles.postUser}>{post.username}</Text>
-                                            <Text style={styles.postDate}>{post.date} • {post.time}</Text>
+                                            <Text style={styles.postDate}>{post.date} • {convertToLocalTime(post.time)}</Text>
                                         </View>
-                                        {/* delete posts */}
-                                        <TouchableOpacity onPress={() => handleDeletePress(post.id)}>
-                                            <Ionicons name="trash-outline" size={22} color='#000000' />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => togglePinPost(post.id, post.isPinned)}>
-                                            <Ionicons 
-                                                name={(userData.pinnedPosts && Array.isArray(userData.pinnedPosts) && userData.pinnedPosts.includes(post.id)) ? "pin" : "pin-outline"} 
-                                                size={22} 
-                                                color='#000000' 
-                                            />
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity onPress={() => toggleSavePost(post.id, post.isSaved)}>
-                                            <Ionicons 
-                                                name={(userData.savedPosts && Array.isArray(userData.savedPosts) && userData.savedPosts.includes(post.id)) ? "star" : "star-outline"} 
-                                                size={22} 
-                                                color='#000000' 
-                                            />
-                                        </TouchableOpacity>
+                                        <View style={styles.actionButtons}>
+                                            {/* pin posts */}
+                                            <TouchableOpacity onPress={() => togglePinPost(post.id, post.isPinned)} style={styles.iconButton}>
+                                                <Ionicons 
+                                                    name={(userData.pinnedPosts && Array.isArray(userData.pinnedPosts) && userData.pinnedPosts.includes(post.id)) ? "pin" : "pin-outline"} 
+                                                    size={20} 
+                                                    color='#000000' 
+                                                />
+                                            </TouchableOpacity>
+                                            {/* save posts */}
+                                            <TouchableOpacity onPress={() => toggleSavePost(post.id, post.isSaved)} style={styles.iconButton}>
+                                                <Ionicons 
+                                                    name={(userData.savedPosts && Array.isArray(userData.savedPosts) && userData.savedPosts.includes(post.id)) ? "star" : "star-outline"} 
+                                                    size={20} 
+                                                    color='#000000' 
+                                                />
+                                            </TouchableOpacity>
+                                            {/* delete posts */}
+                                            <TouchableOpacity onPress={() => handleDeletePress(post.id)} style={styles.iconButton}>
+                                                <Ionicons name="trash-outline" size={20} color='#000000' />
+                                            </TouchableOpacity>
+                                        </View>
                                     </View>
                                     <TouchableOpacity onPress={() => handlePress(post)} key={post.id}>
                                         {/* Title */}
@@ -967,15 +986,21 @@ const styles = StyleSheet.create({
     postButtons: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between'
+    },
+    buttonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     button: {
         paddingVertical: 12,
         paddingHorizontal: 20,
         borderRadius: 17,
-        backgroundColor: '#F26419',
+        marginHorizontal: 10,
     },
     buttonText: {
-        color: '#FFFFFF',
+        color: "#F26419",
+        marginHorizontal: 5,
         fontSize: 16,
         textAlign: 'center',
         fontWeight: 'bold',
@@ -1010,13 +1035,21 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#808080',
     },
+    actionButtons: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'flex-end'
+    },
+    iconButton: {
+        marginHorizontal: 5,
+    },
     postTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 8,
+        marginVertical: 8,
     },
     postText: {
-        marginTop: 10,
+        marginBottom: 8,
         fontSize: 16,
     },
     imageScrollContainer: {
