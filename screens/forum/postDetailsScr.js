@@ -1,10 +1,21 @@
 import React from 'react';
 import { View, Text, Image, ScrollView, Button, StyleSheet, TouchableOpacity, Modal, Dimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const PostDetailsScr = ({ post, onBack, openImageViewer, imageViewerVisible, currentImages, currentImageIndex, closeImageViewer }) => {
+    const convertToLocalTime = (isoString) => {
+        const date = new Date(isoString);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    };
+    
     return (
         <View style={styles.postDetailsContainer}>
-            <Button title="Back" onPress={onBack} />
+            <View style={styles.headerContainer}>
+                <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                    <Ionicons name="arrow-back-outline" size={24} color='#000000' />
+                </TouchableOpacity>
+                <Text style={styles.headerText}>Post Details</Text>
+            </View>
             <View style={styles.postUserContainer}>
                 <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
                     <Image
@@ -14,7 +25,7 @@ const PostDetailsScr = ({ post, onBack, openImageViewer, imageViewerVisible, cur
                 </View>
                 <View>
                     <Text style={styles.postUser}>{post.username}</Text>
-                    <Text style={styles.postDate}>{post.date} • {post.time}</Text>
+                    <Text style={styles.postDate}>{post.date} • {convertToLocalTime(post.time)}</Text>
                 </View>
             </View>
             {/* Title */}
@@ -71,9 +82,25 @@ export default PostDetailsScr;
 const styles = StyleSheet.create({
     postDetailsContainer: {
         marginTop: '10%',
+        padding: 16,
         backgroundColor: '#FCF9D9',
         width: '100%',
         flex: 1,
+    },
+    headerContainer: {
+        flexDirection: 'row',
+        alignContent: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 40,
+    },
+    backButton: {
+        position: 'absolute',
+        zIndex: 1,
+        alignSelf: 'center',
+    },
+    headerText: {
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     profilePictureContainer: {
         width: 40,
@@ -89,7 +116,8 @@ const styles = StyleSheet.create({
     postUserContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 8,
+        paddingVertical: 10,
+        borderWidth: 1,
     },
     postUser: {
         fontSize: 16,
@@ -103,11 +131,11 @@ const styles = StyleSheet.create({
     postTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        marginVertical: 10,
+        marginVertical: '3%',
     },
     postText: {
         fontSize: 16,
-        marginBottom: 10,
+        marginBottom: '3%',
     },
     imageScrollContainer: {
         flexDirection: 'row',
