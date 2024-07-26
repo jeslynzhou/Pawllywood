@@ -15,12 +15,12 @@ const ModalTypes = {
 };
 
 const colorOptions = [
-    'rgba(255, 255, 255, 0.7)', // White with 50% opacity
-    'rgba(51, 101, 138, 0.7)',  // #33658A with 50% opacity
-    'rgba(134, 187, 216, 0.7)', // #86BBD8 with 50% opacity
-    'rgba(117, 142, 79, 0.7)',  // #758E4F with 50% opacity
-    'rgba(246, 174, 45, 0.7)',  // #F6AE2D with 50% opacity
-    'rgba(242, 100, 25, 0.7)'   // #F26419 with 50% opacity
+    'rgba(255, 255, 255, 0.7)', // White with 70% opacity
+    'rgba(51, 101, 138, 0.7)',  // #33658A with 70% opacity
+    'rgba(134, 187, 216, 0.7)', // #86BBD8 with 70% opacity
+    'rgba(117, 142, 79, 0.7)',  // #758E4F with 70% opacity
+    'rgba(246, 174, 45, 0.7)',  // #F6AE2D with 70% opacity
+    'rgba(242, 100, 25, 0.7)'   // #F26419 with 70% opacity
 ];
 
 export default function NoteDetailsScreen({ note, closeNoteDetails }) {

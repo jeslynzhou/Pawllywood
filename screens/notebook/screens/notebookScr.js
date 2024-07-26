@@ -126,8 +126,12 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
     { /* Edit Notes Mode */ }
     const openEditNotesModal = () => {
-        setShowEditNotesModal(true);
         setShowEditModal(false);
+    
+        // Use setTimeout to ensure this runs after the state update
+        setTimeout(() => {
+            setShowEditNotesModal(true);
+        }, 1000); // 0 milliseconds delay ensures immediate execution after current call stack
     };
 
     const closeEditNotesModal = () => {
