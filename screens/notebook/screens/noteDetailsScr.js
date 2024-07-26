@@ -6,18 +6,32 @@ import { Ionicons } from '@expo/vector-icons';
 import { db, auth } from '../../../initializeFB';
 import { updateDoc, doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 
+const ModalTypes = {
+    NONE: 'none',
+    EDIT_NOTE: 'edit_note',
+    EDIT_BACKGROUND_COLOR: 'edit_background_color',
+    FOLDER_SELECTION: 'folder_selection',
+    DELETE_CONFIRMATION: 'delete_confirmation'
+};
+
+const colorOptions = [
+    'rgba(255, 255, 255, 0.7)', // White with 50% opacity
+    'rgba(51, 101, 138, 0.7)',  // #33658A with 50% opacity
+    'rgba(134, 187, 216, 0.7)', // #86BBD8 with 50% opacity
+    'rgba(117, 142, 79, 0.7)',  // #758E4F with 50% opacity
+    'rgba(246, 174, 45, 0.7)',  // #F6AE2D with 50% opacity
+    'rgba(242, 100, 25, 0.7)'   // #F26419 with 50% opacity
+];
+
 export default function NoteDetailsScreen({ note, closeNoteDetails }) {
     const [noteTitle, setNoteTitle] = useState('');
     const [noteText, setNoteText] = useState('');
     const [noteFolderId, setNoteFolderId] = useState('');
-    const [showEditNoteModal, setShowEditNoteModal] = useState(false);
-    const [showBackgroundColorModal, setShowBackgroundColorModal] = useState(false);
-    const [showFolderSelectionModal, setShowFolderSelectionModal] = useState(false);
-    const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false);
     const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
     const [selectedBackgroundColor, setSelectedBackgroundColor] = useState('');
     const [folders, setFolders] = useState([]);
-    const [selectedFolderId, setSelectedFolderId] = useState('');
+    const [loadingFolders, setLoadingFolders] = useState(false);
+    const [modalMode, setModalMode] = useState(ModalTypes.NONE);
 
     useEffect(() => {
         setNoteTitle(note.title);
@@ -28,6 +42,7 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
     }, [note]);
 
     const fetchFolders = async () => {
+        setLoadingFolders(true);
         const user = auth.currentUser;
         if (user) {
             try {
@@ -37,15 +52,17 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                     id: doc.id,
                     ...doc.data(),
                 }));
-                // Sort folders by name
                 fetchedFolders.sort((a, b) => a.folderName.localeCompare(b.folderName));
                 setFolders(fetchedFolders);
             } catch (error) {
                 console.error('Error fetching folders:', error.message);
-                Alert.alert('Error fetching folders', 'Failed to fetch folders data. Please try again later.');
+                showAlert('Error fetching folders', 'Failed to fetch folders data. Please try again later.');
+            } finally {
+                setLoadingFolders(false);
             }
         } else {
-            Alert.alert('User not authenticated');
+            showAlert('User not authenticated');
+            setLoadingFolders(false);
         }
     };
 
@@ -54,8 +71,6 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
         if (user) {
             try {
                 const noteRef = doc(db, `users/${user.uid}/notes`, note.id);
-
-                // Check if there are changes before updating
                 if (noteTitle !== note.title || noteText !== note.text || noteFolderId !== note.folderId || backgroundColor !== note.backgroundColor) {
                     await updateDoc(noteRef, {
                         title: noteTitle,
@@ -63,15 +78,15 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                         folderId: noteFolderId,
                         backgroundColor: backgroundColor,
                     });
-                    Alert.alert('Note updated successfully!');
+                    showAlert('Note updated successfully!');
                 }
             } catch (error) {
                 console.error('Error updating note:', error.message);
-                Alert.alert('Error updating note', 'Failed to update note. Please try again later.');
+                showAlert('Error updating note', 'Failed to update note. Please try again later.');
             }
         } else {
             console.log('User not authenticated');
-        };
+        }
     };
 
     const handleBackAndSave = () => {
@@ -79,41 +94,18 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
         closeNoteDetails();
     };
 
-    { /* Edit Note Modal */ }
-    const openEditNoteModal = () => {
-        setShowEditNoteModal(true);
+    const handleModalOpen = (modalType) => {
+        setModalMode(modalType);
     };
 
-    const closeEditNoteModal = () => {
-        setShowEditNoteModal(false);
-    };
-
-    { /* Edit background color */ }
-    const openEditBackgroundColorModal = () => {
-        setShowBackgroundColorModal(true);
-        setShowEditNoteModal(false);
-    };
-
-    const closeEditBackgroundColorModal = () => {
-        setShowBackgroundColorModal(false);
+    const handleModalClose = () => {
+        setModalMode(ModalTypes.NONE);
     };
 
     const handleBackgroundColorSelection = (color) => {
         setBackgroundColor(color);
-        setSelectedBackgroundColor(color); // keep track
-        closeEditBackgroundColorModal();
-    };
-
-    const colorOptions = ['#FFFFFF', '#33658A', '#86BBD8', '#758E4F', '#F6AE2D', '#F26419']
-
-    { /* Move to folder */ }
-    const openFolderSelectionModal = () => {
-        setShowFolderSelectionModal(true);
-        setShowEditNoteModal(false);
-    };
-
-    const closeFolderSelectionModal = () => {
-        setShowFolderSelectionModal(false);
+        setSelectedBackgroundColor(color);
+        handleModalClose();
     };
 
     const handleFolderSelection = async (folderId) => {
@@ -121,31 +113,17 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
         if (user) {
             try {
                 setNoteFolderId(folderId);
-
                 const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
-                await updateDoc(noteRef, {
-                    folderId: folderId,
-                });
-
-                closeFolderSelectionModal();
-                Alert.alert('Note successfully moved to new folder!');
+                await updateDoc(noteRef, { folderId });
+                showAlert('Note successfully moved to new folder!');
+                handleModalClose();
             } catch (error) {
-                console.error('Error mobing note to folder:', error.message);
-                Alert.alert('Error moving note', 'Failed to move note to folder. Please try again later.');
+                console.error('Error moving note to folder:', error.message);
+                showAlert('Error moving note', 'Failed to move note to folder. Please try again later.');
             }
         } else {
-            Alert.alert('User note authenticated');
+            showAlert('User not authenticated');
         }
-    };
-
-    { /* Handle Delete Note */ }
-    const openDeleteConfirmationModal = () => {
-        setShowDeleteConfirmationModal(true);
-        setShowEditNoteModal(false);
-    };
-
-    const closeDeleteConfirmationModal = () => {
-        setShowDeleteConfirmationModal(false);
     };
 
     const handleDeleteNote = async () => {
@@ -154,14 +132,171 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
             try {
                 const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
                 await deleteDoc(noteRef);
-                Alert.alert('Note deleted successfully!');
+                showAlert('Note deleted successfully!');
                 closeNoteDetails();
             } catch (error) {
                 console.error('Error deleting note:', error.message);
-                Alert.alert('Error deleting note', 'Failed to delete note. Please try again later.');
+                showAlert('Error deleting note', 'Failed to delete note. Please try again later.');
             }
         } else {
             console.log('User not authenticated');
+        }
+    };
+
+    const showAlert = (title, message) => {
+        Alert.alert(title, message, [{ text: 'OK' }]);
+    };
+
+    const renderModalContent = () => {
+        switch (modalMode) {
+            case ModalTypes.EDIT_NOTE:
+                return (
+                    <Modal
+                        isVisible={modalMode === ModalTypes.EDIT_NOTE}
+                        transparent={true}
+                        animationIn='fadeIn'
+                        animationOut='fadeOut'
+                        onBackdropPress={handleModalClose}
+                        style={styles.modalContainer}
+                    >
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalButtonContainer}>
+                                <View style={styles.titleContainer}>
+                                    <Text style={styles.modalTitle}>Edit Note</Text>
+                                </View>
+
+                                <View style={styles.separatorLine} />
+
+                                <TouchableOpacity onPress={() => handleModalOpen(ModalTypes.EDIT_BACKGROUND_COLOR)} style={styles.modalButton}>
+                                    <Ionicons name="color-wand-outline" size={24} color='#000000' />
+                                    <Text style={styles.modalButtonText}>Background Color</Text>
+                                </TouchableOpacity>
+
+                                <View style={styles.separatorLine} />
+
+                                <TouchableOpacity onPress={() => handleModalOpen(ModalTypes.FOLDER_SELECTION)} style={styles.modalButton}>
+                                    <Ionicons name="enter-outline" size={24} color='#000000' />
+                                    <Text style={styles.modalButtonText}>Move to folder</Text>
+                                </TouchableOpacity>
+
+                                <View style={styles.separatorLine} />
+
+                                <TouchableOpacity onPress={() => handleModalOpen(ModalTypes.DELETE_CONFIRMATION)} style={styles.modalButton}>
+                                    <Ionicons name="trash-outline" size={24} color='#000000' />
+                                    <Text style={styles.modalButtonText}>Delete Note</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
+                );
+            case ModalTypes.EDIT_BACKGROUND_COLOR:
+                return (
+                    <Modal
+                        isVisible={modalMode === ModalTypes.EDIT_BACKGROUND_COLOR}
+                        transparent={true}
+                        animationIn="fadeIn"
+                        animationOut="fadeOut"
+                        onBackdropPress={handleModalClose}
+                        style={styles.modalContainer}
+                    >
+                        <View style={styles.editModalContainer}>
+                            <View style={styles.editModalContent}>
+                                <View style={{ width: '100%' }}>
+                                    <Text style={styles.editModalTitle}>Background color</Text>
+                                    <View style={styles.separatorLine} />
+                                </View>
+                                <View style={styles.colorsContainer}>
+                                    <View style={styles.colorRow}>
+                                        {colorOptions.slice(0, 3).map((color, index) => (
+                                            <TouchableOpacity
+                                                key={index}
+                                                style={[styles.colorOption, { backgroundColor: color }]}
+                                                onPress={() => handleBackgroundColorSelection(color)}
+                                            >
+                                                {selectedBackgroundColor === color && (
+                                                    <Ionicons name="checkmark-circle" size={60} color="rgba(0, 0, 0, 0.5)" style={styles.checkmark} />
+                                                )}
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                    <View style={styles.colorRow}>
+                                        {colorOptions.slice(3, 6).map((color, index) => (
+                                            <TouchableOpacity
+                                                key={index}
+                                                style={[styles.colorOption, { backgroundColor: color }]}
+                                                onPress={() => handleBackgroundColorSelection(color)}
+                                            >
+                                                {selectedBackgroundColor === color && (
+                                                    <Ionicons name="checkmark-circle" size={60} color="rgba(0, 0, 0, 0.5)" style={styles.checkmark} />
+                                                )}
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
+                    </Modal>
+                );
+            case ModalTypes.FOLDER_SELECTION:
+                return (
+                    <Modal
+                        isVisible={modalMode === ModalTypes.FOLDER_SELECTION}
+                        transparent={true}
+                        animationIn="fadeIn"
+                        animationOut="fadeOut"
+                        onBackdropPress={handleModalClose}
+                        style={styles.modalContainer}
+                    >
+                        <View style={styles.editModalContainer}>
+                            <View style={styles.editModalContent}>
+                                <View style={{ width: '100%' }}>
+                                    <Text style={styles.editModalTitle}>Move to Folder</Text>
+                                    <View style={styles.separatorLine} />
+                                </View>
+                                {/* Adjusted ScrollView style to use contentContainerStyle */}
+                                <ScrollView style={styles.folderScrollView}>
+                                    {folders.map((folder) => (
+                                        <TouchableOpacity
+                                            key={folder.id}
+                                            style={styles.folderOptions}
+                                            onPress={() => handleFolderSelection(folder.id)}
+                                        >
+                                            <Text style={styles.folderName}>{folder.folderName}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            </View>
+                        </View>
+                    </Modal>
+                );
+            case ModalTypes.DELETE_CONFIRMATION:
+                return (
+                    <Modal
+                        isVisible={modalMode === ModalTypes.DELETE_CONFIRMATION}
+                        transparent={true}
+                        animationIn="fadeIn"
+                        animationOut="fadeOut"
+                        onBackdropPress={handleModalClose}
+                        style={styles.modalContainer}
+                    >
+                        <View style={styles.editModalContainer}>
+                            <View style={styles.editModalContent}>
+                                <Text style={styles.editModalTitle}>Delete note?</Text>
+                                <View style={styles.editModalButtonContainer}>
+                                    <TouchableOpacity onPress={handleModalClose} style={styles.editModalButton}>
+                                        <Text style={styles.editModalButtonText}>Cancel</Text>
+                                    </TouchableOpacity>
+                                    <View style={styles.verticalLine} />
+                                    <TouchableOpacity onPress={handleDeleteNote} style={styles.editModalButton}>
+                                        <Text style={[styles.editModalButtonText, { color: '#F26419' }]}>Delete</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </View>
+                    </Modal>
+                );
+            default:
+                return null;
         }
     };
 
@@ -178,7 +313,7 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                     maxLength={100}
                     numberOfLines={1}
                 />
-                <TouchableOpacity onPress={openEditNoteModal} style={styles.editButton}>
+                <TouchableOpacity onPress={() => handleModalOpen(ModalTypes.EDIT_NOTE)} style={styles.editButton}>
                     <Ionicons name="ellipsis-horizontal" size={24} color='#000000' />
                 </TouchableOpacity>
             </View>
@@ -191,149 +326,10 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                     onChangeText={setNoteText}
                 />
             </View>
-
-            {/* Edit Note Modal */}
-            <Modal
-                isVisible={showEditNoteModal}
-                transparent={true}
-                animationIn='fadeIn'
-                animationOut='fadeOut'
-                onBackdropPress={closeEditNoteModal}
-                style={styles.modalContainer}
-            >
-                <View style={styles.modalContent}>
-                    <View style={styles.modalButtonContainer}>
-                        <View style={styles.titleContainer}>
-                            <Text style={styles.modalTitle}>Edit Note</Text>
-                        </View>
-
-                        <View style={styles.separatorLine} />
-
-                        <TouchableOpacity onPress={openEditBackgroundColorModal} style={styles.modalButton}>
-                            <Ionicons name="color-wand-outline" size={24} color='#000000' />
-                            <Text style={styles.modalButtonText}>Background Color</Text>
-                        </TouchableOpacity>
-
-                        <View style={styles.separatorLine} />
-
-                        <TouchableOpacity onPress={openFolderSelectionModal} style={styles.modalButton}>
-                            <Ionicons name="enter-outline" size={24} color='#000000' />
-                            <Text style={styles.modalButtonText}>Move to folder</Text>
-                        </TouchableOpacity>
-
-                        <View style={styles.separatorLine} />
-
-                        <TouchableOpacity onPress={openDeleteConfirmationModal} style={styles.modalButton}>
-                            <Ionicons name="trash-outline" size={24} color='#000000' />
-                            <Text style={styles.modalButtonText}>Delete Note</Text>
-                        </TouchableOpacity>
-
-                    </View>
-                </View>
-            </Modal>
-
-            { /* Edit Background Color Modal */}
-            <Modal
-                isVisible={showBackgroundColorModal}
-                transparent={true}
-                animationIn="fadeIn"
-                animationOut="fadeOut"
-                onBackdropPress={closeEditBackgroundColorModal}
-            >
-                <View style={styles.editModalContainer}>
-                    <View style={styles.editModalContent}>
-                        <View style={{ width: '100%' }}>
-                            <Text style={styles.editModalTitle}>Background color</Text>
-                            <View style={styles.separatorLine} />
-                        </View>
-                        <View style={styles.colorsContainer}>
-                            <View style={styles.colorRow}>
-                                {colorOptions.slice(0, 3).map((color, index) => (
-                                    <TouchableOpacity
-                                        key={index}
-                                        style={[styles.colorOption, { backgroundColor: color }]}
-                                        onPress={() => handleBackgroundColorSelection(color)}
-                                    >
-                                        {selectedBackgroundColor === color && (
-                                            <Ionicons name="checkmark-circle" size={60} color="rgba(0, 0, 0, 0.5)" style={styles.checkmark} />
-                                        )}
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                            <View style={styles.colorRow}>
-                                {colorOptions.slice(3, 6).map((color, index) => (
-                                    <TouchableOpacity
-                                        key={index}
-                                        style={[styles.colorOption, { backgroundColor: color }]}
-                                        onPress={() => handleBackgroundColorSelection(color)}
-                                    >
-                                        {selectedBackgroundColor === color && (
-                                            <Ionicons name="checkmark-circle" size={60} color="rgba(0, 0, 0, 0.5)" style={styles.checkmark} />
-                                        )}
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        </View>
-                    </View>
-                </View>
-            </Modal >
-
-            {/* Folder Selection Modal */}
-            <Modal
-                isVisible={showFolderSelectionModal}
-                transparent={true}
-                animationIn="fadeIn"
-                animationOut="fadeOut"
-                onBackdropPress={closeFolderSelectionModal}
-            >
-                <View style={styles.editModalContainer}>
-                    <View style={styles.editModalContent}>
-                        <View style={{ width: '100%' }}>
-                            <Text style={styles.editModalTitle}>Move to Folder</Text>
-                            <View style={styles.separatorLine} />
-                        </View>
-                        {/* Adjusted ScrollView style to use contentContainerStyle */}
-                        <ScrollView style={styles.folderScrollView}>
-                            {folders.map((folder) => (
-                                <TouchableOpacity
-                                    key={folder.id}
-                                    style={styles.folderOptions}
-                                    onPress={() => handleFolderSelection(folder.id)}
-                                >
-                                    <Text style={styles.folderName}>{folder.folderName}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-                    </View>
-                </View>
-            </Modal>
-
-            { /* Delete Note Confirmation Modal */}
-            < Modal
-                isVisible={showDeleteConfirmationModal}
-                transparent={true}
-                animationIn="fadeIn"
-                animationOut="fadeOut"
-                onBackdropPress={closeDeleteConfirmationModal}
-            >
-                <View style={styles.editModalContainer}>
-                    <View style={styles.editModalContent}>
-                        <Text style={styles.editModalTitle}>Delete note?</Text>
-                        <View style={styles.editModalButtonContainer}>
-                            <TouchableOpacity onPress={closeDeleteConfirmationModal} style={styles.editModalButton}>
-                                <Text style={styles.editModalButtonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <View style={styles.verticalLine} />
-                            <TouchableOpacity onPress={handleDeleteNote} style={styles.editModalButton}>
-                                <Text style={[styles.editModalButtonText, { color: '#F26419' }]}>Delete</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal >
-        </View >
+            {renderModalContent()}
+        </View>
     );
-};
+}
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -377,7 +373,7 @@ const styles = StyleSheet.create({
 
     modalContainer: {
         position: 'absolute',
-        top: 10,
+        top: 50,
         right: 10,
         margin: 0,
     },
@@ -418,7 +414,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#CCCCCC',
     },
     editModalContainer: {
-        alignSelf: 'center',
+        flex: 1,
+        alignContent: 'center',
+        justifyContent: 'center',
     },
     editModalContent: {
         backgroundColor: '#FFFFFF',
