@@ -12,6 +12,7 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
     const [viewMode, setViewMode] = useState('currentPets');
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [isArchivedMode, setIsArchivedMode] = useState(false);
+    const [isUnarchivedMode, setIsUnarchivedMode] = useState(false);
     const [selectedPetsForEdit, setSelectedPetsForEdit] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -85,6 +86,39 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
         } catch (error) {
             console.error('Error archiving pets:', error.message);
             Alert.alert('Error archiving pets.', 'Please try again later.');
+        }
+    };
+
+    { /* Unarchive pets */ }
+    const handleUnarchivedPetsList = () => {
+        setIsUnarchivedMode(true);
+        setShowEditModal(false);
+    };
+
+    const closeUnarchivedPetsList = () => {
+        setSelectedPetsForEdit([]);
+        setIsUnarchivedMode(false);
+    };
+
+    const unarchiveSelectedPets = async () => {
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const archivePromises = selectedPetsForEdit.map(async (petId) => {
+                    const petDocRef = doc(db, 'users', user.uid, 'pets', petId);
+                    await updateDoc(petDocRef, {
+                        isArchived: false,
+                    });
+                });
+                await Promise.all(archivePromises);
+
+                fetchPetData();
+                setSelectedPetsForEdit([]);
+                setIsUnarchivedMode(false);
+            }
+        } catch (error) {
+            console.error('Error unarchiving pets:', error.message);
+            Alert.alert('Error unarchiving pets.', 'Please try again later.');
         }
     };
 
@@ -192,7 +226,7 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                     ) : (
                         petProfilesData.map((petProfile) => (
                             <View key={petProfile.id}>
-                                <TouchableOpacity onPress={directToHome} key={petProfile.id} style={[styles.petInfoContainer]} disabled={isDeleteMode || isArchivedMode}>
+                                <TouchableOpacity onPress={directToHome} key={petProfile.id} style={[styles.petInfoContainer]} disabled={isDeleteMode || isArchivedMode || isUnarchivedMode}>
                                     <View style={styles.profileImageContainer}>
                                         <Image
                                             source={{ uri: petProfile.picture }}
@@ -204,12 +238,12 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                                         <Text style={[styles.text, { fontWeight: 'bold' }]}>{petProfile.name}</Text>
                                         <Text style={styles.text}>Adopted Date: {petProfile.adoptedDate}</Text>
                                     </View>
-                                    {(isDeleteMode || isArchivedMode) && (
+                                    {(isDeleteMode || isArchivedMode || isUnarchivedMode) && (
                                         <TouchableOpacity style={styles.checkboxContainer} onPress={() => toggleSelectPet(petProfile.id)}>
                                             <Ionicons name={selectedPetsForEdit.includes(petProfile.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
                                         </TouchableOpacity>
                                     )}
-                                    {!isDeleteMode && !isArchivedMode && (
+                                    {!isDeleteMode && !isArchivedMode && !isUnarchivedMode && (
                                         <View style={styles.navigateButtonContainer}>
                                             <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
                                         </View>
@@ -236,9 +270,17 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                     <View style={styles.modalButtonContainer}>
                         <View style={styles.separatorLine} />
 
-                        <TouchableOpacity onPress={handleArchivedPetsList} style={styles.modalButton}>
-                            <Text style={styles.modalButtonText}>Archive</Text>
-                        </TouchableOpacity>
+                        {viewMode === "currentPets" && (
+                            <TouchableOpacity onPress={handleArchivedPetsList} style={styles.modalButton}>
+                                <Text style={styles.modalButtonText}>Archive</Text>
+                            </TouchableOpacity>
+                        )}
+
+                        {viewMode === "archivedPets" && (
+                            <TouchableOpacity onPress={handleUnarchivedPetsList} style={styles.modalButton}>
+                                <Text style={styles.modalButtonText}>Unarchive</Text>
+                            </TouchableOpacity>
+                        )}
 
                         <View style={styles.separatorLine} />
 
@@ -258,6 +300,18 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                     </TouchableOpacity>
                     <TouchableOpacity onPress={archiveSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
                         <Text style={styles.editModeButtonText}>Confirm Archive</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {/* Buttons for Unarchived Mode */}
+            {isUnarchivedMode && (
+                <View style={styles.editModeButtonsContainer}>
+                    <TouchableOpacity onPress={closeUnarchivedPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                        <Text style={styles.editModeButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={unarchiveSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
+                        <Text style={styles.editModeButtonText}>Confirm Unarchive</Text>
                     </TouchableOpacity>
                 </View>
             )}
