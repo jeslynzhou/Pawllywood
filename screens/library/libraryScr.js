@@ -151,7 +151,7 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
         ]
         : [
           { name: 'About', image: require('../../assets/library_images/aboutCats.png') },
-          { name: 'Appearance and Colours', image: require('../../assets/library_images/coloursCats.png') },
+          { name: 'Appearance', image: require('../../assets/library_images/coloursCats.png') },
           { name: 'Personality', image: require('../../assets/library_images/personalitiesCats.png') },
           { name: 'Care', image: require('../../assets/library_images/careCats.png') },
           { name: 'Health', image: require('../../assets/library_images/healthCats.png') },
@@ -164,8 +164,12 @@ export default function LibraryScreen({ directToProfile, directToNotebook, direc
             style={styles.aspectButton}
             onPress={() => handleAspectPress(aspect.name)} // Update onPress handler
           >
-            <Image source={aspect.image} style={{ width: imageL, height: imageL, marginBottom: 5 }} />
-            <Text style={styles.buttonText}>{aspect.name}</Text>
+            <View style={styles.aspectButtonImageWrapper}>
+              <Image source={aspect.image} style={styles.image} />
+            </View>
+            <View style={styles.aspectButtonTitleContainer}>
+              <Text style={[styles.buttonText, { fontSize: 14, }]}>{aspect.name}</Text>
+            </View>
           </TouchableOpacity>
         ))}
       </View>
@@ -402,19 +406,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginVertical: 5,
     marginHorizontal: 8,
     maxHeight: 135,
   },
   aspectButton: {
     width: '44%',
     marginHorizontal: 10,
-    marginVertical: 10,
-    padding: 4,
-    borderWidth: 1,
+    marginVertical: 20,
+  },
+  aspectButtonImageWrapper: {
+    height: '90%',
     borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  aspectButtonTitleContainer: {
+    borderWidth: 1,
+    borderRadius: 9,
+    paddingVertical: 4,
+    marginVertical: 5,
+  },
+  image: {
+    height: '125%',
+    width: '100%'
   },
   buttonText: {
     fontSize: 15,

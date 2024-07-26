@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
         paddingTop: 16,
         paddingBottom: 25,
         backgroundColor: '#FFFFFF',
-        height: 665,
+        height: 676,
     },
     input: {
         fontSize: 16,
