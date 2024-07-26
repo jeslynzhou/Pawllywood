@@ -262,9 +262,13 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     };
 
     { /* Add Folder Modal */ }
+
     const openAddFolderModal = () => {
-        setShowAddFolderModal(true);
         setShowEditModal(false);
+
+        setTimeout(() => {
+            setShowAddFolderModal(true);;
+        }, 2000);
     };
 
     const closeAddFolderModal = () => {
