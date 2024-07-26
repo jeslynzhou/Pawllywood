@@ -16,7 +16,7 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
     const [isCrowdAlert, setIsCrowdAlert] = useState(false);
     const [location, setLocation] = useState(null);
     const [showMap, setShowMap] = useState(false);
-    const [showUploadModal, setShowUploadModal] = useState(false); // State for modal visibility
+    const [showUploadModal, setShowUploadModal] = useState(false);
 
     const handleTitleChange = (text) => {
         // Split the text by spaces and check the word count
@@ -117,7 +117,7 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
     if (showMap && location) {
         return <MapScreen latitude={location.latitude} longitude={location.longitude} onBack={() => setShowMap(false)} />;
     }
-
+    
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
@@ -202,7 +202,7 @@ export default function PostScreen({ handlePostSubmit, handleCancel, }) {
                         <TouchableOpacity onPress={() => setShowMap(true)} style={styles.viewButton}>
                             <Text style={styles.viewMapText}>View</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={handleDeleteLocation}>
+                        <TouchableOpacity onPress={handleDeleteLocation} style={styles.deleteLocationButton}>
                             <Ionicons name="trash-outline" size={22} color="#F26419" />
                         </TouchableOpacity>
                     </View>
@@ -229,9 +229,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 16,
-        position: 'absolute',
-        height: '100%',
-        width: '100%',
     },
     headerContainer: {
         flexDirection: 'row',
@@ -308,7 +305,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FAFAFA',
         justifyContent: 'center',
         alignItems: 'center',
-        marginHorizontal: 8,
+        marginRight: 8,
         alignSelf: 'center',
     },
     deleteButton: {
@@ -338,6 +335,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginRight: '4%',
         fontWeight: 'bold',
+        marginLeft: 4,
     },
     switch: {
         width: 50,
@@ -377,19 +375,19 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         paddingLeft: 5,
     },
-    locationText: {
-        marginLeft: 1,
-    },
     viewMapText: {
         fontSize: 14,
         fontWeight: 'bold',
     },
     viewButton: {
-        marginHorizontal: 15,
+        marginHorizontal: '3%',
         borderWidth: 1,
         borderRadius: 10,
         paddingVertical: 5,
-        paddingHorizontal: 10,
+        paddingHorizontal: '2%',
         backgroundColor: '#FFFFFF',
     },
+    deleteLocationButton: {
+        marginRight: '4%',
+    }
 });
