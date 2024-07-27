@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, TouchableOpacity, Image, TextInput, StyleSheet, Alert } from "react-native";
+import Modal from 'react-native-modal';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+
+import { auth } from '../../../initializeFB';
 
 import UploadImageModal from '../../profile/components/uploapImageModal';
 import BirthDateModal from '../components/birthDateModal';
@@ -13,6 +16,7 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
     const [showUploadImageModal, setShowUploadImageModal] = useState(false);
     const [showBirthDateModal, setShowBirthDateModal] = useState(false);
     const [showGenderOptionsModal, setShowGenderOptionsModal] = useState(false);
+    const [showArchiveConfirmationModal, setShowArchiveConfirmationModal] = useState(false);
 
     useEffect(() => {
         setEditedPetProfile({ ...petProfile });
@@ -149,6 +153,27 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
         }
     };
 
+    const openArchiveConfirmationModal = () => {
+        setShowArchiveConfirmationModal(true);
+    };
+
+    const closeArchiveConfirmationModal = () => {
+        setShowArchiveConfirmationModal(false);
+    };
+
+    const handleArchive = async () => {
+        try {
+            const updatedPetProfile = { ...editedPetProfile, isArchived: true };
+            await updatePetProfile(updatedPetProfile);
+            closeArchiveConfirmationModal();
+            closeEditPetProfile();
+            Alert.alert('Success', 'Pet profile archived successfully!');
+        } catch (error) {
+            console.error('Error archiving pet profile', error.message);
+            Alert.alert('Error', 'There was a problem archiving the pet profile. Please try again later.');
+        }
+    };
+
     return (
         <View style={styles.editProfileContainer}>
             {/* Header */}
@@ -223,6 +248,32 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
                 <Text style={styles.buttonText}>Save changes</Text>
             </TouchableOpacity>
 
+            {/* Archive button */}
+            <TouchableOpacity onPress={openArchiveConfirmationModal} style={[styles.button, { backgroundColor: 'rgba(128, 128, 128, 0.7)' }]}>
+                <Text style={styles.buttonText}>Archive</Text>
+            </TouchableOpacity>
+
+            <Modal
+                isVisible={showArchiveConfirmationModal}
+                transparent={true}
+                animationIn="fadeIn"
+                animationOut="fadeOut"
+                onBackdropPress={closeArchiveConfirmationModal}
+            >
+                <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>Archive pet?</Text>
+                    <View style={styles.modalButtonContainer}>
+                        <TouchableOpacity onPress={closeArchiveConfirmationModal} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <View style={styles.verticalLine} />
+                        <TouchableOpacity onPress={handleArchive} style={styles.modalButton}>
+                            <Text style={[styles.modalButtonText, { color: '#F26419' }]}>Archive</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
             {/* Upload Image Modal */}
             <UploadImageModal
                 visible={showUploadImageModal}
@@ -237,12 +288,14 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
                 onDateSelect={handleDateSelect}
                 onClose={closeBirthDateModal}
             />
+
             {/* Gender Modal */}
             <GenderOptionsModal
                 visible={showGenderOptionsModal}
                 onSelectedGender={handleGenderSelect}
                 onClose={closeGenderOptionsModal}
             />
+
         </View>
     );
 };
@@ -322,5 +375,43 @@ const styles = StyleSheet.create({
     inputTextContainer: {
         flex: 1,
         justifyContent: 'center',
+    },
+
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        width: '80%',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderRadius: 17,
+        alignSelf: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        padding: 20,
+        alignSelf: 'center',
+    },
+    modalButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
+        margin: 15,
+    },
+    modalButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modalButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#000000',
+        padding: 2,
+    },
+    verticalLine: {
+        borderRightColor: '#808080',
+        borderRightWidth: 1,
+        marginVertical: 4,
     },
 });

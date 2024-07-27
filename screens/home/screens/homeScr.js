@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-swiper';
 
 import { db, auth } from '../../../initializeFB';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, query, where } from 'firebase/firestore';
 
 import NavigationBar from '../../../components/navigationBar';
 import EditPetProfileScreen from './editPetProfileScr';
@@ -38,7 +38,8 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
             const user = auth.currentUser;
             if (user) {
                 const petsCollectionRef = collection(db, 'users', user.uid, 'pets');
-                const querySnapShot = await getDocs(petsCollectionRef);
+                const q = query(petsCollectionRef, where('isArchived', '==', false));
+                const querySnapShot = await getDocs(q);
                 const fetchedPetProfiles = querySnapShot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
@@ -305,6 +306,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         justifyContent: 'space-between',
         marginTop: '25%',
+        zIndex: 1,
     },
     labels: {
         fontSize: 25,
