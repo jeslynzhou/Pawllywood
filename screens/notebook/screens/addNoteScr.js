@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
-import { addDoc, collection } from 'firebase/firestore';
+import { doc, getDoc, addDoc, collection, updateDoc } from 'firebase/firestore';
 
 export default function AddNoteScreen({ fetchNotes, closeAddNote, petId }) {
     const [title, setTitle] = useState('');
@@ -23,32 +23,56 @@ export default function AddNoteScreen({ fetchNotes, closeAddNote, petId }) {
                 closeAddNote();
                 return;
             }
-
+    
             const noteTitle = title.trim() || 'Untitled';
-
-            // Create a new note document
+    
             const user = auth.currentUser;
-            const notesCollectionRef = collection(db, 'users', user.uid, 'notes'); // Replace 'currentUserId' with the actual user ID
-            await addDoc(notesCollectionRef, {
+            const notesCollectionRef = collection(db, 'users', user.uid, 'notes');
+    
+            // Create a new note document
+            const newNoteRef = await addDoc(notesCollectionRef, {
                 title: noteTitle,
                 text: text.trim(),
                 createdAt: formatDate(new Date()),
-                folderId: folderId.trim() || '', // Optionally assign a folder ID
-                petId: petId || '',
+                folderId: folderId.trim() || '',
+                petId: [], // Initialize with an empty array
                 backgroundColor: '#FFFFFF',
             });
-
+    
+            // If petId is provided, update the note
+            if (petId) {
+                const newNoteDocRef = doc(db, 'users', user.uid, 'notes', newNoteRef.id);
+                
+                // Get the current note document to fetch existing petIds
+                const docSnap = await getDoc(newNoteDocRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    let existingPetIds = data.petId || [];
+                    
+                    // Append the new petId if it's not already in the list
+                    if (!existingPetIds.includes(petId)) {
+                        existingPetIds = [...existingPetIds, petId];
+                        
+                        // Update the document with the new list of petIds
+                        await updateDoc(newNoteDocRef, {
+                            petId: existingPetIds
+                        });
+                    }
+                }
+            }
+    
             // Fetch updated notes data
             fetchNotes();
-
+    
             // Close the Add Note screen
             closeAddNote();
-
+    
             // Reset state
             setTitle('');
             setText('');
             setFolderId('');
-
+    
             Alert.alert('Success', 'Note added successfully!');
         } catch (error) {
             console.error('Error adding note:', error.message);

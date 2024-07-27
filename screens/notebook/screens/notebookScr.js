@@ -4,7 +4,7 @@ import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB.js';
-import { collection, deleteDoc, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, getDoc, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 import NavigationBar from '../../../components/navigationBar.js';
 import AddNoteScreen from './addNoteScr.js';
@@ -54,6 +54,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
             const fetchedNotes = notesSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
+                petId: Array.isArray(doc.data().petId) ? doc.data().petId : [], // Ensure petId is an array
             }));
             setNotes(fetchedNotes);
 
@@ -127,11 +128,10 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     { /* Edit Notes Mode */ }
     const openEditNotesModal = () => {
         setShowEditModal(false);
-
-        // Use setTimeout to ensure this runs after the state update
         setTimeout(() => {
             setShowEditNotesModal(true);
-        }, 1000); // 0 milliseconds delay ensures immediate execution after current call stack
+            console.log('i m good');
+        }, 3000); // 300 milliseconds delay ensures immediate execution after current call stack
     };
 
     const closeEditNotesModal = () => {
@@ -145,6 +145,8 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     { /* Moving Mode */ }
     const onMovingNotes = () => {
         setIsMovingMode(true);
+        setIsPinningMode(false);
+        setIsDeleteMode(false);
         setShowEditNotesModal(false);
         setSelectedDestinationFolder(selectedFolder);
     };
@@ -181,13 +183,20 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
     const onPinToPetProfile = () => {
         setIsPinningMode(true);
-        setShowEditNotesModal(false);
+        setIsMovingMode(false);
+        setIsDeleteMode(false);
+        setTimeout(() => {
+            setShowEditNotesModal(false);
+        }, 100);
     };
 
     const confirmPinToPetProfile = () => {
         if (selectedNotes.length > 0) {
-            setShowSelectingPetProfileModal(true);
-            setShowEditNotesModal(false);
+            console.log('its working');
+            setShowEditNotesModal(false); // First hide the edit notes modal
+            setTimeout(() => {
+                setShowSelectingPetProfileModal(true); // Then show the selecting pet profile modal after a delay
+            }, 300); // Adjust the delay (300ms) as needed
         }
     };
 
@@ -197,8 +206,19 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
             if (user && selectedDestinationPetProfile) {
                 const pinningPromises = selectedNotes.map(async (noteId) => {
                     const noteDocRef = doc(db, 'users', user.uid, 'notes', noteId);
+                    const noteSnapshot = await getDoc(noteDocRef);
+                    const noteData = noteSnapshot.data();
+                    const existingPetIds = noteData.petId || [];
+
+                    if (existingPetIds.includes(selectedDestinationPetProfile.id)) {
+                        // Pet ID is already in the petId array, show an alert
+                        Alert.alert('Alert', 'This note is already pinned to the selected pet profile.');
+                        return;
+                    }
+
+                    // Update the note document with the new petId
                     await updateDoc(noteDocRef, {
-                        petId: selectedDestinationPetProfile.id,
+                        petId: [...existingPetIds, selectedDestinationPetProfile.id],
                     });
                 });
 
@@ -218,17 +238,26 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     { /* Delete Mode */ }
     const confirmDeleteNotes = () => {
         setIsDeleteMode(true);
+        setIsMovingMode(false);
+        setIsPinningMode(false);
         setShowEditNotesModal(false);
     };
 
     const toggleSelectNotesForEdit = (noteId) => {
         const index = selectedNotes.indexOf(noteId);
+
         if (index === -1) {
-            setSelectedNotes([...selectedNotes, noteId]);
+            // Add noteId to selectedNotes after a delay
+            setTimeout(() => {
+                setSelectedNotes([...selectedNotes, noteId]);
+            }, 300); // Adjust the delay (300ms) as needed
         } else {
-            const updatedSelectedNotesForDelete = [...selectedNotes];
-            updatedSelectedNotesForDelete.splice(index, 1);
-            setSelectedNotes(updatedSelectedNotesForDelete);
+            // Remove noteId from selectedNotes after a delay
+            setTimeout(() => {
+                const updatedSelectedNotesForDelete = [...selectedNotes];
+                updatedSelectedNotesForDelete.splice(index, 1);
+                setSelectedNotes(updatedSelectedNotesForDelete);
+            }, 300); // Adjust the delay (300ms) as needed
         }
     };
 
@@ -268,7 +297,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
         setTimeout(() => {
             setShowAddFolderModal(true);;
-        }, 2000);
+        }, 300);
     };
 
     const closeAddFolderModal = () => {
@@ -416,7 +445,9 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                                             {filteredNotes.length > 0 ? (
                                                 renderNoteRows()
                                             ) : (
-                                                <Text style={styles.text}>No notes found in this folder.</Text>
+                                                <View style={{ marginHorizontal: 16 }}>
+                                                    <Text style={styles.text}>No notes found in this folder.</Text>
+                                                </View>
                                             )}
                                         </ScrollView>
                                     )}
@@ -438,11 +469,16 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                             <View style={styles.modalContent}>
                                 <Text style={styles.modalTitle}>Edit</Text>
                                 <View style={styles.modalButtonContainer}>
-                                    <View style={styles.separatorLine} />
 
-                                    <TouchableOpacity onPress={openEditNotesModal} style={styles.modalButton}>
-                                        <Text style={styles.modalButtonText}>Edit Notes</Text>
-                                    </TouchableOpacity>
+
+                                    {filteredNotes.length > 0 && (
+                                        <>
+                                            <View style={styles.separatorLine} />
+                                            <TouchableOpacity onPress={openEditNotesModal} style={styles.modalButton}>
+                                                <Text style={styles.modalButtonText}>Edit Notes</Text>
+                                            </TouchableOpacity>
+                                        </>
+                                    )}
 
                                     <View style={styles.separatorLine} />
 
@@ -508,9 +544,18 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                                                 key={folder.id}
                                                 style={[styles.modalButton, { alignItems: 'flex-start', paddingHorizontal: 15, }]}
                                                 onPress={() => {
+                                                    // Set the selected destination folder immediately
                                                     setSelectedDestinationFolder(folder);
-                                                    moveSelectedNotes();
-                                                    setShowSelectingFolderModal(false);
+
+                                                    // Wait for 300ms before moving selected notes
+                                                    setTimeout(() => {
+                                                        moveSelectedNotes();
+
+                                                        // After moving the notes, wait another 300ms before closing the modal
+                                                        setTimeout(() => {
+                                                            setShowSelectingFolderModal(false);
+                                                        }, 300); // Adjust the delay as needed
+                                                    }, 300); // Adjust the delay as needed
                                                 }}
                                             >
                                                 <Text style={[styles.modalButtonText, { paddingVertical: 5, }]}>{folder.folderName}</Text>
@@ -620,18 +665,27 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                                     <Text style={styles.editModeButtonText}>Cancel</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={openDeleteConfirmationModal} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
-                                    <Text style={styles.editModeButtonText}>Confirm Delete</Text>
+                                    <Text style={styles.editModeButtonText}>Delete</Text>
                                 </TouchableOpacity>
                             </View>
                         )}
-
                     </View >
+
                     {/* Add Note Button */}
                     {!isDeleteMode && !isMovingMode && !isPinningMode && (
                         <TouchableOpacity style={styles.addNoteButton} onPress={handleAddingNote}>
                             <Ionicons name="add-circle" size={70} color='rgba(242, 100, 25, 0.7)' />
                         </TouchableOpacity>
                     )}
+
+                    {/* Navigation Bar */}
+                    <NavigationBar
+                        activeScreen={currentScreen}
+                        directToProfile={directToProfile}
+                        directToHome={directToHome}
+                        directToLibrary={directToLibrary}
+                        directToForum={directToForum}
+                    />
                 </View >
             )}
 
@@ -655,15 +709,6 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 />
             )}
 
-            {/* Navigation Bar */}
-            <NavigationBar
-                activeScreen={currentScreen}
-                directToProfile={directToProfile}
-                directToHome={directToHome}
-                directToLibrary={directToLibrary}
-                directToForum={directToForum}
-            />
-
             { /* Menu Modal */}
             <MenuModal
                 visible={showMenuModal}
@@ -680,13 +725,13 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 const styles = StyleSheet.create({
     notebookContainer: {
         marginTop: '10%',
-        marginHorizontal: 16,
+        flex: 1,
     },
     searchContainer: {
         marginTop: '3%',
-        width: '100%',
         marginBottom: 10,
         flexDirection: 'row',
+        marginHorizontal: 16,
     },
     searchInput: {
         flex: 1,
@@ -701,6 +746,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         width: '100%',
+        marginHorizontal: 16,
     },
     toggleMenuButton: {
         marginRight: 10,
@@ -738,6 +784,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 10,
+        marginHorizontal: 16,
     },
     noteItem: {
         width: ITEM_WIDTH,
@@ -764,6 +811,7 @@ const styles = StyleSheet.create({
     foldersContainer: {
         height: 45,
         borderColor: '#000000',
+        marginHorizontal: 16,
     },
     folderItem: {
         width: 120,
@@ -786,8 +834,8 @@ const styles = StyleSheet.create({
     },
     addNoteButton: {
         position: 'absolute',
-        bottom: '-1.9%',
-        right: 0,
+        bottom: '8.65%',
+        right: '4.1%',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -827,7 +875,7 @@ const styles = StyleSheet.create({
     editModeButtonsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        marginTop: 16,
+        marginHorizontal: 16,
     },
     editModeButton: {
         flex: 1,

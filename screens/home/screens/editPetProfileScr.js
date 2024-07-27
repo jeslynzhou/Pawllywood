@@ -181,7 +181,16 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
                 <TouchableOpacity onPress={closeEditPetProfile} style={styles.backButton}>
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
                 </TouchableOpacity>
-                <Text style={styles.headerText}>Edit Pet Profile</Text>
+                <View style={{ flex: 1, }}>
+                    <Text style={styles.headerText}>Edit Pet Profile</Text>
+                </View>
+
+                {/* Archive button */}
+                <TouchableOpacity onPress={openArchiveConfirmationModal} style={{ justifyContent: 'center' }}>
+                    <View style={styles.editButton}>
+                        <Text style={styles.editButtonText}>Archive</Text>
+                    </View>
+                </TouchableOpacity>
             </View>
 
             {/* Edit Pet Profile Form */}
@@ -248,11 +257,6 @@ export default function EditPetProfileScreen({ petProfile, updatePetProfile, clo
                 <Text style={styles.buttonText}>Save changes</Text>
             </TouchableOpacity>
 
-            {/* Archive button */}
-            <TouchableOpacity onPress={openArchiveConfirmationModal} style={[styles.button, { backgroundColor: 'rgba(128, 128, 128, 0.7)' }]}>
-                <Text style={styles.buttonText}>Archive</Text>
-            </TouchableOpacity>
-
             <Modal
                 isVisible={showArchiveConfirmationModal}
                 transparent={true}
@@ -309,7 +313,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignContent: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 40,
+        paddingLeft: 40,
     },
     backButton: {
         position: 'absolute',
@@ -413,5 +417,17 @@ const styles = StyleSheet.create({
         borderRightColor: '#808080',
         borderRightWidth: 1,
         marginVertical: 4,
+    },
+    editButton: {
+        backgroundColor: '#FFFFFF',
+        borderColor: '#000000',
+        borderWidth: 1,
+        borderRadius: 9,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+    },
+    editButtonText: {
+        fontSize: 10,
+        fontWeight: 'bold',
     },
 });

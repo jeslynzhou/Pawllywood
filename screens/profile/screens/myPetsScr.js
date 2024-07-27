@@ -6,7 +6,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { db, auth } from '../../../initializeFB';
 import { collection, getDocs, deleteDoc, doc, query, where, updateDoc } from 'firebase/firestore';
 
+import ArchivedPetDetailsScreen from './archivedPetDetailsScr';
+
 export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, directToHome }) {
+    const [currentScreen, setCurrentScreen] = useState('MyPets');
     const [petProfilesData, setPetProfilesData] = useState([]);
     const [showEditModal, setShowEditModal] = useState(false);
     const [viewMode, setViewMode] = useState('currentPets');
@@ -15,6 +18,7 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
     const [isUnarchivedMode, setIsUnarchivedMode] = useState(false);
     const [selectedPetsForEdit, setSelectedPetsForEdit] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedArchivedPetId, setSelectedArchivedPetId] = useState('');
 
     async function fetchPetData() {
         try {
@@ -46,6 +50,11 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
     useEffect(() => {
         fetchPetData();
     }, [viewMode]);
+
+    const onClose = () => {
+        setCurrentScreen('MyPets');
+    };
+
 
     { /* Edit Modal */ }
     const openEditModal = () => {
@@ -173,161 +182,181 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
         setViewMode('archivedPets');
     };
 
+    const openArchivedPetDetailsScreen = (petId) => {
+        setSelectedArchivedPetId(petId);
+        setCurrentScreen('archivedPetDetails');
+    };
+
     return (
-        <View style={styles.myPetsContainer}>
-            {/* Header */}
-            <View style={styles.headerContainer}>
-                <TouchableOpacity onPress={closeMyPetsScreen} style={styles.backButton}>
-                    <Ionicons name="arrow-back-outline" size={24} color='#000000' />
-                </TouchableOpacity>
-                <Text style={styles.headerText}>My Pets</Text>
-                <TouchableOpacity onPress={petProfilesData.length > 0 ? openEditModal : closeEditModal} style={styles.editContainer}>
-                    <Text style={styles.editText}>Edit</Text>
-                </TouchableOpacity>
-            </View>
+        <>
+            {currentScreen === 'MyPets' && (
+                <View style={styles.myPetsContainer}>
+                    {/* Header */}
+                    <View style={styles.headerContainer}>
+                        <TouchableOpacity onPress={closeMyPetsScreen} style={styles.backButton}>
+                            <Ionicons name="arrow-back-outline" size={24} color='#000000' />
+                        </TouchableOpacity>
+                        <Text style={styles.headerText}>My Pets</Text>
+                        <TouchableOpacity onPress={petProfilesData.length > 0 ? openEditModal : closeEditModal} style={styles.editContainer}>
+                            <Text style={styles.editText}>Edit</Text>
+                        </TouchableOpacity>
+                    </View>
 
-            <View style={styles.viewModeContainer}>
-                <TouchableOpacity style={[styles.viewModeButton, viewMode === 'currentPets' ? styles.viewModeActiveButton : null]} onPress={handleCurrentPetsView}>
-                    <Text style={styles.viewModeButtonText}>Current</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.viewModeButton, viewMode === 'archivedPets' ? styles.viewModeActiveButton : null]} onPress={handleArchivedPetsView}>
-                    <Text style={styles.viewModeButtonText}>Archive</Text>
-                </TouchableOpacity>
-            </View>
+                    <View style={styles.viewModeContainer}>
+                        <TouchableOpacity style={[styles.viewModeButton, viewMode === 'currentPets' ? styles.viewModeActiveButton : null]} onPress={handleCurrentPetsView}>
+                            <Text style={styles.viewModeButtonText}>Current</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.viewModeButton, viewMode === 'archivedPets' ? styles.viewModeActiveButton : null]} onPress={handleArchivedPetsView}>
+                            <Text style={styles.viewModeButtonText}>Archive</Text>
+                        </TouchableOpacity>
+                    </View>
 
-            {loading ? (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size='large' color='#F26419' />
-                </View>
-            ) : (
-                <View style={styles.contentContainer}>
-                    {/* My Pets List */}
-                    {petProfilesData.length === 0 ? (
-                        <>
-                            {viewMode === 'currentPets' && (
-                                <TouchableOpacity onPress={handleAddingPet} style={styles.petInfoContainer}>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={styles.text}>You don't have any pets. Click here to add your first pet now!</Text>
-                                    </View>
-                                    <View style={styles.navigateButtonContainer}>
-                                        <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
-                                    </View>
-                                </TouchableOpacity>
-                            )}
-                            {viewMode === 'archivedPets' && (
-                                <View style={styles.petInfoContainer}>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={styles.text}>You don't have any pets in archive.</Text>
-                                    </View>
-                                </View>
-                            )}
-
-                        </>
+                    {loading ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size='large' color='#F26419' />
+                        </View>
                     ) : (
-                        petProfilesData.map((petProfile) => (
-                            <View key={petProfile.id}>
-                                <TouchableOpacity onPress={directToHome} key={petProfile.id} style={[styles.petInfoContainer]} disabled={isDeleteMode || isArchivedMode || isUnarchivedMode}>
-                                    <View style={styles.profileImageContainer}>
-                                        <Image
-                                            source={{ uri: petProfile.picture }}
-                                            style={styles.profileImage}
-                                            resizeMode='cover'
-                                        />
-                                    </View>
-                                    <View style={styles.nameAndAdoptedDateContainer}>
-                                        <Text style={[styles.text, { fontWeight: 'bold' }]}>{petProfile.name}</Text>
-                                        <Text style={styles.text}>Adopted Date: {petProfile.adoptedDate}</Text>
-                                    </View>
-                                    {(isDeleteMode || isArchivedMode || isUnarchivedMode) && (
-                                        <TouchableOpacity style={styles.checkboxContainer} onPress={() => toggleSelectPet(petProfile.id)}>
-                                            <Ionicons name={selectedPetsForEdit.includes(petProfile.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
+                        <View style={styles.contentContainer}>
+                            {/* My Pets List */}
+                            {petProfilesData.length === 0 ? (
+                                <>
+                                    {viewMode === 'currentPets' && (
+                                        <TouchableOpacity onPress={handleAddingPet} style={styles.petInfoContainer}>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={styles.text}>You don't have any pets. Click here to add your first pet now!</Text>
+                                            </View>
+                                            <View style={styles.navigateButtonContainer}>
+                                                <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
+                                            </View>
                                         </TouchableOpacity>
                                     )}
-                                    {!isDeleteMode && !isArchivedMode && !isUnarchivedMode && (
-                                        <View style={styles.navigateButtonContainer}>
-                                            <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
+                                    {viewMode === 'archivedPets' && (
+                                        <View style={styles.petInfoContainer}>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={styles.text}>You don't have any pets in archive.</Text>
+                                            </View>
                                         </View>
                                     )}
-                                </TouchableOpacity>
-                                <View style={styles.separatorLine} />
-                            </View>
-                        ))
 
+                                </>
+                            ) : (
+                                petProfilesData.map((petProfile) => (
+                                    <View key={petProfile.id}>
+                                        <TouchableOpacity
+                                            onPress={() => viewMode === 'archivedPets' ? openArchivedPetDetailsScreen(petProfile.id) : directToHome()}
+                                            key={petProfile.id}
+                                            style={[styles.petInfoContainer]}
+                                            disabled={isDeleteMode || isArchivedMode || isUnarchivedMode}
+                                        >
+                                            <View style={styles.profileImageContainer}>
+                                                <Image
+                                                    source={{ uri: petProfile.picture }}
+                                                    style={styles.profileImage}
+                                                    resizeMode='cover'
+                                                />
+                                            </View>
+                                            <View style={styles.nameAndAdoptedDateContainer}>
+                                                <Text style={[styles.text, { fontWeight: 'bold' }]}>{petProfile.name}</Text>
+                                                <Text style={styles.text}>Adopted Date: {petProfile.adoptedDate}</Text>
+                                            </View>
+                                            {(isDeleteMode || isArchivedMode || isUnarchivedMode) && (
+                                                <TouchableOpacity style={styles.checkboxContainer} onPress={() => toggleSelectPet(petProfile.id)}>
+                                                    <Ionicons name={selectedPetsForEdit.includes(petProfile.id) ? 'checkbox-outline' : 'square-outline'} size={24} color='#000000' />
+                                                </TouchableOpacity>
+                                            )}
+                                            {!isDeleteMode && !isArchivedMode && !isUnarchivedMode && (
+                                                <View style={styles.navigateButtonContainer}>
+                                                    <Ionicons name="chevron-forward-outline" size={24} color='#CCCCCC' />
+                                                </View>
+                                            )}
+                                        </TouchableOpacity>
+                                        <View style={styles.separatorLine} />
+                                    </View>
+                                ))
+
+                            )}
+                        </View>
                     )}
-                </View>
-            )}
 
-            {/* Edit Modal */}
-            <Modal
-                isVisible={showEditModal}
-                transparent={true}
-                animationIn='fadeIn'
-                animationOut='fadeOut'
-                onBackdropPress={closeEditModal}
-            >
-                <View style={styles.modalContent}>
-                    <Text style={styles.modalTitle}>Do you want to edit your pets list?</Text>
-                    <View style={styles.modalButtonContainer}>
-                        <View style={styles.separatorLine} />
+                    {/* Edit Modal */}
+                    <Modal
+                        isVisible={showEditModal}
+                        transparent={true}
+                        animationIn='fadeIn'
+                        animationOut='fadeOut'
+                        onBackdropPress={closeEditModal}
+                    >
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>Do you want to edit your pets list?</Text>
+                            <View style={styles.modalButtonContainer}>
+                                <View style={styles.separatorLine} />
 
-                        {viewMode === "currentPets" && (
-                            <TouchableOpacity onPress={handleArchivedPetsList} style={styles.modalButton}>
-                                <Text style={styles.modalButtonText}>Archive</Text>
+                                {viewMode === "currentPets" && (
+                                    <TouchableOpacity onPress={handleArchivedPetsList} style={styles.modalButton}>
+                                        <Text style={styles.modalButtonText}>Archive</Text>
+                                    </TouchableOpacity>
+                                )}
+
+                                {viewMode === "archivedPets" && (
+                                    <TouchableOpacity onPress={handleUnarchivedPetsList} style={styles.modalButton}>
+                                        <Text style={styles.modalButtonText}>Unarchive</Text>
+                                    </TouchableOpacity>
+                                )}
+
+                                <View style={styles.separatorLine} />
+
+                                <TouchableOpacity onPress={handleDeletePetsList} style={styles.modalButton}>
+                                    <Text style={styles.modalButtonText}>Delete</Text>
+                                </TouchableOpacity>
+
+                            </View>
+                        </View>
+                    </Modal >
+
+                    {/* Buttons for Archived Mode */}
+                    {isArchivedMode && (
+                        <View style={styles.editModeButtonsContainer}>
+                            <TouchableOpacity onPress={closeArchivedPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                                <Text style={styles.editModeButtonText}>Cancel</Text>
                             </TouchableOpacity>
-                        )}
-
-                        {viewMode === "archivedPets" && (
-                            <TouchableOpacity onPress={handleUnarchivedPetsList} style={styles.modalButton}>
-                                <Text style={styles.modalButtonText}>Unarchive</Text>
+                            <TouchableOpacity onPress={archiveSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
+                                <Text style={styles.editModeButtonText}>Confirm Archive</Text>
                             </TouchableOpacity>
-                        )}
+                        </View>
+                    )}
 
-                        <View style={styles.separatorLine} />
+                    {/* Buttons for Unarchived Mode */}
+                    {isUnarchivedMode && (
+                        <View style={styles.editModeButtonsContainer}>
+                            <TouchableOpacity onPress={closeUnarchivedPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                                <Text style={styles.editModeButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={unarchiveSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
+                                <Text style={styles.editModeButtonText}>Confirm Unarchive</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
 
-                        <TouchableOpacity onPress={handleDeletePetsList} style={styles.modalButton}>
-                            <Text style={styles.modalButtonText}>Delete</Text>
-                        </TouchableOpacity>
-
-                    </View>
-                </View>
-            </Modal >
-
-            {/* Buttons for Archived Mode */}
-            {isArchivedMode && (
-                <View style={styles.editModeButtonsContainer}>
-                    <TouchableOpacity onPress={closeArchivedPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
-                        <Text style={styles.editModeButtonText}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={archiveSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
-                        <Text style={styles.editModeButtonText}>Confirm Archive</Text>
-                    </TouchableOpacity>
-                </View>
+                    {/* Buttons for Delete Mode */}
+                    {isDeleteMode && (
+                        <View style={styles.editModeButtonsContainer}>
+                            <TouchableOpacity onPress={closeDeleteMyPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                                <Text style={styles.editModeButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={deleteSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
+                                <Text style={styles.editModeButtonText}>Confirm Delete</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View >
             )}
-
-            {/* Buttons for Unarchived Mode */}
-            {isUnarchivedMode && (
-                <View style={styles.editModeButtonsContainer}>
-                    <TouchableOpacity onPress={closeUnarchivedPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
-                        <Text style={styles.editModeButtonText}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={unarchiveSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
-                        <Text style={styles.editModeButtonText}>Confirm Unarchive</Text>
-                    </TouchableOpacity>
-                </View>
+            {currentScreen === 'archivedPetDetails' && (
+                <ArchivedPetDetailsScreen
+                    onClose={onClose}
+                    archivedPetId={selectedArchivedPetId}
+                />
             )}
-
-            {/* Buttons for Delete Mode */}
-            {isDeleteMode && (
-                <View style={styles.editModeButtonsContainer}>
-                    <TouchableOpacity onPress={closeDeleteMyPetsList} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
-                        <Text style={styles.editModeButtonText}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={deleteSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
-                        <Text style={styles.editModeButtonText}>Confirm Delete</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
-        </View >
+        </>
     );
 };
 

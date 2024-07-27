@@ -46,6 +46,7 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
         setNoteTitle(note.title);
         setNoteText(note.text);
         setNoteFolderId(note.folderId || '');
+        setNotePetIds(note.petId || []);
         setBackgroundColor(note.backgroundColor);
     }, [note]);
 
@@ -330,7 +331,7 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                                         <TouchableOpacity
                                             key={folder.id}
                                             style={styles.folderOptions}
-                                            onPress={() => handlePetSelection(folder.id)}
+                                            onPress={() => handleFolderSelection(folder.id)}
                                         >
                                             <Text style={styles.folderName}>{folder.folderName}</Text>
                                         </TouchableOpacity>
@@ -364,7 +365,7 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                                             <TouchableOpacity
                                                 key={pet.id}
                                                 style={styles.folderOptions}
-                                                onPress={() => handleFolderSelection(pet.id)}
+                                                onPress={() => handlePetSelection(pet.id)}
                                             >
                                                 <Text style={styles.folderName}>{pet.name}</Text>
                                             </TouchableOpacity>
