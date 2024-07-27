@@ -19,7 +19,10 @@ const PostDetailsScr = ({ post, onBack, openImageViewer, imageViewerVisible, cur
     }
 
     return (
-        <View style={styles.postDetailsContainer}>
+        <View style={[
+            styles.postDetailsContainer,
+            { backgroundColor: post.isCrowdAlert ? '#FFE5B4' : '#FCF9D9' }
+        ]}>
             <View style={styles.headerContainer}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
                     <Ionicons name="arrow-back-outline" size={24} color='#000000' />
@@ -29,7 +32,7 @@ const PostDetailsScr = ({ post, onBack, openImageViewer, imageViewerVisible, cur
             <View style={styles.postUserContainer}>
                 <View style={[styles.profilePictureContainer, { width: 40, height: 40 }]}>
                     <Image
-                        source={userData.picture ? { uri: userData.picture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
+                        source={post.userProfilePicture ? { uri: post.userProfilePicture } : ref(storage, 'default_profile_picture/default_profile_picture.png')}
                         style={styles.profilePicture}
                     />
                 </View>
@@ -169,9 +172,9 @@ export default PostDetailsScr;
 
 const styles = StyleSheet.create({
     postDetailsContainer: {
-        marginTop: '10%',
-        padding: 16,
-        backgroundColor: '#FCF9D9',
+        paddingTop: '15%',
+        paddingBottom: 16,
+        paddingHorizontal: 16,
         width: '100%',
         flex: 1,
     },

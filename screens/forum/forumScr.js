@@ -179,6 +179,13 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
         setCurrentScreen('Post');
     };
 
+    const formatDate = (date) => {
+        const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Ensure two digits
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
     const convertToLocalTime = (isoString) => {
         const date = new Date(isoString);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -189,13 +196,6 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             Alert.alert('Title and content cannot be empty.');
             return;
         }
-
-        const formatDate = (date) => {
-            const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
-            const month = String(date.getMonth() + 1).padStart(2, '0'); // Ensure two digits
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
-        };
 
         const newPost = {
             title: title,
