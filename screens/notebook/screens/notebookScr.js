@@ -4,7 +4,7 @@ import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB.js';
-import { collection, deleteDoc, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, getDoc, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 import NavigationBar from '../../../components/navigationBar.js';
 import AddNoteScreen from './addNoteScr.js';
@@ -54,6 +54,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
             const fetchedNotes = notesSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
+                petId: Array.isArray(doc.data().petId) ? doc.data().petId : [], // Ensure petId is an array
             }));
             setNotes(fetchedNotes);
 
@@ -127,11 +128,10 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     { /* Edit Notes Mode */ }
     const openEditNotesModal = () => {
         setShowEditModal(false);
-    
-        // Use setTimeout to ensure this runs after the state update
         setTimeout(() => {
             setShowEditNotesModal(true);
-        }, 1000); // 0 milliseconds delay ensures immediate execution after current call stack
+            console.log('i m good');
+        }, 3000); // 300 milliseconds delay ensures immediate execution after current call stack
     };
 
     const closeEditNotesModal = () => {
@@ -181,13 +181,18 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
     const onPinToPetProfile = () => {
         setIsPinningMode(true);
-        setShowEditNotesModal(false);
+        setTimeout(() => {
+            setShowEditNotesModal(false);
+        }, 100);
     };
 
     const confirmPinToPetProfile = () => {
         if (selectedNotes.length > 0) {
-            setShowSelectingPetProfileModal(true);
-            setShowEditNotesModal(false);
+            console.log('its working');
+            setShowEditNotesModal(false); // First hide the edit notes modal
+            setTimeout(() => {
+                setShowSelectingPetProfileModal(true); // Then show the selecting pet profile modal after a delay
+            }, 300); // Adjust the delay (300ms) as needed
         }
     };
 
@@ -197,13 +202,24 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
             if (user && selectedDestinationPetProfile) {
                 const pinningPromises = selectedNotes.map(async (noteId) => {
                     const noteDocRef = doc(db, 'users', user.uid, 'notes', noteId);
+                    const noteSnapshot = await getDoc(noteDocRef);
+                    const noteData = noteSnapshot.data();
+                    const existingPetIds = noteData.petId || [];
+    
+                    if (existingPetIds.includes(selectedDestinationPetProfile.id)) {
+                        // Pet ID is already in the petId array, show an alert
+                        Alert.alert('Alert', 'This note is already pinned to the selected pet profile.');
+                        return;
+                    }
+    
+                    // Update the note document with the new petId
                     await updateDoc(noteDocRef, {
-                        petId: selectedDestinationPetProfile.id,
+                        petId: [...existingPetIds, selectedDestinationPetProfile.id],
                     });
                 });
-
+    
                 await Promise.all(pinningPromises);
-
+    
                 fetchNotes();  // Update the state after pinning notes
                 setSelectedNotes([]);
                 setSelectedDestinationPetProfile(null);
@@ -223,12 +239,19 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
     const toggleSelectNotesForEdit = (noteId) => {
         const index = selectedNotes.indexOf(noteId);
+        
         if (index === -1) {
-            setSelectedNotes([...selectedNotes, noteId]);
+            // Add noteId to selectedNotes after a delay
+            setTimeout(() => {
+                setSelectedNotes([...selectedNotes, noteId]);
+            }, 300); // Adjust the delay (300ms) as needed
         } else {
-            const updatedSelectedNotesForDelete = [...selectedNotes];
-            updatedSelectedNotesForDelete.splice(index, 1);
-            setSelectedNotes(updatedSelectedNotesForDelete);
+            // Remove noteId from selectedNotes after a delay
+            setTimeout(() => {
+                const updatedSelectedNotesForDelete = [...selectedNotes];
+                updatedSelectedNotesForDelete.splice(index, 1);
+                setSelectedNotes(updatedSelectedNotesForDelete);
+            }, 300); // Adjust the delay (300ms) as needed
         }
     };
 
@@ -268,7 +291,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
         setTimeout(() => {
             setShowAddFolderModal(true);;
-        }, 2000);
+        }, 300);
     };
 
     const closeAddFolderModal = () => {
@@ -508,9 +531,18 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                                                 key={folder.id}
                                                 style={[styles.modalButton, { alignItems: 'flex-start', paddingHorizontal: 15, }]}
                                                 onPress={() => {
+                                                    // Set the selected destination folder immediately
                                                     setSelectedDestinationFolder(folder);
-                                                    moveSelectedNotes();
-                                                    setShowSelectingFolderModal(false);
+                                                
+                                                    // Wait for 300ms before moving selected notes
+                                                    setTimeout(() => {
+                                                        moveSelectedNotes();
+                                                
+                                                        // After moving the notes, wait another 300ms before closing the modal
+                                                        setTimeout(() => {
+                                                            setShowSelectingFolderModal(false);
+                                                        }, 300); // Adjust the delay as needed
+                                                    }, 300); // Adjust the delay as needed
                                                 }}
                                             >
                                                 <Text style={[styles.modalButtonText, { paddingVertical: 5, }]}>{folder.folderName}</Text>

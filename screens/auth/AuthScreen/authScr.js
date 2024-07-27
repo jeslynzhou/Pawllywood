@@ -74,7 +74,7 @@ const AuthScreen = ({
           createdAt: formatDate(new Date()),
           text: 'I love my pet!',
           folderId: '', // optional
-          petId: '', // optional
+          petId: [], // optional
           backgroundColor: '#FFFFFF',
         });
 

@@ -72,21 +72,26 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                 console.log('User not authenticated.');
                 return;
             }
-
+    
             if (petProfilesData.length === 0) {
                 console.log('Pet profiles data is empty.');
                 return;
             }
-
+    
             const petId = petProfilesData[activePetIndex].id;
             const notesCollectionRef = collection(db, 'users', user.uid, 'notes');
             const querySnapShot = await getDocs(notesCollectionRef);
+    
             const fetchedNotes = querySnapShot.docs
-                .filter(doc => doc.data().petId === petId)
+                .filter(doc => {
+                    const noteData = doc.data();
+                    return Array.isArray(noteData.petId) && noteData.petId.includes(petId);
+                })
                 .map(doc => ({
                     id: doc.id,
                     ...doc.data(),
                 }));
+    
             setPetNotes(fetchedNotes);
         } catch (error) {
             console.error('Error fetching pet notes:', error.message);
