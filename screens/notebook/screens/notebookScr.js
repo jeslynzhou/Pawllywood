@@ -127,7 +127,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     { /* Edit Notes Mode */ }
     const openEditNotesModal = () => {
         setShowEditModal(false);
-    
+
         // Use setTimeout to ensure this runs after the state update
         setTimeout(() => {
             setShowEditNotesModal(true);
@@ -786,7 +786,7 @@ const styles = StyleSheet.create({
     },
     addNoteButton: {
         position: 'absolute',
-        bottom: -27,
+        bottom: '-1.9%',
         right: 0,
         alignItems: 'center',
         justifyContent: 'center',

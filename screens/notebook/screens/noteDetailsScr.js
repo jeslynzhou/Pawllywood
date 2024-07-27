@@ -4,13 +4,14 @@ import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
-import { updateDoc, doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
+import { updateDoc, doc, deleteDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 const ModalTypes = {
     NONE: 'none',
     EDIT_NOTE: 'edit_note',
     EDIT_BACKGROUND_COLOR: 'edit_background_color',
     FOLDER_SELECTION: 'folder_selection',
+    PIN_TO_PET_PROFILE: 'pin_to_pet_profile',
     DELETE_CONFIRMATION: 'delete_confirmation'
 };
 
@@ -26,19 +27,26 @@ const colorOptions = [
 export default function NoteDetailsScreen({ note, closeNoteDetails }) {
     const [noteTitle, setNoteTitle] = useState('');
     const [noteText, setNoteText] = useState('');
-    const [noteFolderId, setNoteFolderId] = useState('');
+    const [notePetIds, setNotePetIds] = useState(note.petId || []);
+    const [noteFolderId, setNoteFolderId] = useState(note.folderId || '');
     const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
     const [selectedBackgroundColor, setSelectedBackgroundColor] = useState('');
     const [folders, setFolders] = useState([]);
+    const [petProfiles, setPetProfiles] = useState([]);
     const [loadingFolders, setLoadingFolders] = useState(false);
+    const [loadingPetProfiles, setLoadingPetProfiles] = useState(false);
     const [modalMode, setModalMode] = useState(ModalTypes.NONE);
+
+    useEffect(() => {
+        fetchPetProfiles();
+        fetchFolders();
+    }, []);
 
     useEffect(() => {
         setNoteTitle(note.title);
         setNoteText(note.text);
-        setNoteFolderId(note.folderId);
+        setNoteFolderId(note.folderId || '');
         setBackgroundColor(note.backgroundColor);
-        fetchFolders();
     }, [note]);
 
     const fetchFolders = async () => {
@@ -66,15 +74,42 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
         }
     };
 
+    const fetchPetProfiles = async () => {
+        setLoadingPetProfiles(true);
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                const petProfilesCollectionRef = collection(db, 'users', user.uid, 'pets');
+                const q = query(petProfilesCollectionRef, where('isArchived', '==', false));
+                const petProfilesSnapshot = await getDocs(q);
+                const fetchedPetProfiles = petProfilesSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+                fetchedPetProfiles.sort((a, b) => a.name.localeCompare(b.name));
+                setPetProfiles(fetchedPetProfiles);
+            } catch (error) {
+                console.error('Error fetching pet profiles:', error.message);
+                showAlert('Error fetching pet profiles', 'Failed to fetch folders data. Please try again later.');
+            } finally {
+                setLoadingPetProfiles(false);
+            }
+        } else {
+            showAlert('User not authenticated');
+            setLoadingPetProfiles(false);
+        }
+    };
+
     const handleSaveNote = async () => {
         const user = auth.currentUser;
         if (user) {
             try {
                 const noteRef = doc(db, `users/${user.uid}/notes`, note.id);
-                if (noteTitle !== note.title || noteText !== note.text || noteFolderId !== note.folderId || backgroundColor !== note.backgroundColor) {
+                if (noteTitle !== note.title || noteText !== note.text || !arraysEqual(notePetIds, note.petId) || noteFolderId !== note.folderId || backgroundColor !== note.backgroundColor) {
                     await updateDoc(noteRef, {
                         title: noteTitle,
                         text: noteText,
+                        petId: notePetIds,
                         folderId: noteFolderId,
                         backgroundColor: backgroundColor,
                     });
@@ -106,6 +141,31 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
         setBackgroundColor(color);
         setSelectedBackgroundColor(color);
         handleModalClose();
+    };
+
+    const handlePetSelection = async (petId) => {
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                const newPetIds = [...notePetIds];
+                if (!newPetIds.includes(petId)) {
+                    newPetIds.push(petId);
+                }
+
+                setNotePetIds(newPetIds);
+
+                const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
+                await updateDoc(noteRef, { petId: newPetIds });
+
+                showAlert('Note successfully pin to pet profile!');
+                handleModalClose();
+            } catch (error) {
+                console.error('Error pinning note to pet profile:', error.message);
+                showAlert('Error pinning note', 'Failed to pin note to pet profile. Please try again later.');
+            }
+        } else {
+            showAlert('User not authenticated');
+        }
     };
 
     const handleFolderSelection = async (folderId) => {
@@ -147,6 +207,11 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
         Alert.alert(title, message, [{ text: 'OK' }]);
     };
 
+    const arraysEqual = (arr1, arr2) => {
+        if (arr1.length !== arr2.length) return false;
+        return arr1.every(item => arr2.includes(item));
+    };
+
     const renderModalContent = () => {
         switch (modalMode) {
             case ModalTypes.EDIT_NOTE:
@@ -177,6 +242,13 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                                 <TouchableOpacity onPress={() => handleModalOpen(ModalTypes.FOLDER_SELECTION)} style={styles.modalButton}>
                                     <Ionicons name="enter-outline" size={24} color='#000000' />
                                     <Text style={styles.modalButtonText}>Move to folder</Text>
+                                </TouchableOpacity>
+
+                                <View style={styles.separatorLine} />
+
+                                <TouchableOpacity onPress={() => handleModalOpen(ModalTypes.PIN_TO_PET_PROFILE)} style={styles.modalButton}>
+                                    <Ionicons name="paw-outline" size={24} color='#000000' />
+                                    <Text style={styles.modalButtonText}>Pin to pet profile</Text>
                                 </TouchableOpacity>
 
                                 <View style={styles.separatorLine} />
@@ -253,18 +325,52 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                                     <Text style={styles.editModalTitle}>Move to Folder</Text>
                                     <View style={styles.separatorLine} />
                                 </View>
-                                {/* Adjusted ScrollView style to use contentContainerStyle */}
                                 <ScrollView style={styles.folderScrollView}>
                                     {folders.map((folder) => (
                                         <TouchableOpacity
                                             key={folder.id}
                                             style={styles.folderOptions}
-                                            onPress={() => handleFolderSelection(folder.id)}
+                                            onPress={() => handlePetSelection(folder.id)}
                                         >
                                             <Text style={styles.folderName}>{folder.folderName}</Text>
                                         </TouchableOpacity>
                                     ))}
                                 </ScrollView>
+                            </View>
+                        </View>
+                    </Modal>
+                );
+            case ModalTypes.PIN_TO_PET_PROFILE:
+                return (
+                    <Modal
+                        isVisible={modalMode === ModalTypes.PIN_TO_PET_PROFILE}
+                        transparent={true}
+                        animationIn="fadeIn"
+                        animationOut="fadeOut"
+                        onBackdropPress={handleModalClose}
+                        style={styles.modalContainer}
+                    >
+                        <View style={styles.editModalContainer}>
+                            <View style={styles.editModalContent}>
+                                <View style={{ width: '100%' }}>
+                                    <Text style={styles.editModalTitle}>Pin to pet profile</Text>
+                                    <View style={styles.separatorLine} />
+                                </View>
+                                {loadingPetProfiles ? (
+                                    <Text>Loading pet profiles...</Text>
+                                ) : (
+                                    <ScrollView style={styles.folderScrollView}>
+                                        {petProfiles.map((pet) => (
+                                            <TouchableOpacity
+                                                key={pet.id}
+                                                style={styles.folderOptions}
+                                                onPress={() => handleFolderSelection(pet.id)}
+                                            >
+                                                <Text style={styles.folderName}>{pet.name}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </ScrollView>
+                                )}
                             </View>
                         </View>
                     </Modal>
