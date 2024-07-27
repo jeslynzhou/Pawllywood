@@ -587,9 +587,18 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                                                 key={pet.id}
                                                 style={[styles.modalButton, { alignItems: 'flex-start', paddingHorizontal: 15, }]}
                                                 onPress={() => {
+                                                    // Set the selected pet profile
                                                     setSelectedDestinationPetProfile(pet);
+                                                    
+                                                    // Pin the pet profile
                                                     pinToPetProfile();
-                                                    setShowSelectingPetProfileModal(false);
+                                                    console.log('hi');
+                                                    
+                                                    // Close the modal after a short delay
+                                                    setTimeout(() => {
+                                                        setShowSelectingPetProfileModal(false);
+                                                        console.log('why this is not closing');
+                                                    }, 1000); // Adjust the delay as needed
                                                 }}
                                             >
                                                 <Text style={[styles.modalButtonText, { paddingVertical: 5, }]}>{pet.name}</Text>
