@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions, ScrollView, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -224,10 +224,20 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
                 await Promise.all(pinningPromises);
 
-                fetchNotes();  // Update the state after pinning notes
-                setSelectedNotes([]);
-                setSelectedDestinationPetProfile(null);
-                setIsPinningMode(false);
+                fetchNotes();
+            
+                setTimeout(() => {
+                    // Clear the selected notes
+                    setSelectedNotes([]);
+                    
+                    // Reset the selected destination pet profile
+                    setSelectedDestinationPetProfile(null);
+                    
+                    // Exit pinning mode
+                    setIsPinningMode(false);
+                }, 1000); // Adjust the delay as needed
+
+                console.log('is it closing');
             }
         } catch (error) {
             console.error('Error pinning notes:', error.message);
@@ -597,8 +607,8 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                                                     // Close the modal after a short delay
                                                     setTimeout(() => {
                                                         setShowSelectingPetProfileModal(false);
-                                                        console.log('why this is not closing');
-                                                    }, 1000); // Adjust the delay as needed
+                                                    }, 3000); // Adjust the delay as needed
+                                                    console.log('why this is not closing');
                                                 }}
                                             >
                                                 <Text style={[styles.modalButtonText, { paddingVertical: 5, }]}>{pet.name}</Text>

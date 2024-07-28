@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, ScrollView, Touchable } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, ScrollView, Touchable, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-swiper';
 
@@ -21,6 +21,7 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
     const { width, height } = Dimensions.get('window');
     const logoHeightSize = height * 0.1;
     const logoWidthSize = width * 0.5;
+    const [loadingNotes, setLoadingNotes] = useState(false);
 
     useEffect(() => {
         fetchPetData();
@@ -66,6 +67,7 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
     };
 
     const fetchNotesForPet = async () => {
+        setLoadingNotes(true);
         try {
             const user = auth.currentUser;
             if (!user) {
@@ -95,6 +97,8 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
             setPetNotes(fetchedNotes);
         } catch (error) {
             console.error('Error fetching pet notes:', error.message);
+        } finally {
+            setLoadingNotes(false);
         }
     };
 
@@ -174,7 +178,11 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                         <Swiper
                             loop={false}
                             index={activePetIndex}
-                            onIndexChanged={(index) => setActivePetIndex(index)}
+                            onIndexChanged={(index) => {
+                                setPetNotes([]);
+                                setLoadingNotes(true);
+                                setActivePetIndex(index);
+                            }}
                             showsPagination={false}
                             style={styles.swiperContainer}
                         >
@@ -219,16 +227,20 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                                         <View style={styles.notesContainer}>
                                             <Text style={[styles.labels, { fontSize: 23 }]}>Notes</Text>
                                             <ScrollView style={styles.notesScrollViewContainer}>
-                                                {petNotes.length > 0 ? (
-                                                    petNotes.map(note => (
-                                                        <TouchableOpacity key={note.id} onPress={() => handleNoteDetails(note)} style={[styles.notesBox, { backgroundColor: note.backgroundColor }]}>
-                                                            <Text style={styles.input}>{note.text}</Text>
-                                                        </TouchableOpacity>
-                                                    ))
+                                                {loadingNotes ? (
+                                                    <ActivityIndicator size="large" color="#F26419" />
                                                 ) : (
-                                                    <TouchableOpacity onPress={handleAddingNote} style={styles.noNotesContainer}>
-                                                        <Text style={styles.input}>No notes available for this pet. Click here to add new note now!</Text>
-                                                    </TouchableOpacity>
+                                                    petNotes.length > 0 ? (
+                                                        petNotes.map(note => (
+                                                            <TouchableOpacity key={note.id} onPress={() => handleNoteDetails(note)} style={[styles.notesBox, { backgroundColor: note.backgroundColor }]}>
+                                                                <Text style={styles.input}>{note.text}</Text>
+                                                            </TouchableOpacity>
+                                                        ))
+                                                    ) : (
+                                                        <TouchableOpacity onPress={handleAddingNote} style={styles.noNotesContainer}>
+                                                            <Text style={styles.input}>No notes available for this pet. Click here to add new note now!</Text>
+                                                        </TouchableOpacity>
+                                                    )
                                                 )}
                                             </ScrollView>
                                         </View>
