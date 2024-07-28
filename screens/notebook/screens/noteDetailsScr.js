@@ -5,12 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
 import { updateDoc, doc, deleteDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { update } from 'firebase/database';
 
 const ModalTypes = {
     NONE: 'none',
     EDIT_NOTE: 'edit_note',
     EDIT_BACKGROUND_COLOR: 'edit_background_color',
     FOLDER_SELECTION: 'folder_selection',
+    REMOVE_FROM_FOLDER: 'remove_from_folder',
     PIN_TO_PET_PROFILE: 'pin_to_pet_profile',
     DELETE_CONFIRMATION: 'delete_confirmation'
 };
@@ -47,7 +49,7 @@ export default function NoteDetailsScreen({ note, closeNoteDetails, showEditButt
         setNoteText(note.text);
         setNoteFolderId(note.folderId || '');
         setNotePetIds(note.petId || []);
-        setBackgroundColor(note.backgroundColor);
+        setBackgroundColor(note.backgroundColor || '#FFFFFF');
     }, [note]);
 
     const fetchFolders = async () => {
@@ -65,12 +67,12 @@ export default function NoteDetailsScreen({ note, closeNoteDetails, showEditButt
                 setFolders(fetchedFolders);
             } catch (error) {
                 console.error('Error fetching folders:', error.message);
-                showAlert('Error fetching folders', 'Failed to fetch folders data. Please try again later.');
+                Alert.alert('Error fetching folders', 'Failed to fetch folders data. Please try again later.');
             } finally {
                 setLoadingFolders(false);
             }
         } else {
-            showAlert('User not authenticated');
+            Alert.alert('User not authenticated');
             setLoadingFolders(false);
         }
     };
@@ -91,12 +93,12 @@ export default function NoteDetailsScreen({ note, closeNoteDetails, showEditButt
                 setPetProfiles(fetchedPetProfiles);
             } catch (error) {
                 console.error('Error fetching pet profiles:', error.message);
-                showAlert('Error fetching pet profiles', 'Failed to fetch folders data. Please try again later.');
+                Alert.alert('Error fetching pet profiles', 'Failed to fetch folders data. Please try again later.');
             } finally {
                 setLoadingPetProfiles(false);
             }
         } else {
-            showAlert('User not authenticated');
+            Alert.alert('User not authenticated');
             setLoadingPetProfiles(false);
         }
     };
@@ -114,11 +116,11 @@ export default function NoteDetailsScreen({ note, closeNoteDetails, showEditButt
                         folderId: noteFolderId,
                         backgroundColor: backgroundColor,
                     });
-                    showAlert('Note updated successfully!');
+                    Alert.alert('Note updated successfully!');
                 }
             } catch (error) {
                 console.error('Error updating note:', error.message);
-                showAlert('Error updating note', 'Failed to update note. Please try again later.');
+                Alert.alert('Error updating note', 'Failed to update note. Please try again later.');
             }
         } else {
             console.log('User not authenticated');
@@ -158,14 +160,14 @@ export default function NoteDetailsScreen({ note, closeNoteDetails, showEditButt
                 const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
                 await updateDoc(noteRef, { petId: newPetIds });
 
-                showAlert('Note successfully pin to pet profile!');
+                Alert.alert('Note successfully pin to pet profile!');
                 handleModalClose();
             } catch (error) {
                 console.error('Error pinning note to pet profile:', error.message);
-                showAlert('Error pinning note', 'Failed to pin note to pet profile. Please try again later.');
+                Alert.alert('Error pinning note', 'Failed to pin note to pet profile. Please try again later.');
             }
         } else {
-            showAlert('User not authenticated');
+            Alert.alert('User not authenticated');
         }
     };
 
@@ -176,16 +178,42 @@ export default function NoteDetailsScreen({ note, closeNoteDetails, showEditButt
                 setNoteFolderId(folderId);
                 const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
                 await updateDoc(noteRef, { folderId });
-                showAlert('Note successfully moved to new folder!');
+                Alert.alert('Note successfully moved to new folder!');
                 handleModalClose();
             } catch (error) {
                 console.error('Error moving note to folder:', error.message);
-                showAlert('Error moving note', 'Failed to move note to folder. Please try again later.');
+                Alert.alert('Error moving note', 'Failed to move note to folder. Please try again later.');
             }
         } else {
-            showAlert('User not authenticated');
+            Alert.alert('User not authenticated');
         }
     };
+
+    const handleRemoveNote = async () => {
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                // Check if note.id is available
+                if (!note.id) {
+                    throw new Error('Note ID is missing');
+                }
+
+                // Create a reference to the note document
+                const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
+
+                // Update the document to remove the folderId
+                await updateDoc(noteRef, { folderId: '' });
+                handleModalClose();
+                Alert.alert('Note removed from folder successfully!');
+            } catch (error) {
+                console.error('Error removing note from folder:', error.message);
+                Alert.alert('Error removing note from folder', 'Failed to remove note. Please try again later.');
+            }
+        } else {
+            Alert.alert('User not authenticated');
+        }
+    };
+
 
     const handleDeleteNote = async () => {
         const user = auth.currentUser;
@@ -193,19 +221,15 @@ export default function NoteDetailsScreen({ note, closeNoteDetails, showEditButt
             try {
                 const noteRef = doc(db, 'users', user.uid, 'notes', note.id);
                 await deleteDoc(noteRef);
-                showAlert('Note deleted successfully!');
+                Alert.alert('Note deleted successfully!');
                 closeNoteDetails();
             } catch (error) {
                 console.error('Error deleting note:', error.message);
-                showAlert('Error deleting note', 'Failed to delete note. Please try again later.');
+                Alert.alert('Error deleting note', 'Failed to delete note. Please try again later.');
             }
         } else {
             console.log('User not authenticated');
         }
-    };
-
-    const showAlert = (title, message) => {
-        Alert.alert(title, message, [{ text: 'OK' }]);
     };
 
     const arraysEqual = (arr1, arr2) => {
@@ -243,6 +267,22 @@ export default function NoteDetailsScreen({ note, closeNoteDetails, showEditButt
                                 <TouchableOpacity onPress={() => handleModalOpen(ModalTypes.FOLDER_SELECTION)} style={styles.modalButton}>
                                     <Ionicons name="enter-outline" size={24} color='#000000' />
                                     <Text style={styles.modalButtonText}>Move to folder</Text>
+                                </TouchableOpacity>
+
+                                <View style={styles.separatorLine} />
+
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        if (note.folderId) {
+                                            handleModalOpen(ModalTypes.REMOVE_FROM_FOLDER)
+                                        } else {
+                                            Alert.alert('No folder found', 'This note does not belong to any folder.');
+                                        }
+                                    }}
+                                    style={styles.modalButton}
+                                >
+                                    <Ionicons name="close-outline" size={24} color='#000000' />
+                                    <Text style={styles.modalButtonText}>Remove from folder</Text>
                                 </TouchableOpacity>
 
                                 <View style={styles.separatorLine} />
@@ -337,6 +377,32 @@ export default function NoteDetailsScreen({ note, closeNoteDetails, showEditButt
                                         </TouchableOpacity>
                                     ))}
                                 </ScrollView>
+                            </View>
+                        </View>
+                    </Modal>
+                );
+            case ModalTypes.REMOVE_FROM_FOLDER:
+                return (
+                    <Modal
+                        isVisible={modalMode === ModalTypes.REMOVE_FROM_FOLDER}
+                        transparent={true}
+                        animationIn="fadeIn"
+                        animationOut="fadeOut"
+                        onBackdropPress={handleModalClose}
+                        style={styles.modalContainer}
+                    >
+                        <View style={styles.editModalContainer}>
+                            <View style={styles.editModalContent}>
+                                <Text style={styles.editModalTitle}>Remove from folder?</Text>
+                                <View style={styles.editModalButtonContainer}>
+                                    <TouchableOpacity onPress={handleModalClose} style={styles.editModalButton}>
+                                        <Text style={styles.editModalButtonText}>Cancel</Text>
+                                    </TouchableOpacity>
+                                    <View style={styles.verticalLine} />
+                                    <TouchableOpacity onPress={handleRemoveNote} style={styles.editModalButton}>
+                                        <Text style={[styles.editModalButtonText, { color: '#F26419' }]}>Remove</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         </View>
                     </Modal>

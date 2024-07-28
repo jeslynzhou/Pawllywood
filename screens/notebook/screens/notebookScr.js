@@ -31,12 +31,14 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     const [showAddFolderModal, setShowAddFolderModal] = useState(false);
     const [showEditNotesModal, setShowEditNotesModal] = useState(false);
     const [isMovingMode, setIsMovingMode] = useState(false);
+    const [isRemovingMode, setIsRemovingMode] = useState(false);
     const [isPinningMode, setIsPinningMode] = useState(false);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [selectedNotes, setSelectedNotes] = useState([]);
     const [showSelectingFolderModal, setShowSelectingFolderModal] = useState(false);
     const [showSelectingPetProfileModal, setShowSelectingPetProfileModal] = useState(false);
     const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false);
+    const [showRemoveConfirmationModal, setShowRemoveConfirmationModal] = useState(false);
     const [selectedDestinationFolder, setSelectedDestinationFolder] = useState(null);
     const [selectedDestinationPetProfile, setSelectedDestinationPetProfile] = useState(null);
 
@@ -140,11 +142,13 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
         setIsMovingMode(false);
         setIsPinningMode(false);
         setIsDeleteMode(false);
+        setIsRemovingMode(false);
     };
 
     { /* Moving Mode */ }
     const onMovingNotes = () => {
         setIsMovingMode(true);
+        setIsRemovingMode(false);
         setIsPinningMode(false);
         setIsDeleteMode(false);
         setShowEditNotesModal(false);
@@ -171,18 +175,65 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
                 await Promise.all(movingPromises);
 
-                fetchNotes();  // Update the state after moving notes
-                setSelectedNotes([]);
-                setSelectedDestinationFolder(null);
-                setIsMovingMode(false);
+                setTimeout(() => {
+                    setShowSelectingFolderModal(false);
+                    setIsMovingMode(false);
+                    fetchNotes();  // Update the state after moving notes
+                    setSelectedNotes([]);
+                    setSelectedDestinationFolder(null);
+                }, 1000);
             }
         } catch (error) {
             console.error('Error moving notes:', error.message);
         }
     };
 
+    { /* Removing Mode */ }
+    const confirmRemoveNotes = () => {
+        setIsRemovingMode(true);
+        setIsDeleteMode(false);
+        setIsMovingMode(false);
+        setIsPinningMode(false);
+        setShowEditNotesModal(false);
+    };
+
+    const removeSelectedNotes = async () => {
+        try {
+            const user = auth.currentUser;
+            if (user && selectedDestinationFolder) {
+                const movingPromises = selectedNotes.map(async (noteId) => {
+                    const noteDocRef = doc(db, 'users', user.uid, 'notes', noteId);
+                    await updateDoc(noteDocRef, {
+                        folderId: '',
+                    });
+                });
+
+                await Promise.all(movingPromises);
+                setTimeout(() => {
+                    fetchNotes();
+                    setSelectedNotes([]);
+                    setIsRemovingMode(false);
+                    closeRemoveConfirmationModal();
+                }, 1000);
+            }
+        } catch (error) {
+            console.error('Error rmoving notes:', error.message);
+        }
+    };
+
+    const openRemoveConfirmationModal = () => {
+        setShowRemoveConfirmationModal(true);
+    };
+
+    const closeRemoveConfirmationModal = () => {
+        setShowRemoveConfirmationModal(false);
+    };
+
+
+    { /* Pin To Pet Profile */ }
     const onPinToPetProfile = () => {
         setIsPinningMode(true);
+        setIsRemovingMode(false);
         setIsMovingMode(false);
         setIsDeleteMode(false);
         setTimeout(() => {
@@ -223,21 +274,14 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 });
 
                 await Promise.all(pinningPromises);
-
-                fetchNotes();
-
+                // Close the modal after a short delay
                 setTimeout(() => {
-                    // Clear the selected notes
-                    setSelectedNotes([]);
-
-                    // Reset the selected destination pet profile
-                    setSelectedDestinationPetProfile(null);
-
-                    // Exit pinning mode
+                    setShowSelectingPetProfileModal(false);
                     setIsPinningMode(false);
-                }, 1000); // Adjust the delay as needed
-
-                console.log('is it closing');
+                    fetchNotes();
+                    setSelectedNotes([]);
+                    setSelectedDestinationPetProfile(null);
+                }, 3000); // Adjust the delay as needed
             }
         } catch (error) {
             console.error('Error pinning notes:', error.message);
@@ -248,6 +292,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     { /* Delete Mode */ }
     const confirmDeleteNotes = () => {
         setIsDeleteMode(true);
+        setIsRemovingMode(false);
         setIsMovingMode(false);
         setIsPinningMode(false);
         setShowEditNotesModal(false);
@@ -301,7 +346,6 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
     };
 
     { /* Add Folder Modal */ }
-
     const openAddFolderModal = () => {
         setShowEditModal(false);
 
@@ -351,6 +395,8 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 } else if (isMovingMode) {
                     toggleSelectNotesForEdit(note.id);
                     setSelectedDestinationFolder(selectedFolder);
+                } else if (isRemovingMode) {
+                    toggleSelectNotesForEdit(note.id);
                 } else if (isPinningMode) {
                     toggleSelectNotesForEdit(note.id);
                 } else {
@@ -359,7 +405,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
             }}
                 style={[styles.noteItem, { backgroundColor: note.backgroundColor }]}>
                 <Text>{note.text}</Text>
-                {(isDeleteMode || isMovingMode || isPinningMode) && (
+                {(isDeleteMode || isMovingMode || isRemovingMode || isPinningMode) && (
                     <View style={styles.checkboxContainer}>
                         <Ionicons name={selectedNotes.includes(note.id) ? 'checkmark-circle-outline' : 'ellipse-outline'} size={24} color='#000000' />
                     </View>
@@ -522,6 +568,12 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
 
                                     <View style={styles.separatorLine} />
 
+                                    <TouchableOpacity onPress={confirmRemoveNotes} style={styles.modalButton}>
+                                        <Text style={styles.modalButtonText}>Remove from folder</Text>
+                                    </TouchableOpacity>
+
+                                    <View style={styles.separatorLine} />
+
                                     <TouchableOpacity onPress={onPinToPetProfile} style={styles.modalButton}>
                                         <Text style={styles.modalButtonText}>Pin to pet profile</Text>
                                     </TouchableOpacity>
@@ -562,12 +614,9 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                                                     // Wait for 300ms before moving selected notes
                                                     setTimeout(() => {
                                                         moveSelectedNotes();
-
-                                                        // After moving the notes, wait another 300ms before closing the modal
-                                                        setTimeout(() => {
-                                                            setShowSelectingFolderModal(false);
-                                                        }, 300); // Adjust the delay as needed
-                                                    }, 300); // Adjust the delay as needed
+                                                        console.log('moved');
+                                                        console.log(folder.folderName);
+                                                    }, 1000); // Adjust the delay as needed
                                                 }}
                                             >
                                                 <Text style={[styles.modalButtonText, { paddingVertical: 5, }]}>{folder.folderName}</Text>
@@ -601,16 +650,8 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                                                 onPress={() => {
                                                     // Set the selected pet profile
                                                     setSelectedDestinationPetProfile(pet);
-
                                                     // Pin the pet profile
                                                     pinToPetProfile();
-                                                    console.log('hi');
-
-                                                    // Close the modal after a short delay
-                                                    setTimeout(() => {
-                                                        setShowSelectingPetProfileModal(false);
-                                                    }, 3000); // Adjust the delay as needed
-                                                    console.log('why this is not closing');
                                                 }}
                                             >
                                                 <Text style={[styles.modalButtonText, { paddingVertical: 5, }]}>{pet.name}</Text>
@@ -628,6 +669,33 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                             onFolderAdded={addNewFolder}
                         />
 
+                        { /* Remove post confirmation Modal */}
+                        <Modal
+                            isVisible={showRemoveConfirmationModal}
+                            transparent={true}
+                            animationIn="fadeIn"
+                            animationOut="fadeOut"
+                            onBackdropPress={closeRemoveConfirmationModal}
+                        >
+                            <View style={styles.deleteConfirmationModalContainer}>
+                                <View style={styles.deleteConfirmationModalContent}>
+                                    <Text style={styles.deleteConfirmationModalTitle}>Remove post from folder?</Text>
+                                    <View style={styles.deleteConfirmationModalButtonsContainer}>
+
+                                        <TouchableOpacity style={styles.deleteConfirmationModalButton} onPress={closeRemoveConfirmationModal}>
+                                            <Text style={styles.deleteConfirmationModalButtonText}>No</Text>
+                                        </TouchableOpacity>
+
+                                        <View style={styles.verticalLine} />
+
+                                        <TouchableOpacity style={styles.deleteConfirmationModalButton} onPress={removeSelectedNotes}>
+                                            <Text style={[styles.deleteConfirmationModalButtonText, { color: '#F26419' }]}>Yes</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                        </Modal>
+
                         { /* Delete post confirmation Modal */}
                         <Modal
                             isVisible={showDeleteConfirmationModal}
@@ -638,7 +706,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                         >
                             <View style={styles.deleteConfirmationModalContainer}>
                                 <View style={styles.deleteConfirmationModalContent}>
-                                    <Text style={styles.deleteConfirmationModalTitle}>Delete this post?</Text>
+                                    <Text style={styles.deleteConfirmationModalTitle}>Delete post?</Text>
                                     <View style={styles.deleteConfirmationModalButtonsContainer}>
 
                                         <TouchableOpacity style={styles.deleteConfirmationModalButton} onPress={closeDeleteConfirmationModal}>
@@ -679,6 +747,18 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                             </View>
                         )}
 
+                        {/* Buttons for Removing Mode */}
+                        {isRemovingMode && (
+                            <View style={styles.editModeButtonsContainer}>
+                                <TouchableOpacity onPress={closeEditNotesModal} style={[styles.editModeButton, { backgroundColor: '#CCCCCC' }]}>
+                                    <Text style={styles.editModeButtonText}>Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={openRemoveConfirmationModal} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
+                                    <Text style={styles.editModeButtonText}>Remove</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
                         {/* Buttons for Delete Mode */}
                         {isDeleteMode && (
                             <View style={styles.editModeButtonsContainer}>
@@ -693,7 +773,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                     </View >
 
                     {/* Add Note Button */}
-                    {!isDeleteMode && !isMovingMode && !isPinningMode && (
+                    {!isDeleteMode && !isMovingMode && !isRemovingMode && !isPinningMode && (
                         <TouchableOpacity style={styles.addNoteButton} onPress={handleAddingNote}>
                             <Ionicons name="add-circle" size={70} color='rgba(242, 100, 25, 0.7)' />
                         </TouchableOpacity>
