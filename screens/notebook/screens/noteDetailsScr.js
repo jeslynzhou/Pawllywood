@@ -24,7 +24,7 @@ const colorOptions = [
     'rgba(242, 100, 25, 0.7)'   // #F26419 with 70% opacity
 ];
 
-export default function NoteDetailsScreen({ note, closeNoteDetails }) {
+export default function NoteDetailsScreen({ note, closeNoteDetails, showEditButton }) {
     const [noteTitle, setNoteTitle] = useState('');
     const [noteText, setNoteText] = useState('');
     const [notePetIds, setNotePetIds] = useState(note.petId || []);
@@ -420,9 +420,11 @@ export default function NoteDetailsScreen({ note, closeNoteDetails }) {
                     maxLength={100}
                     numberOfLines={1}
                 />
-                <TouchableOpacity onPress={() => handleModalOpen(ModalTypes.EDIT_NOTE)} style={styles.editButton}>
-                    <Ionicons name="ellipsis-horizontal" size={24} color='#000000' />
-                </TouchableOpacity>
+                {showEditButton && (
+                    <TouchableOpacity onPress={() => handleModalOpen(ModalTypes.EDIT_NOTE)} style={styles.editButton}>
+                        <Ionicons name="ellipsis-horizontal" size={24} color='#000000' />
+                    </TouchableOpacity>
+                )}
             </View>
 
             <View style={[styles.textInputContainer, { backgroundColor: backgroundColor }]}>

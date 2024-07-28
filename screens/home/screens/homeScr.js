@@ -278,6 +278,7 @@ export default function HomeScreen({ directToProfile, directToNotebook, directTo
                 <NoteDetailsScreen
                     note={selectedNote}
                     closeNoteDetails={onClose}
+                    showEditButton={true}
                 />
             )}
         </>

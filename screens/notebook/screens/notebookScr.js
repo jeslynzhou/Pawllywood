@@ -589,11 +589,11 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                                                 onPress={() => {
                                                     // Set the selected pet profile
                                                     setSelectedDestinationPetProfile(pet);
-                                                    
+
                                                     // Pin the pet profile
                                                     pinToPetProfile();
                                                     console.log('hi');
-                                                    
+
                                                     // Close the modal after a short delay
                                                     setTimeout(() => {
                                                         setShowSelectingPetProfileModal(false);
@@ -709,6 +709,7 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 <NoteDetailsScreen
                     note={selectedNote}
                     closeNoteDetails={onClose}
+                    showEditButton={true}
                 />
             )}
 

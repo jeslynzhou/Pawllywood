@@ -320,7 +320,7 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                                 <Text style={styles.editModeButtonText}>Cancel</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={archiveSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
-                                <Text style={styles.editModeButtonText}>Confirm Archive</Text>
+                                <Text style={styles.editModeButtonText}>Archive</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -332,7 +332,7 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                                 <Text style={styles.editModeButtonText}>Cancel</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={unarchiveSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
-                                <Text style={styles.editModeButtonText}>Confirm Unarchive</Text>
+                                <Text style={styles.editModeButtonText}>Unarchive</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -344,7 +344,7 @@ export default function MyPetsScreen({ closeMyPetsScreen, handleAddingPet, direc
                                 <Text style={styles.editModeButtonText}>Cancel</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={deleteSelectedPets} style={[styles.editModeButton, { backgroundColor: '#F26419' }]}>
-                                <Text style={styles.editModeButtonText}>Confirm Delete</Text>
+                                <Text style={styles.editModeButtonText}>Delete</Text>
                             </TouchableOpacity>
                         </View>
                     )}
