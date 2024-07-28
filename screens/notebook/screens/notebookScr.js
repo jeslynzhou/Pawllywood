@@ -225,14 +225,14 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                 await Promise.all(pinningPromises);
 
                 fetchNotes();
-            
+
                 setTimeout(() => {
                     // Clear the selected notes
                     setSelectedNotes([]);
-                    
+
                     // Reset the selected destination pet profile
                     setSelectedDestinationPetProfile(null);
-                    
+
                     // Exit pinning mode
                     setIsPinningMode(false);
                 }, 1000); // Adjust the delay as needed
@@ -444,7 +444,9 @@ export default function NotebookScreen({ directToProfile, directToHome, directTo
                                     {renderNoteRows()}
                                 </ScrollView>
                             ) : (
-                                <Text style={styles.text}>No notes found.</Text>
+                                <View style={styles.header}>
+                                    <Text style={styles.text}>No notes found.</Text>
+                                </View>
                             )
                         ) : (
                             folders.length > 0 ? (
