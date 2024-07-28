@@ -129,18 +129,18 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 console.error('No user is currently signed in.');
                 return;
             }
-
+    
             // Fetch the current user's data
             const userRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userRef);
             const userData = userDoc.data();
             const pinnedPosts = userData.pinnedPosts || [];
             const savedPosts = userData.savedPosts || [];
-
+    
             // Fetch all posts
             const postsSnapshot = await getDocs(collection(db, 'posts'));
             const postsData = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
+    
             // Filter posts based on user's saved and pinned posts
             const filteredPosts = postsData.filter(post => {
                 let include = true;
@@ -150,7 +150,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 if (selectedFilters.notCrowdAlert && post.isCrowdAlert) include = false;
                 return include;
             });
-
+    
             // Sort posts using the user's pinned posts
             const sortedPosts = filterAndSortPosts(filteredPosts, searchQuery, pinnedPosts);
             setPosts(sortedPosts);
@@ -189,7 +189,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
     const convertToLocalTime = (isoString) => {
         const date = new Date(isoString);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    };
+    };    
 
     const handlePostSubmit = async (title, content, imageUrls, isCrowdAlert, location) => {
         if (!title.trim() || !content.trim()) {
@@ -479,7 +479,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
 
     const handleComment = async (postId, commentText) => {
         if (!commentText.trim() || !userData) return;
-
+    
         const newComment = {
             username: userData.username || 'Unknown User',
             userId: auth.currentUser.uid,
@@ -488,13 +488,13 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
             time: new Date().toISOString(),
             text: commentText
         };
-
+    
         try {
             const postRef = doc(db, 'posts', postId);
             await updateDoc(postRef, {
                 comments: arrayUnion(newComment)
             });
-
+    
             setPosts(prevPosts =>
                 prevPosts.map(post =>
                     post.id === postId ? { ...post, comments: [...post.comments, newComment] } : post
@@ -504,7 +504,7 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 ...prevState,
                 [postId]: ''
             }));
-
+    
             // Send notification to post author
             const postDoc = await getDoc(postRef);
             const postData = postDoc.data();
@@ -512,19 +512,18 @@ export default function ForumScreen({ directToProfile, directToNotebook, directT
                 const userRef = doc(db, 'users', postData.userId);
                 const userDoc = await getDoc(userRef);
                 const userExpoToken = userDoc.data().expoPushToken;
-
+    
                 if (userExpoToken) {
                     await sendNotification(userExpoToken, 'New Comment', `${userData.username} commented on your post.`);
                 } else {
                     console.log('No expoPushToken found for user:', postData.userId);
                 }
             }
-
+    
         } catch (error) {
             console.error('Error adding comment to Firestore:', error.message);
         }
     };
-
 
     const handleUpvote = async (postId) => {
         if (!userData || !userData.email) {
@@ -912,7 +911,7 @@ ${post.comments.map(comment => `\t${comment.username}: ${comment.text}`).join('\
                                                         <Text style={styles.commentText}>{post.comments[0].text}</Text>
                                                     </View>
                                                     <View style={styles.commentDateTimeContainer}>
-                                                        <Text style={styles.commentDateTime}>{post.comments[0].date} • {post.comments[0].time}</Text>
+                                                        <Text style={styles.commentDateTime}>{post.comments[0].date} • {convertToLocalTime(post.comments[0].time)}</Text>
                                                     </View>
                                                 </View>
                                             </View>
