@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Button, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
 import Modal from 'react-native-modal';
 
 const EmergencyModal = ({ visible, onClose }) => {

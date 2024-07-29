@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Switch, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Switch } from 'react-native';
 import Modal from 'react-native-modal';
 
 const FilterMenu = ({ isVisible, onClose, onApply, onClear, selectedFilters, onChangeFilter }) => {

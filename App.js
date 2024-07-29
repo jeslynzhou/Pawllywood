@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Text, View, Button, Platform, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import * as Permissions from 'expo-permissions';
-import { getExpoPushTokenAsync, setNotificationChannelAsync } from 'expo-notifications';
+import { getExpoPushTokenAsync } from 'expo-notifications';
 import { doc, updateDoc } from 'firebase/firestore';
 
 

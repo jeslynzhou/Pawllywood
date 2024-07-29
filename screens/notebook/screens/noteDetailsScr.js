@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '../../../initializeFB';
 import { updateDoc, doc, deleteDoc, collection, getDocs, query, where } from 'firebase/firestore';
-import { update } from 'firebase/database';
 
 const ModalTypes = {
     NONE: 'none',
