@@ -48,16 +48,23 @@ This command will build and run the latest version of the app on Android using E
 
 - [Milestone 1](#milestone-1)
 - [Milestone 2](#milestone-2)
+- [Milestone 3](#milestone-3)
 
 ### E. IMPLEMENTING FEATURES
 
 1. [Authentication](#authentication)
 2. [Profile (Core)](#profile-core)
-3. [Home](#home)
-4. [Library (Core)](#library-core)
-5. [Forum (Core)](#forum-core)
+3. [Notebook](#notebook)
+4. [Home](#home)
+5. [Push Notification](#push-notification)
+6. [Library (Core)](#library-core)
+7. [Forum (Core)](#forum-core)
 
-### F. SOFTWARE ENGINEERING PRACTICES
+### F. BUG SQUASHED
+
+- [Bug Squashed](#bug-squashed)
+
+### G. SOFTWARE ENGINEERING PRACTICES
 
 1. [Version Controls](#version-controls)
    - [Branching](#branching)
@@ -65,14 +72,17 @@ This command will build and run the latest version of the app on Android using E
 2. [Software Architecture](#software-architecture)
    - [User Flow Diagram](#user-flow-diagram)
    - [Microservice Architecture Diagram](#microservice-architecture-diagram)
+3. [Testing](#testing)
+   - [User Testing](#user-testing)
+   - [Integration Testing](#integration-testing)
 
-### G. DEVELOPMENT PLAN
+### H. DEVELOPMENT PLAN
 
 1. [Milestone 1 | 20/05 - 03/06](#milestone-1--2005---0306)
 2. [Milestone 2 | 03/06 - 01/07](#milestone-2--0306---0107)
 3. [Milestone 3 | 01/07 - 29/07](#milestone-3--0107---2907)
 
-### H. PROJECT LOG
+### I. PROJECT LOG
 
 - [Project Log](#project-log)
 
@@ -106,21 +116,21 @@ Our **_forum_** feature allows users to engage in discussions, ask questions, an
 
    The library provides instant pet-specific care guides, from diet, training, to grooming and exercise. Users can access the in-app library whenever they want, wherever they are (Just make sure to have a strong internet connection!)
 
-3. Forum for engaging in discussion, asking questions, and sharing thoughts and experiences through writing posts and pictures
+2. Forum for engaging in discussion, asking questions, and sharing thoughts and experiences through writing posts and pictures
 
    In addition to the library, our forum offers essential support for users’ pet care needs. The forum helps users to connect with fellow pet owners who share real-life experiences. Users can engage in discussions, ask questions, share thoughts and experiences through posts and pictures, and enjoy lively chats with like-minded individuals who share their interests.
 
-5. Authentication for user accounts
+3. Users and Accounts
 
    The profile feature will help to manage user accounts and handle the authentication; users can create a new account, log in and log out. 
 
 ### Bonus Features
 
 1. Notebook to save and note down useful tips sourced from in-app library and forum
-2. User engagement to add friends and initiate private chat with people
+2. User engagement to add friends and initiate private chat with people (Haven’t implemented)
 3. Push notification to inform users about updates and relevant activities
-4. Multi-device synchronization
-5. Effective search-engine
+4. Multi-device synchronization for seamless synchronization across multiple devices for a consistent user experience
+5. Effective search-engine to find relevant information in the forum and in-app library feature (Haven’t implemented)
 
 ## Tech Stack
 
@@ -133,7 +143,8 @@ Our **_forum_** feature allows users to engage in discussions, ask questions, an
 
 ### Poster
 
-<img src="https://github.com/jeslynzhou/Pawllywood/assets/157949261/4bdac6bf-6fde-494d-8e40-860153117df0" width="500px">
+![6515](https://github.com/user-attachments/assets/e918c31a-4d05-45a1-8035-78d8cc3c3d8e)
+
 
 ### Video
 
@@ -168,13 +179,21 @@ In our initial milestone, we have integrated the Authentication feature into the
 
 In our second milestone, we have integrated the core features of the app: Profile, Library, and Forum features, with the home screen to display users’ pets profiles. Upon creating an account, users will be redirected to the home screen. There is a navigation bar at the bottom of the screen to help users easily navigate through profile, notebook, home, library, and forum screens. 
 
-- **Profile Feature** (for managing user account): The profile screen will store users’ basic information: Username, profile picture, and bio description. Users can edit their profile info by clicking on the ‘Edit Profile’ Button and update their new info. Additionally, users can add more pet profiles with a simple click ‘Add Pet’, just fill in the space and you now have a new pet! You can view your pets and posts in ‘My Pets’ and ‘My Posts’, and also have ‘Friends’, ‘Message’, ‘Notification’ features that will be implemented in the next milestones. Press the ‘Log out’ button and users will be prompted with a modal to confirm logging out.
+- **Profile Screen** (for managing user account):  The profile screen will store users’ basic information: Username, profile picture, and bio description. Users can edit their profile info by pressing on the ‘Edit Profile’ Button and update their new info. Additionally, users can add more pet profiles with a simple click ‘Add Pet’, just fill in the space and you now have a new pet! Users can view their pets and posts in ‘My Pets’ and ‘My Posts’. Inside ‘My Pets’, users can view the list in 02 view modes, ‘Current’ and ‘Archived‘, the details of users’ current pets will be displayed in the home screen, while the archived one can be viewed in the archived pets list. Press the ‘Log out’ button and users will be prompted with a modal to confirm logging out.
 
-- **Home Screen** (for displaying pet profiles): Users can view their pet profiles in the home screen, swiping left to view more. Users can press the ‘Add’ button at the bottom of the screen to add more pets (same as ‘Add Pet’ in profile screen). To edit the pet profile, click on the 3 dots icon on the top right of the pet info box.
+- **Home Screen** (for displaying pet profiles): Users can view their current pet profiles in the home screen, swiping left to view more. To view the note details, just press on the note box and the note details screen will open, and editing the notes is simple, users just need to press on the 3 dots icon at the top right corner of the screen. If there are no notes displayed in the pet profile, users are prompted to add new notes for the pet. Once added, the note will be automatically pinned to the pet. Users can press the ‘Add’ button at the bottom of the screen to add more pets (same as ‘Add Pet’ in profile screen). To edit the pet profile, click on the ‘Edit Pet Profile’ button on the top right of the pet info box. Users can also archive a pet in the edit pet profile function. Once pressed, the pet will go to the archived pets list in ‘My Pets’ and will not be displayed in the home screen.
 
-- **Library Screen** (for looking up care guides): Users can choose to view either dog or cat information. There are over two hundred dog and cat breeds in the library. When searching for a breed, the library will present information on the chosen breed across 5 to 6 aspects (About, Health, Grooming, Exercise, Training and Nutrition for Dog and About, Appearance & Colors, Personality, Care, and Health for Cat).
+- **Library Screen** (for looking up care guides): Users can choose to view either dog or cat information. There are over two hundred dog and cat breeds in the library. When searching for a breed, the library will present information on the chosen breed across 5 to 6 aspects (About, Health, Grooming, Exercise, Training, and Nutrition for Dog and About, Appearance, Personality, Care, and Health for Cat).
 
-- **Forum Screen** (for asking questions and engaging in discussions): Users can search for posts to find information, post questions or thoughts for comments and engagement, and interact with other users by commenting, voting, and sharing posts.
+- **Forum Screen** (for asking questions and engaging in discussions): Users can search for posts to find information, post questions or thoughts for comments and engagement, and interact with other users by commenting, voting, and sharing posts. Moreover, users are allowed to mark the location, pin posts, save posts and delete posts created by themselves. They can apply filters to the posts in the forum screen. Options include: saved posts, pinned posts, crowd alert/not crowd alert posts. By turning on the crowd alert button,  users can visually notify others since the background color of the post will be changed into orange. The hotlines section allows users to call the corresponding hotlines when they encounter an emergency situation. For each post, there is a post details screen for the user to view the specific post.
+
+### Milestone 3
+
+In our third milestone, we integrated the bonus features of the app: Notebook and Push Notification features.
+
+- **Notebook Screen**  (for creating and managing notes): Users can create, manage and organize the notes in the notebook screen. To create a new note, press on the ‘Add’ button at the bottom of the screen. Once users finish taking notes, pressing the back button will automatically save the note. The notes can be viewed in either ‘All notes’ or ‘Folders’ mode. To search for the notes, users can simply search it in the search bar on top of the screen. To edit the notes, simply press on the 3 dots icon at the top right corner of the screen. Users can move notes to a folder, pin to a specific pet profile, and delete. If users are in the ‘folders’ view, pressing on the 3 dots icon will also allow users to create new folders. To manage the folders, users can press the menu icon at the top left corner of the screen. Users can either create new folders or delete existing ones. To view the notes in full screen, just press on the notes. Users can customize the background color of the notes to their liking, move to a folder, pin to a pet profile, and delete this note.
+
+- **Push Notification** (for receiving notifications): Users will receive notifications when other users comment on/upvote/downvote on their posts.
 
 
 ## Implementing Features
@@ -202,8 +221,6 @@ In our second milestone, we have integrated the core features of the app: Profil
 
    - We used Dimensions to adjust the size of the picture while maintaining its quality.
 
-   - We will solve problem (3) in the next milestone.
-
 ### Profile (Core)
 
 - **Proposed Feature:** Manage user profile, including their profile, pet profiles, posts, friends, message, and notification. Users can also log out from their account in the profile screen.
@@ -216,9 +233,16 @@ In our second milestone, we have integrated the core features of the app: Profil
 
    (3) Add Pet Profile details: Enables users to add new pet profiles, inputting the pet’s picture, name, breed, birth date (with automatically calculated age), gender, and their adopted date.
 
-   (4) My Pets: Allows users to know how many pets they have (displaying in a list format with the pets’ names, pictures, and adopted dates). Clicking on the pet profile will redirect the users to the home screen. Users can edit the pet lists by clicking on the 3 dots, showing a prompted box to confirm the edit. If they choose ‘yes’, users can delete the pet profile from the pet lists. If there are no pets inside the list, users will be prompted to add their first pet by clicking on the box.
+   (4) My Pets:
+        - Allows users to know how many pets they have (displaying in a list format with the pets’ names, pictures, and adopted dates). Clicking on the pet profile will redirect the users to the home screen. Users can edit the pet lists by clicking on the 3 dots, showing a prompted box to confirm the edit. If they choose ‘yes’, users can delete the pet profile from the pet lists. If there are no pets inside the list, users will be prompted to add their first pet by clicking on the box.
+        - In the ‘Current’ pets list, by pressing on the 3 dots users can edit the pet lists, either archive or delete the pets. Archiving the pets will move the pets to the ‘Archive’ pets lists. If there are no pets inside the list, users will be prompted to add their first pet by pressing on the box.
+        - In the ‘Archive’ pets list, by pressing on the 3 dots users can edit the pet lists, either unarchive or delete the pets. Unarchiving the pets will move the pets to the ‘Current’ pets lists.
 
    (5) My Posts: Displays a list of posts created by the user within the forum. Users are also allowed to delete their own posts, providing control over their contributions to the community. If there are no posts inside the list, users will be prompted to share their thoughts by clicking on the box and be redirected to the forum screen.
+
+   (6) Manage Account: Users will be able to delete their account.
+
+   (7) Log Out: Users will be able to log out from their account.
 
 - **Problems Encountered:** 
 
@@ -237,8 +261,40 @@ In our second milestone, we have integrated the core features of the app: Profil
    - We observed that the picture fields within the users collection were stored as a number instead of a string intended for a url. Hence, we changed the way of uploading data based on the issue and managed to solve the problem.
 
    - Taking advantage of the ’add-more-pet screen’ and ‘directToForum’ that are in (/passed to) the profile screen, we passed these to ‘My Pets’ and ‘My Posts’ and was able to redirect to add-more-pet screen (add pet) and the forum.
+ 
+### Notebook
 
-   - We will try to fix this problem in the next milestone.
+- **Proposed Feature:** Create, manage, and organize notes within the app, storing valuable tips sourced from the in-app library and forum.
+
+- **Progress:**
+
+   (1) Displaying Notes: Users can view their notes in either ‘All notes’ or ‘Folders’ view. The screen will display the note, its name and the created date.
+
+   (2) Add Note: By pressing on the ‘plus’ button at the bottom right of the screen, users will be able to add more notes. Pressing on the back button will automatically save the note. 
+
+   (3) Search for notes: Users can easily search for the title of the note they are looking for.
+
+   (4) View & Edit Note: When users press on the note, they can view the note in full screen. In this full screen mode, users can edit the title and content of the note. The 3 dots icon at the right top corner of the screen will handle editing the note: changing background color, moving to a folder, and deleting the note. Pressing on the back button will automatically save the changes.
+
+   (5) Menu Modal: Pressing the menu icon on the top left corner of the screen, a menu modal will appear where users can switch from ‘All notes’ to ‘Folders’ view and vice versa. Users can also manage folders here.
+
+   (6) Manage Folders: Display and manage folders, allowing users to create new folders or delete existing ones.
+
+   (7) Edit Notes:
+      - In the ‘All notes’ view, pressing on the 3 dots icon at the top right corner of the screen will display an edit modal for users to edit notes. Pressing the ‘Edit notes’, users can move to folder, pin to pet profile, or delete the notes.
+      - In the ‘Folders’ view, pressing on the 3 dots icon at the top right corner of the screen will display an edit modal for users to edit notes and create a new folder.
+
+- **Problems Encountered:**
+
+   (1) (For iOS, we encountered difficulties in opening edit notes modal in the Notebook screen and in the Note Details screen (system crashed due to many calls of open and close modals).
+
+   (2) Notes cannot upload pictures.
+
+- **Solutions:**
+
+   - We reduce the calls and adjust the structure of the code.
+
+   - Will be implemented in the next period.
 
 ### Home
 
@@ -246,11 +302,11 @@ In our second milestone, we have integrated the core features of the app: Profil
 
 - **Progress:** 
 
-   (1) Displaying Pet Profiles: Users can view their pet profiles in alphabetical order; swipe left to view more. The pet profile box displays the pet’s name, picture, breed, birth date, age, and gender. 
+   (1) Displaying Pet Profiles: Users can view their (current) pet profiles in alphabetical order; swipe left to view more. The pet profile box displays the pet’s name, picture, breed, birth date, age, gender, and all the notes pinned to the pet profile (Users can also view the notes in full screen by pressing on the notes).
 
-   (2) Edit Pet Profile details: By clicking on the 3 dots on the top right of the info box, users will be able to edit and update their pet’s details.
+   (2) Edit Pet Profile details: By pressing on the 3 dots on the top right of the info box, users will be able to edit, archive, and update their pet’s details.
 
-   (3) Add Pet Profile: By clicking on the ‘plus’ button at the bottom right of the screen, users will be able to add more pets and see the changes they made in the home screen right away.
+   (3) Add Pet Profile: By pressing on the ‘plus’ button at the bottom right of the screen, users will be able to add more pets and see the changes they made in the home screen right away.
 
 - **Problems Encountered:**
 
@@ -263,6 +319,22 @@ In our second milestone, we have integrated the core features of the app: Profil
    - We changed the UI design of the home screen: instead of having 2 boxed of ‘pet profile’ and ‘notes’ that need to be swipeable while the labels of the 2 boxed stay still, we put the ‘notes’ component inside the pet profile, and thus, making the ‘pet profile’ labels with the counting stay still.
 
    - By changing the data type of the picture stored in the database (same as profile screen), we were able to edit, update and edit the pet profile picture.
+
+### Push Notification
+
+- **Proposed Feature:** Push notifications to alert users of comments, upvotes, and downvotes on their posts.
+
+- **Progress:** 
+
+   Notifications are being implemented to inform users when they receive comments, upvotes, or downvotes.
+
+- **Problems Encountered:**
+
+   Uncertainty about how to begin implementing push notifications.
+
+- **Solutions:**
+
+   Researched through YouTube videos and online resources to find guidance and solutions.
 
 ### Library (Core)
 
@@ -278,9 +350,13 @@ In our second milestone, we have integrated the core features of the app: Profil
 
    (4) Swipe Functionality: Users can swipe left or right to view different aspects of the pet without returning to the main list.
 
-- **Problems Encountered:** Difficulties in uploading breed data into the Firestore database due to the large volume of data (200+ dog breeds and 30+ cat breeds, each with 5/6 fields).
+- **Problems Encountered:**
+  
+   Difficulties in uploading breed data into the Firestore database due to the large volume of data (200+ dog breeds and 30+ cat breeds, each with 5/6 fields).
 
-- **Solutions:** We attempted to automate data upload using Python and managed to upload the breed names into the database. However, due to the complicated design of the websites we found as the source of the data, we failed to upload the information in each aspect. As a result, we eventually opted to manually input data into the Firestore database to ensure accuracy and completeness.
+- **Solutions:**
+  
+   We attempted to automate data upload using Python and managed to upload the breed names into the database. However, due to the complicated design of the websites we found as the source of the data, we failed to upload the information in each aspect. As a result, we eventually opted to manually input data into the Firestore database to ensure accuracy and completeness.
 
 ### Forum (Core)
 
@@ -298,17 +374,62 @@ In our second milestone, we have integrated the core features of the app: Profil
 
    (5) Search Posts: Users can search for specific posts using keywords or filters to find relevant content quickly.
 
+   (6) Image Uploading: Users are allowed to upload several images in their post.
+
+   (7) Image Viewer: Users can view the images they uploaded in full screen mode when posting and  viewing posts.
+
+   (8) Crowd Alert: Users can enable CROWD ALERT mode for their posts to visually notify others by changing the background color to orange.
+
+   (9) Hotlines: In the Forum Screen, we designed a hotline section so users can view and call emergency hotlines.
+
+   (10) Save and Pin Posts: Users can choose to save and pin others’ posts. The pinned posts will appear at the top of the Forum Screen.
+
+   (11) Delete: Users are allowed to delete their own posts.
+
+   (12) Filter: Users can filter the posts they want to view. Options provided are: saved, pinned, crowd alert/not crowd alert.
+
+   (13) Post Details: Each post will have a corresponding post details screen for users to view the specific post full screen. Users can view the post details screen by pressing the tile and content part for each post in Forum Screen.
+
+   (14) Adding Location and Map View: Users can add their current location when posting and view the locations in a map view.
+
 - **Problems Encountered:** 
 
    (1) Unable to display the profile pictures of other users.
 
    (2) The profile picture and username from posts and comments were not in sync with the newest profile picture and username.
 
+   (3) Device will quit when trying to upload images to test image uploading feature in forum screen.
+
 - **Solutions:** 
 
    - Upon further review, we discovered that the URLs stored in the picture field within the users collection were specific to each user's private album, restricting access for other users. This prompted us to reevaluate how our app handles picture uploads to the database. By implementing necessary adjustments, we successfully resolved the issue that was causing profiles not to display correctly on the screen.
 
-   - We fetched the posts and comments made by the user and updated the profile picture and username inside the function that handles updating the user information in the profile screen. 
+   - We fetched the posts and comments made by the user and updated the profile picture and username inside the function that handles updating the user information in the profile screen.
+
+   - We set all the image quality to 0.2 instead of 1.0.
+
+## Bug Squashed
+
+At each milestone, we conduct thorough tests to evaluate the app’s functionality and address any issues that arise. We’ve encountered and resolved many bugs throughout this process. To maintain efficiency, we follow a structured series of steps:
+
+- Document Issues
+
+  After testing, we gather feedback and document all problems encountered while using the app.
+  
+- Identify Bugs
+  
+  We use `console.log` and other debugging tools to pinpoint the source of the issues.
+  
+- Analyze and Fix
+  
+  Based on the bug identified in the previous step, we analyze the root causes and implement fixes to resolve the bugs.
+  
+- Retest
+
+  We re-run tests to ensure that the fixes are effective and that no new issues have been introduced.
+
+For example, in the first testing stage, we found out that once a user has pinned a post, the post will be pinned for all users due to the logical error in our code. Thus, we checked the code for the forum screen and realized the isPinned field for all posts was storing a boolean. Therefore, once a post is pinned by one user, the field would update to be true and the post will be pinned for all users. After finding out the error, we fixed the code by linking the isPinned field to specific users and retested it.
+
 
 ## Software Engineering Practices
 
@@ -320,9 +441,13 @@ During our development, we achieved parallel work streams by utilizing different
 
 #### Commits
 
-*For milestone 1,* our regular commits focus on developing user authentication. To ensure easy tracking and management of our changes, we named our commits according to the specific changes made. Some examples of our commits are “Add Retype Password for Sign In”, “Login & Sign up Screen” and, “organize files”.
+In *milestone 3*, we continued to split tasks so the two of us focused on different features. Our regular commits continued to reflect the division of work, with each commit focusing on the respective feature assigned to us. This division allowed us to maintain productivity and progress efficiently towards our milestone goals, ensuring that each feature received dedicated attention and timely updates. Just as what we did in the previous milestone, we named our commits according to the specific changes made. Some examples of our commits are “update forum: fix bugs (refresher +  clear filter menu)”, “update my pets (archive pet function)” and, “update forum: add a confirmation modal for deleting posts”. However, we did help out each other when one of us encountered issues. For example, Jeslyn helped to rearrange the code in Notebook Details Screen to reduce lagging and optimize the performance and Marianne helped to format the UI in the forum screen.
+<img width="1078" alt="Screenshot 2024-07-31 at 11 32 02 PM" src="https://github.com/user-attachments/assets/d13efb5f-1da2-47ed-a858-57da15b1af0a">
+<img width="1079" alt="Screenshot 2024-07-31 at 11 31 32 PM" src="https://github.com/user-attachments/assets/6da826a9-7e08-4014-a8ba-46e3737c3407">
 
-*For milestone 2,* we split tasks so two of us focused on different features. Our regular commits continued to reflect the division of work, with each commit focusing on the respective feature assigned to us. This division allowed us to maintain productivity and progress efficiently towards our milestone goals, ensuring that each feature received dedicated attention and timely updates. Just as what we did in the previous milestone, we named our commits according to the specific changes made. Some examples of our commits are “fix profile displaying issue + adjust UI”, “fix bugs: profile pic can now be displayed on the screen” and, “Update Home Screen (calculate pet's age)”. However, we did help out each other and commit to each other’s branch when one of us encountered issues. For example, Jeslyn helped to fix the profile picture not displaying problems for the profile screen and Marianne added the “view more comments” function and formatted the UI in the forum screen.
+
+
+
 
 ### Software Architecture
 
@@ -333,6 +458,22 @@ During our development, we achieved parallel work streams by utilizing different
 #### Microservice Architecture Diagram
 
 ![Microservice](https://github.com/jeslynzhou/Pawllywood/assets/168978806/6e8d1bdb-c96c-4b27-97d2-225536dfd537)
+
+## Testing
+
+### User Testing
+
+| User        | Comments                  | Solutions                |
+|-------------|---------------------------|--------------------------|
+| UserA(iOS)  | 1. Unable to upload images: device will quit when uploading images in the app.<br>2. Notebook Screen and Notebook Details Screen lagging: system crashing after selecting edit note button and unable to perform any actions such as change background colors. | 1. Set all the image qualities to 0.2 instead of 1.<br>2. Rearrange the code in the Notebook Details Screen and optimize the performance; edit Notebook Screen functions to ensure the smooth transition. |
+| UserB(Android) | 1. Unable to post in the forum screen.<br>2. Can delete posts posted by all users. | 1. The user sent us the error message, and we resolved it accordingly.<br>2.Fixed the logical errors so that the delete icon now only appears for posts created by the specific user. |
+
+### Integration Testing
+
+| User        | Comments                  | Solutions                |
+|-------------|---------------------------|--------------------------|
+| Jeslyn  | All functions work. But the background color of the notebook seems to be too dark for users to view the texts.| Add transparency to the colors so they look lighter.|
+| Marianne | Overall, the experience is smooth, but there is some lag.| Fetch all the data before displaying to users.|
 
 ## Development Plan
 
@@ -356,17 +497,12 @@ During our development, we achieved parallel work streams by utilizing different
 
 ## Project Log
 
-**Total hours for Milestone 1:**
-
-Jeslyn: 41
-
-Marianne: 42
-
-**Total hours for Milestones 2:**
-
-Jeslyn: 137
-
-Marianne: 134
+| Milestone     | Jeslyn | Marianne |
+|---------------|--------|----------|
+| Milestone 1   | 41     | 42       |
+| Milestone 2   | 137    | 134      |
+| Milestone 3   | 121    | 114      |
+| **Total**     | **299**| **290**  |
 
 | Milestone     | Tasks                                                              | PIC      | Start | End   | Hrs |
 | ------------  | ------------------------------------------------------------------ | -------- | ----- | ----- | --- |
@@ -393,3 +529,15 @@ Marianne: 134
 | 2.7           | System Testing for Forum feature                                   | Both     | 29/06 | -     | 2   |
 | 2.8           | Final Testing for core features with users + feedback (Deployment) | Both     | 29/06 | 30/06 | 4   |
 | 2.9           | Finalize documentation                                             | Both     | 30/06 | 01/07 | 5   |
+| 3 - Extension |                                                                    |          |       |       |     |
+| 3.1           | Fix problem addressed in the previous milestone | Both     | 09/07 | 11/07     | 10  |
+| 3.2           | Integrate Notebook feature                                          | Marianne | 11/07 | 25/07 | 88  |
+| 3.3           | System Testing for Notebook feature                                 | Jeslyn   | 25/07 | 26/07     | 1   |
+| 3.4           | Upgrade Profile feature | Marianne   | 25/07 | 26/07 | 4  |
+| 3.5           | System Testing for Profile feature                                 | Jeslyn | 26/07 | 27/07     | 1   |
+| 3.6           | Upgrade Forum feature                                          | Jeslyn     | 10/07 | 24/07 | 86  |
+| 3.7           | System Testing for Forum feature                                   | Marianne     | 24/07 | 25/07    | 1   |
+| 3.8           | Implement Push Notification feature | Jeslyn     | 24/07 | 26/07 | 13   |
+| 3.9           | System Testing for Push Notification feature                | Marianne     | 26/07 | 27/07 | 1   |
+| 3.10           | Final Testing for bonus features (internal and external testing)       | Both     | 26/07 | 27/07 | 2   |
+| 3.11           | Finalize report + poster + video                                            | Both     | 27/07 | 29/07 | 8   |
